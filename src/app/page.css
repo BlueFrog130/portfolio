@@ -1,0 +1,15 @@
+@property --breath-inner {
+  syntax: "<percentage>";
+  initial-value: 100%;
+  inherits: false;
+}
+
+@keyframes breath {
+  0%,
+  100% {
+    --breath-inner: var(--start-position);
+  }
+  50% {
+    --breath-inner: var(--end-position);
+  }
+}
