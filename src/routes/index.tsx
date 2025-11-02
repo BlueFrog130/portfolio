@@ -1,9 +1,11 @@
-'use client';
+import * as Card from '@/lib/components/ui/glow-card';
+import { ExternalLink } from '@/lib/components/ui/link';
+import { createFileRoute } from '@tanstack/react-router';
+import { type MouseEventHandler, useEffect, useRef } from 'react';
 
-import * as Card from '@/components/ui/glow-card';
-import { Link } from '@/components/ui/link';
-import { MouseEventHandler, useEffect, useRef } from 'react';
-import './page.css';
+export const Route = createFileRoute('/')({
+	component: Home
+});
 
 const navLinks = [
 	{ label: 'About', href: '#about' },
@@ -77,7 +79,7 @@ const experience: ExperienceItem[] = [
 	}
 ];
 
-export default function Home() {
+function Home() {
 	const sections = useRef<HTMLElement[]>([]);
 
 	useEffect(() => {
@@ -85,8 +87,6 @@ export default function Home() {
 		const observer = new IntersectionObserver(
 			(entries) => {
 				entries.forEach((entry) => {
-					const index = sections.current.indexOf(entry.target as HTMLElement);
-					console.log('Observed entry:', entry);
 					if (entry.isIntersecting) {
 						// Clear all active states
 						navLinks.forEach((link) => link.setAttribute('data-active', 'false'));
@@ -105,7 +105,6 @@ export default function Home() {
 		);
 
 		sections.current.forEach((section) => {
-			console.log('Observing section:', section);
 			if (section) observer.observe(section);
 		});
 
@@ -135,12 +134,12 @@ export default function Home() {
 						{/* TODO: Socials */}
 						<nav className="mt-10 hidden lg:block lg:grow">
 							<ul>
-								{navLinks.map((link) => (
+								{navLinks.map((link, i) => (
 									<li key={link.href}>
 										<a
 											href={link.href}
 											className="group inline-flex items-center gap-2 text-muted-foreground transition-colors hover:font-bold hover:text-primary data-[active=true]:font-bold data-[active=true]:text-primary"
-											data-active={false}
+											data-active={i === 0}
 											onClick={setActiveLink}
 										>
 											<div className="h-[1px] w-6 bg-current transition-all group-hover:w-10 group-[&[data-active=true]]:w-10"></div>
@@ -204,7 +203,8 @@ export default function Home() {
 							stakeholders.
 						</p>
 						<p>
-							Since 2019 at <Link href="https://solarityhealth.com/">Solarity Health</Link>{' '}
+							Since 2019 at{' '}
+							<ExternalLink href="https://solarityhealth.com/">Solarity Health</ExternalLink>{' '}
 							I&apos;ve grown from an intern writing early production features to leading
 							modernization efforts—driving the adoption of TypeScript, React, and contemporary
 							engineering standards. I build and review code across the stack (JS/TS, React, C#,
@@ -213,24 +213,25 @@ export default function Home() {
 							quality, and calm incremental change are core to how I work.
 						</p>
 						<p>
-							As founder of <Link href="https://gradydevelopment.com/">Grady Development</Link> I
+							As founder of{' '}
+							<ExternalLink href="https://gradydevelopment.com/">Grady Development</ExternalLink> I
 							deliver pragmatic software for small businesses:{' '}
-							<Link href="https://dukestreetvermillion.com/">
+							<ExternalLink href="https://dukestreetvermillion.com/">
 								a high‑visibility rental property platform that improved search ranking and
 								occupancy
-							</Link>
-							; <Link href="https://wmammogram.com/">wMammogram</Link>—an increased screening
-							uptake; and cloud‑deployed solutions spanning AWS, Azure, Google Cloud, and
+							</ExternalLink>
+							; <ExternalLink href="https://wmammogram.com/">wMammogram</ExternalLink>—an increased
+							screening uptake; and cloud‑deployed solutions spanning AWS, Azure, Google Cloud, and
 							Cloudflare. I lean on containerization, microservice boundaries where they add
 							clarity, disciplined CI/CD, and performance-aware architecture.
 						</p>
 						<p>
 							In academia I built CodingStub, a containerized, microservice based coding practice
 							environment as a Graduate Assistant while teaching and mentoring students.{' '}
-							<Link href="https://ieeexplore.ieee.org/document/9249222">
+							<ExternalLink href="https://ieeexplore.ieee.org/document/9249222">
 								My research on Software‑Defined Networking performance and security in cloud
 								environments
-							</Link>{' '}
+							</ExternalLink>{' '}
 							was presented at the IETC Conference and the USD Research Fair. I enjoy bridging
 							low‑level understanding (Rust, C, C++) with product delivery, and I care deeply about
 							accessibility, clarity, and craftsmanship. I&apos;m energized by opportunities to

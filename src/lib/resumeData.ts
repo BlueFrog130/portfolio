@@ -1,4 +1,4 @@
-import { ResumeData } from '@/lib/resumeTypes';
+import { type ResumeData } from '@/lib/resumeTypes';
 
 export const resume: ResumeData = {
 	name: 'Adam Grady',
