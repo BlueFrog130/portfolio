@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Personal portfolio website for Adam Grady (resume details in `resume.md`). Built as a React application from scratch with Server Components and Static Site Generation (SSG) - intentionally avoiding meta-frameworks like Next.js, TanStack Start, or React Router.
+Personal portfolio website for Adam Grady (resume details in `resume.md` ). Built as a React application from scratch with Server Components and Static Site Generation (SSG) - intentionally avoiding meta-frameworks like Next.js, TanStack Start, or React Router.
 
 ## Architecture Philosophy
 
@@ -38,10 +38,16 @@ dist/              # Build output (SSG)
 ## Key Conventions
 
 - Server Components by default; add `'use client'` directive only when needed for interactivity
-- Resume data sourced from `resume.md` - parse at build time for SSG
+- Resume data sourced from `resume.md` - use as a reference for content, not parsed or use directly
 - TypeScript for type safety
 - CSS modules or Tailwind for styling (TBD)
 
 ## Deployment
 
 Target: Cloudflare Pages (static hosting)
+
+## MCP
+
+Always use context7 when I need code generation, setup or configuration steps, or
+library/API documentation. This means you should automatically use the Context7 MCP
+tools to resolve library id and get library docs without me having to explicitly ask.

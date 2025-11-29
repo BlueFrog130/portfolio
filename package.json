@@ -1,0 +1,51 @@
+{
+	"name": "adam-grady-portfolio",
+	"version": "1.0.0",
+	"description": "Personal portfolio website for Adam Grady - built with React, Vite, and custom SSG",
+	"type": "module",
+	"scripts": {
+		"dev": "vite",
+		"build": "pnpm build:client && pnpm build:ssr && pnpm ssg",
+		"build:client": "vite build --outDir dist/client",
+		"build:ssr": "vite build --ssr src/entry-server.tsx --outDir dist/server",
+		"ssg": "node --import tsx scripts/ssg.ts",
+		"preview": "vite preview --outDir dist/client",
+		"format": "prettier --write .",
+		"format:check": "prettier --check ."
+	},
+	"keywords": [
+		"portfolio",
+		"react",
+		"vite",
+		"ssg",
+		"typescript",
+		"custom-router",
+		"view-transitions"
+	],
+	"author": "Adam Grady",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/BlueFrog130/portfolio"
+	},
+	"dependencies": {
+		"react": "19.3.0-canary-fd524fe0-20251121",
+		"react-dom": "19.3.0-canary-fd524fe0-20251121"
+	},
+	"devDependencies": {
+		"@mdx-js/react": "^3.1.1",
+		"@mdx-js/rollup": "^3.1.1",
+		"@tailwindcss/typography": "^0.5.19",
+		"@tailwindcss/vite": "^4.0.0",
+		"@types/node": "^22.0.0",
+		"@types/react": "^19.2.7",
+		"@types/react-dom": "^19.2.3",
+		"@vitejs/plugin-react": "^5.1.1",
+		"babel-plugin-react-compiler": "^1.0.0",
+		"prettier": "^3.6.2",
+		"tailwindcss": "^4.0.0",
+		"tsx": "^4.0.0",
+		"typescript": "^5.7.0",
+		"vite": "^7.2.4"
+	}
+}

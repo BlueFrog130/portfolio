@@ -1,0 +1,51 @@
+export const metadata = {
+	slug: 'portfolio',
+	title: 'Portfolio',
+	description: (
+		<>
+			This portfolio website built with React 19, custom router, View Transitions
+			API, and custom SSG - no meta-frameworks.
+		</>
+	),
+	technologies: ['React 19', 'TypeScript', 'Vite', 'Tailwind CSS', 'Custom SSG'],
+	github: 'https://github.com/BlueFrog130/portfolio',
+	featured: true,
+};
+
+## Overview
+
+This portfolio website is an exploration of building a modern React application from scratch, intentionally avoiding meta-frameworks like Next.js or Remix. The goal was to deeply understand the underlying technologies and patterns that these frameworks abstract away.
+
+## Architecture Decisions
+
+### No Meta-Framework
+
+Rather than reaching for Next.js or similar, this project implements:
+
+- **Custom Router**: A lightweight routing solution with View Transitions API support
+- **Static Site Generation**: Build-time rendering for optimal performance
+- **Server Components**: Leveraging React 19's RSC capabilities without a framework
+
+### View Transitions API
+
+The site uses the native View Transitions API to create smooth page transitions, providing a polished user experience without heavy animation libraries.
+
+### MDX for Content
+
+Project content and descriptions are authored in MDX, allowing for rich content with embedded components while keeping the authoring experience simple.
+
+## Technical Stack
+
+- **React 19**: Latest React features including Server Components
+- **TypeScript**: Full type safety across the codebase
+- **Vite**: Fast development server and optimized production builds
+- **Tailwind CSS**: Utility-first styling for rapid UI development
+
+## Lessons Learned
+
+Building this portfolio reinforced several key insights:
+
+- Understanding what meta-frameworks provide by implementing it manually
+- The power and simplicity of the View Transitions API
+- React Server Components can work outside of meta-frameworks
+- The value of static site generation for content-focused sites

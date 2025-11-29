@@ -1,0 +1,9 @@
+{
+	"permissions": {
+		"allow": [
+			"Bash(del \"c:\\Users\\adamg\\Documents\\GitHub\\portfolio\\src\\routes.tsx\")"
+		],
+		"deny": [],
+		"ask": []
+	}
+}

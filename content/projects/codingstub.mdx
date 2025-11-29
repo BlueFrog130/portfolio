@@ -1,0 +1,36 @@
+export const metadata = {
+	slug: 'codingstub',
+	title: 'CodingStub',
+	description: (
+		<>
+			Online coding environment for students to practice coding problems. Built
+			with containerized microservices for security and scalability.
+		</>
+	),
+	technologies: ['React', 'TypeScript', 'Docker', 'Microservices', 'Node.js'],
+	featured: true,
+};
+
+## Overview
+
+CodingStub is a full-stack online coding environment developed during my time as a Graduate Assistant at the University of South Dakota. The platform allows students to practice coding problems in a secure, isolated environment.
+
+## Technical Architecture
+
+The application leverages containerized microservices to provide a secure and scalable solution for running untrusted student code. Each code execution request spins up an isolated Docker container, preventing malicious code from affecting the host system or other users.
+
+### Key Components
+
+- **Frontend**: React-based interface with real-time code editing and output streaming
+- **API Gateway**: Node.js service handling authentication and request routing
+- **Execution Engine**: Containerized code runners supporting multiple languages
+- **Problem Management**: Admin interface for creating and managing coding challenges
+
+## Lessons Learned
+
+Building CodingStub taught me valuable lessons about:
+
+- Designing secure systems for executing untrusted code
+- Managing container orchestration and resource limits
+- Building real-time applications with WebSocket connections
+- Scaling microservices architecture for educational use cases
