@@ -2,13 +2,17 @@ import { profile, links } from '@/lib/data';
 
 export function Hero() {
 	return (
-		<section
-			className="relative overflow-hidden bg-linear-to-b from-accent-50/50 to-surface-50 py-20 sm:py-32"
-			aria-labelledby="hero-heading"
-		>
-			{/* Decorative background */}
+		<section className="relative py-20 sm:py-32" aria-labelledby="hero-heading">
+			{/* Animated gradient blobs */}
 			<div className="absolute inset-0 -z-10">
-				<div className="absolute left-1/2 top-0 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent-100/50 blur-3xl" />
+				{/* Primary indigo blob */}
+				<div className="blob blob-1 absolute h-[600px] w-[600px] rounded-full bg-linear-to-br from-accent-400/20 to-accent-600/15 blur-3xl" />
+				{/* Purple accent blob */}
+				<div className="blob blob-2 absolute h-[500px] w-[500px] rounded-full bg-linear-to-br from-purple-400/15 to-fuchsia-500/10 blur-3xl" />
+				{/* Cyan accent blob */}
+				<div className="blob blob-3 absolute h-[400px] w-[400px] rounded-full bg-linear-to-br from-cyan-400/12 to-blue-500/10 blur-3xl" />
+				{/* Subtle pink blob */}
+				<div className="blob blob-4 absolute h-[350px] w-[350px] rounded-full bg-linear-to-br from-pink-300/10 to-rose-400/8 blur-3xl" />
 			</div>
 
 			<div className="mx-auto max-w-5xl px-4 sm:px-6">

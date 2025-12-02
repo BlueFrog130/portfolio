@@ -115,8 +115,14 @@ export default function ProjectDetail() {
 							)}
 
 							<section className="prose prose-surface mt-12 max-w-none">
-								<Suspense fallback={<div className="animate-pulse h-64 bg-surface-100 rounded-lg" />}>
-									<project.Content />
+								<Suspense
+									fallback={
+										<div className="animate-pulse h-64 bg-surface-100 rounded-lg" />
+									}
+								>
+									<ViewTransition name="project-content">
+										<project.Content />
+									</ViewTransition>
 								</Suspense>
 							</section>
 						</article>

@@ -43,7 +43,7 @@ export function Experience() {
 							<ul className="mt-4 space-y-2" role="list">
 								{exp.description.map((item, i) => (
 									<li key={i} className="flex items-start text-surface-600">
-										<span className="mr-3 mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-surface-400" />
+										<span className="mr-3 mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-surface-400" />
 										{item}
 									</li>
 								))}

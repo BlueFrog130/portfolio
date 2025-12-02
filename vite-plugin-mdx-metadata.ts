@@ -26,13 +26,13 @@ export function mdxMetadataPlugin(): Plugin {
 			if (id.startsWith(VIRTUAL_PREFIX) && id.endsWith(METADATA_QUERY)) {
 				const actualPath = id.slice(
 					VIRTUAL_PREFIX.length,
-					-METADATA_QUERY.length
+					-METADATA_QUERY.length,
 				);
 				const content = readFileSync(actualPath, 'utf-8');
 
 				// Extract the metadata export block
 				const match = content.match(
-					/export\s+const\s+metadata\s*=\s*(\{[\s\S]*?\n\});/
+					/export\s+const\s+metadata\s*=\s*(\{[\s\S]*?\n\});/,
 				);
 
 				if (!match) {

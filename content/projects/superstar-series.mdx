@@ -1,0 +1,398 @@
+export const metadata = {
+	slug: 'superstar-series',
+	title: 'Superstar Series',
+	description: (
+		<>
+			A full-stack esports management platform for competitive Rocket League
+			tournaments, featuring a Discord bot for match reporting, a statistics
+			website, and cloud infrastructure—all built as a polyglot monorepo.
+		</>
+	),
+	technologies: ['SvelteKit', 'TypeScript', 'C#/.NET', 'Discord', 'Firebase'],
+	link: 'https://superstar.disconnect.gg/',
+	featured: true,
+};
+
+## Overview
+
+Superstar Series is a competitive Rocket League league organized through Discord. This platform provides end-to-end tournament management:
+
+- **Discord Bot** — Match reporting, player management, and clip collection
+- **Statistics Website** — Standings, team analytics, and player performance tracking
+- **Cloud Functions** — Authentication and serverless operations
+- **Shared Infrastructure** — Firestore database, deployment automation, and utility scripts
+
+The system is designed for **cost efficiency** and **real-time performance**, using static site generation with nightly builds to minimize database reads while maintaining live update capabilities.
+
+---
+
+## Problems Solved
+
+### 1. Firebase Cost Optimization
+
+**Problem:** Firestore charges per document read. With hundreds of users viewing standings and match data daily, real-time queries would generate significant costs.
+
+**Solution:** Implemented a hybrid static/real-time architecture:
+
+- All Firestore data is fetched once during nightly builds
+- Pages are prerendered as static HTML with embedded JSON
+- Client-side Firestore listeners only subscribe to _new_ data after initial load
+- Result: **~95% reduction in Firestore reads**
+
+| Approach         | Daily Reads | Monthly Cost |
+| ---------------- | ----------- | ------------ |
+| Pure Real-time   | ~50,000+    | $15-30+      |
+| Static + Nightly | ~2,000      | < $1         |
+
+### 2. Data Freshness vs. Performance
+
+**Problem:** Static sites serve stale data, but real-time systems are expensive and slower on initial load.
+
+**Solution:** Dual-layer data strategy:
+
+1. **Build-time caching** — SeasonDb class fetches all data once, caches in memory, generates static JSON endpoints
+2. **Nightly rebuilds** — GitHub Actions rebuilds at 5 AM UTC daily
+3. **Real-time overlay** — Firestore listeners merge new matches into the static baseline
+
+### 3. Complex Match Reporting Workflow
+
+**Problem:** Reporting Rocket League matches requires validating players, mapping platform IDs to Discord users, and ensuring data integrity.
+
+**Solution:** Multi-step validation pipeline in the Discord bot:
+
+1. Fetch replay data from Ballchasing.com API
+2. Extract player platform IDs from replay
+3. Map platform IDs to Discord users (with interactive resolution for unknowns)
+4. Validate team membership and player counts
+5. Atomic Firestore transactions prevent duplicates
+6. Automatic series completion detection
+
+### 4. Cross-Platform Data Consistency
+
+**Problem:** Tournament data spans Discord (users/roles), Ballchasing (replays), and Firestore (persistence) with complex relationships.
+
+**Solution:** Shared model library (`SuperstarSeries.Firestore.Models`) used by both C# and TypeScript projects, ensuring consistent data structures across the entire stack.
+
+---
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                         DISCORD USERS                               │
+└───────────────────────────────┬─────────────────────────────────────┘
+                                │
+        ┌───────────────────────┼───────────────────────┐
+        │                       │                       │
+        ▼                       ▼                       ▼
+┌───────────────┐    ┌─────────────────────┐    ┌─────────────────┐
+│  Discord Bot  │    │   Website (Static)  │    │ Cloud Functions │
+│    (C#/.NET)  │    │     (SvelteKit)     │    │   (TypeScript)  │
+├───────────────┤    ├─────────────────────┤    ├─────────────────┤
+│ /report game  │    │ Prerendered HTML    │    │ Discord OAuth   │
+│ /report series│    │ Static JSON APIs    │    │ Token Exchange  │
+│ /stats        │    │ Real-time listeners │    │                 │
+│ /clips        │    │ Chart.js analytics  │    │                 │
+└───────┬───────┘    └──────────┬──────────┘    └────────┬────────┘
+        │                       │                        │
+        │     ┌─────────────────┼────────────────────────┘
+        │     │                 │
+        ▼     ▼                 ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                      GOOGLE CLOUD FIRESTORE                         │
+├─────────────────────────────────────────────────────────────────────┤
+│  Seasons/{id}/Series → Games → PlayerStats                          │
+│  Users/{id} → Profile, Discord mapping                              │
+│  Config → Divisions, Teams, Channels                                │
+│  Clips → Metadata, Ratings                                          │
+└─────────────────────────────────────────────────────────────────────┘
+        │
+        ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                       EXTERNAL SERVICES                             │
+├─────────────────────────────────────────────────────────────────────┤
+│  Ballchasing.com API → Replay data, player stats, match validation  │
+│  Discord API → User identity, role management, guild interactions   │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Monorepo Structure
+
+The platform is built as a polyglot monorepo combining C# backends with TypeScript frontends:
+
+```
+SuperstarSeriesBot/
+├── SuperstarSeries.Website/        # SvelteKit static site (TypeScript)
+├── SuperstarSeries.Functions/      # Firebase Cloud Functions (TypeScript)
+├── SuperstarSeries.Scripts/        # Deployment utilities (TypeScript)
+├── SuperstarSeries.Bot/            # Discord bot (C#/.NET 8)
+├── SuperstarSeries.SeriesApi/      # API client library (C#)
+├── SuperstarSeries.Ballchasing/    # Ballchasing.com client (C#)
+├── SuperstarSeries.Firestore.Models/ # Shared data models (C#)
+├── SuperstarSeries.Core/           # Common utilities (C#)
+├── pnpm-workspace.yaml             # Node.js workspace config
+├── SuperstarSeries.sln             # .NET solution file
+└── firebase.json                   # Firebase configuration
+```
+
+**Why Polyglot?**
+
+- **C# for the bot** — Remora.Discord provides type-safe Discord API interactions with excellent async support
+- **TypeScript for the web** — SvelteKit's SSG capabilities and Firebase SDK integration
+- **Shared Firestore** — Single source of truth accessible from both stacks
+
+---
+
+## Discord Bot
+
+### Technology Stack
+
+| Component    | Technology                       |
+| ------------ | -------------------------------- |
+| Framework    | Remora.Discord (C#/.NET 8)       |
+| Database     | Google Cloud Firestore           |
+| External API | Ballchasing.com                  |
+| Architecture | DI-based services + repositories |
+
+### Key Features
+
+**Match Reporting**
+
+```
+/report game <ballchasing-link>    # Report single game
+/report series <ballchasing-group> # Report entire series
+```
+
+- Validates players are Discord members
+- Maps Ballchasing platform IDs to Discord users
+- Interactive player resolution via select menus
+- Atomic transactions prevent duplicate reports
+- Auto-detects series completion
+
+**Statistics & Analytics**
+
+```
+/stats all              # Export all season stats (CSV)
+/stats user @player     # Player-specific statistics
+/my_stats               # Personal performance data
+```
+
+**Clip Management**
+
+- Automatic clip detection in designated channel
+- 1-5 star rating system via emoji reactions
+- `/clips top5` — View top-rated clips
+- `/clips export` — Export clip data
+
+**Configuration**
+
+```
+/config channel set reports #channel
+/config division add @role
+/config team add @role <logo-url>
+/config bestof set 5
+```
+
+### Match Reporting Flow
+
+```
+User submits Ballchasing link
+         │
+         ▼
+┌─────────────────────────────┐
+│  Fetch replay from API      │
+│  Extract player platform IDs│
+└──────────────┬──────────────┘
+               │
+               ▼
+┌─────────────────────────────┐
+│  Map platform IDs → Discord │
+│  (Interactive if unknown)   │
+└──────────────┬──────────────┘
+               │
+               ▼
+┌─────────────────────────────┐
+│  Validate:                  │
+│  • Team membership          │
+│  • Player count (≤3/side)   │
+│  • Not duplicate            │
+└──────────────┬──────────────┘
+               │
+               ▼
+┌─────────────────────────────┐
+│  Firestore Transaction:     │
+│  • Create/update series     │
+│  • Add game record          │
+│  • Update player stats      │
+└──────────────┬──────────────┘
+               │
+               ▼
+┌─────────────────────────────┐
+│  Post results embed         │
+│  Check series completion    │
+└─────────────────────────────┘
+```
+
+---
+
+## Static Website
+
+### Technology Stack
+
+| Category      | Technology                 |
+| ------------- | -------------------------- |
+| Framework     | SvelteKit 2 + Vite         |
+| Styling       | Tailwind CSS + Skeleton UI |
+| Database      | Firebase Firestore         |
+| Hosting       | Firebase Hosting (CDN)     |
+| Visualization | Chart.js                   |
+
+### Static Generation Strategy
+
+**Build-Time Caching**
+
+The `SeasonDb` class implements efficient data aggregation:
+
+```typescript
+class SeasonDb {
+	private cachedSeries = new Map<string, SeriesData>();
+	private namesLookup: Record<string, string> | null = null;
+
+	async init() {
+		// Single pass through Firestore
+		// All subsequent requests use cached data
+	}
+}
+```
+
+**Prerendered API Endpoints**
+
+All data is served as static JSON generated during build:
+
+```
+/api/seasons/current.json
+/api/seasons/[season]/series.json
+/api/seasons/[season]/divisions/[division]/standings.json
+/api/seasons/[season]/divisions/[division]/teams/[team]/stats.json
+```
+
+**Real-Time Enhancement**
+
+After loading static baseline, Firestore listeners subscribe to new data only:
+
+```typescript
+// Only fetches documents created after the static build
+onSnapshot(
+	query(seriesRef, where('ReportedDate', '>', lastBuildTime)),
+	(snapshot) => mergeNewData(snapshot),
+);
+```
+
+### Key Pages
+
+- **Standings** — Conference/division breakdowns with win/loss records
+- **Team Stats** — Aggregated player performance, head-to-head history
+- **Series Details** — Individual game breakdowns with player statistics
+- **Compare** — Side-by-side team analysis
+
+---
+
+## Technologies Used
+
+### Backend (C#/.NET 8)
+
+| Technology              | Purpose                                 |
+| ----------------------- | --------------------------------------- |
+| Remora.Discord          | Discord API framework                   |
+| Google.Cloud.Firestore  | Database client                         |
+| Microsoft.Extensions.DI | Dependency injection                    |
+| OneOf                   | Discriminated unions for error handling |
+| Riok.Mapperly           | Object mapping                          |
+| FuzzySharp              | Fuzzy string matching                   |
+| Polly                   | HTTP retry policies                     |
+
+### Frontend (TypeScript)
+
+| Technology   | Purpose                 |
+| ------------ | ----------------------- |
+| SvelteKit    | Full-stack framework    |
+| Vite         | Build tooling           |
+| Tailwind CSS | Utility-first styling   |
+| Skeleton UI  | Component library       |
+| Firebase SDK | Auth + Firestore client |
+| Chart.js     | Data visualization      |
+| date-fns     | Date manipulation       |
+
+### Infrastructure
+
+| Technology         | Purpose          |
+| ------------------ | ---------------- |
+| Firebase Hosting   | Static site CDN  |
+| Firebase Functions | Serverless auth  |
+| Cloud Firestore    | NoSQL database   |
+| GitHub Actions     | CI/CD pipelines  |
+| pnpm Workspaces    | Node.js monorepo |
+
+---
+
+## Deployment Pipeline
+
+```
+┌────────────┐         ┌─────────────┐         ┌─────────────┐
+│  PR Open   │────────▶│   Preview   │         │             │
+│            │         │ Deployment  │         │             │
+└────────────┘         └─────────────┘         │             │
+                                               │  Live Site  │
+┌────────────┐                                 │             │
+│   Merge    │────────────────────────────────▶│             │
+│ to Release │                                 │             │
+└────────────┘                                 └─────────────┘
+                                                     ▲
+┌────────────┐                                       │
+│  5 AM UTC  │───────────────────────────────────────┘
+│  (Nightly) │  Refresh cached data
+└────────────┘
+```
+
+---
+
+## Key Architectural Decisions
+
+### 1. Hybrid Static/Real-Time
+
+Rather than choosing between static (fast, cheap) and real-time (fresh, expensive), the platform uses both:
+
+- Static for 99% of page loads
+- Real-time only for truly live data
+
+### 2. Polyglot Monorepo
+
+Choosing the right tool for each job:
+
+- C# for Discord bot (type safety, async patterns, Remora ecosystem)
+- TypeScript for web (SvelteKit SSG, Firebase SDK)
+- Shared Firestore models ensure consistency
+
+### 3. Build-Time Data Aggregation
+
+Complex queries and joins happen once at build time, not on every request:
+
+- Standings calculations
+- Player stat aggregations
+- Division rankings
+
+### 4. Railway-Oriented Error Handling
+
+The C# projects use `Result<TValue, TError>` types for explicit error handling without exceptions, making failure cases visible in the type system.
+
+---
+
+## Lessons Learned
+
+1. **Static generation doesn't mean stale** — Nightly builds + real-time overlays provide freshness without cost
+2. **Polyglot monorepos work** — Right tool for each job, shared data models bridge the gap
+3. **Build-time computation is powerful** — Move work from request time to build time when possible
+4. **Interactive Discord UIs** — Select menus and buttons make complex workflows user-friendly
+5. **Cost optimization requires architecture** — The cheapest database read is the one that never happens

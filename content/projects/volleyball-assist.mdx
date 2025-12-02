@@ -1,0 +1,187 @@
+export const metadata = {
+	slug: 'volleyball-assist',
+	title: 'Volleyball Assist',
+	description: (
+		<>
+			A full-stack tournament management platform for volleyball tournaments,
+			featuring real-time score tracking, intelligent scheduling, and
+			multi-device synchronization.
+		</>
+	),
+	technologies: [
+		'SvelteKit',
+		'TypeScript',
+		'Firebase',
+		'Stripe',
+		'Algolia',
+		'SEO',
+	],
+	link: 'https://volleyballassist.com/',
+	featured: true,
+};
+
+## Overview
+
+Volleyball Assist is a web-based application that streamlines the organization and management of volleyball tournaments. Tournament organizers can create events supporting multiple formats (Round Robin, Pool Play, Single & Double Elimination), while scorekeepers track live scores from any device. The platform handles the complexity of scheduling across multiple courts and time constraints, allowing organizers to focus on running their events.
+
+**Live Application**: Built as a production-ready SaaS with Stripe payment integration for tournament creation.
+
+## Problems Solved
+
+| Challenge                                      | Solution                                                                                                                                                                |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Manual Scheduling Complexity**               | Intelligent scheduling algorithm that automatically assigns matches to courts and time slots while respecting daily time windows, match durations, and team constraints |
+| **Multi-Format Tournament Support**            | Unified platform supporting Round Robin, Pool Play, Single Elimination, and Double Elimination formats with bracket advancement logic                                   |
+| **Real-Time Score Distribution**               | Firestore real-time listeners synchronize scores instantly across all connected devices—organizers, scorekeepers, and spectators see updates simultaneously             |
+| **Distributed Scorekeeping**                   | Role-based permission system allows multiple scorekeepers to update scores from courtside on any device                                                                 |
+| **Tournament Discovery**                       | Algolia-powered search enables participants to find public tournaments; shareable 8-character tournament codes for private events                                       |
+| **UI Responsiveness During Heavy Computation** | Web Workers handle tournament scheduling and preview generation off the main thread, keeping the interface responsive                                                   |
+
+## Key Features
+
+- **Tournament Builder Wizard** — Step-by-step tournament creation with live preview
+- **Bracket Visualization** — Interactive bracket display for elimination rounds
+- **Live Scoring** — Set-by-set score tracking with automatic winner determination
+- **Multi-Court Scheduling** — Parallel match scheduling across multiple courts/locations
+- **Pool-to-Bracket Advancement** — Automatic bracket seeding based on pool play results
+- **QR Code Sharing** — Quick tournament access via scannable codes
+- **Payment Processing** — Stripe integration with coupon/discount support
+- **Admin Dashboard** — Tournament management and user administration
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         Frontend (SvelteKit)                    │
+│  ┌──────────────┐  ┌──────────────┐  ┌────────────────────────┐ │
+│  │ Tournament   │  │ Real-Time    │  │ Web Workers            │ │
+│  │ Builder      │  │ Score UI     │  │ (Scheduling Engine)    │ │
+│  └──────────────┘  └──────────────┘  └────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      Firebase Platform                          │
+│  ┌──────────────┐  ┌──────────────┐  ┌────────────────────────┐ │
+│  │ Cloud        │  │ Firestore    │  │ Firebase               │ │
+│  │ Functions    │  │ (Real-Time)  │  │ Authentication         │ │
+│  └──────────────┘  └──────────────┘  └────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+           ┌──────────────────┼──────────────────┐
+           ▼                  ▼                  ▼
+    ┌────────────┐     ┌────────────┐     ┌────────────┐
+    │  Stripe    │     │  Algolia   │     │  Firebase  │
+    │  Payments  │     │  Search    │     │  Hosting   │
+    └────────────┘     └────────────┘     └────────────┘
+```
+
+**Monorepo Structure:**
+
+- `/web` — SvelteKit frontend application
+- `/functions` — Firebase Cloud Functions (backend API)
+- `/common` — Shared TypeScript interfaces, models, and scheduling algorithms
+
+## Technology Stack
+
+### Frontend
+
+- **Framework**: SvelteKit 2 with Svelte 5 (Runes reactivity)
+- **Styling**: Tailwind CSS 4 + Skeleton UI component library
+- **State**: Svelte stores with Firestore real-time subscriptions
+- **Validation**: Zod schema validation
+- **Build**: Vite 6
+
+### Backend
+
+- **Runtime**: Node.js 22 on Firebase Cloud Functions
+- **Database**: Cloud Firestore (NoSQL, real-time)
+- **Authentication**: Firebase Auth (Google, Facebook, Email)
+- **Payments**: Stripe API with webhooks
+- **Search**: Algolia for full-text tournament search
+
+### Infrastructure
+
+- **Hosting**: Firebase Hosting (static SPA)
+- **CI/CD**: GitHub Actions
+- **Package Management**: pnpm workspaces
+
+## Technical Highlights
+
+### Scheduling Algorithm
+
+The tournament scheduling engine uses generator functions for memory-efficient processing of large tournaments. It handles complex constraints including:
+
+- Multiple courts with parallel match scheduling
+- Daily time windows (start/end times per day)
+- Match duration limits with buffer time
+- Pool assignments preventing same-pool concurrent matches
+- Bracket progression dependencies
+
+```typescript
+// Simplified scheduling flow
+function* scheduleMatches(matches: Match[], constraints: Constraints) {
+	for (const match of matches) {
+		const slot = findAvailableSlot(match, constraints);
+		if (!slot) throw new SchedulingError('No available slots');
+		yield { match, slot };
+	}
+}
+```
+
+### Real-Time State Synchronization
+
+Firestore listeners provide instant updates across all connected clients. Custom Svelte stores wrap Firestore subscriptions for reactive UI updates:
+
+```typescript
+// Tournament data flows reactively through the component tree
+const tournament = createFirestoreStore<Tournament>(`tournaments/${id}`);
+// Components automatically re-render on remote changes
+```
+
+### Web Worker Architecture
+
+CPU-intensive scheduling operations run in dedicated Web Workers to maintain UI responsiveness:
+
+- `tournament.worker.ts` — Full tournament generation
+- `tournament-preview.worker.ts` — Live preview during configuration
+
+### Type-Safe Monorepo
+
+Shared TypeScript interfaces ensure consistency between frontend and backend:
+
+- Tournament, Match, and Team interfaces shared across packages
+- Scheduling algorithms importable by both web and functions packages
+- Strict TypeScript configuration catches errors at compile time
+
+## Data Model
+
+```
+tournaments/{tournamentId}
+├── name, type, organizer
+├── teams: { [teamId]: Team }
+├── matches: { [matchId]: Match }
+├── eliminationMatches: { [matchId]: Match }
+├── config: TournamentConfig
+└── scorekeepers: { [uid]: permissions }
+
+tournaments/{tournamentId}/sets/{matchId}
+└── sets: { [setNumber]: SetScore }
+```
+
+Security rules enforce:
+
+- Public read access for tournament data
+- Organizer-only write for configuration
+- Scorekeeper-only access for score updates
+
+## Outcomes
+
+- **Production-ready SaaS** with payment processing and user authentication
+- **Scalable architecture** handling tournaments of varying sizes
+- **Real-time collaboration** enabling distributed scorekeeping teams
+- **Responsive design** optimized for courtside mobile use
+
+---
+
+_Built with SvelteKit, Firebase, Stripe, and Algolia_

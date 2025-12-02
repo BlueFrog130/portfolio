@@ -90,7 +90,7 @@ html {
 }
 
 body {
-	@apply bg-surface-50 text-surface-900 antialiased;
+	@apply bg-surface-50 text-surface-900 antialiased overflow-x-hidden;
 	font-family: var(--font-family-sans);
 }
 
@@ -129,6 +129,43 @@ body {
 	}
 	to {
 		opacity: 0;
+	}
+}
+
+/* Project content scale-in transition */
+::view-transition-old(project-content) {
+	animation: content-scale-out 300ms ease-out forwards;
+}
+
+::view-transition-new(project-content) {
+	animation: content-scale-in 300ms ease-out forwards;
+}
+
+@keyframes content-scale-in {
+	from {
+		opacity: 0;
+		transform: scaleY(0.4);
+		transform-origin: top center;
+		max-height: 16rem;
+	}
+	to {
+		opacity: 1;
+		transform: scaleY(1);
+		transform-origin: top center;
+		max-height: none;
+	}
+}
+
+@keyframes content-scale-out {
+	from {
+		opacity: 1;
+		transform: scaleY(1);
+		transform-origin: top center;
+	}
+	to {
+		opacity: 0;
+		transform: scaleY(0.4);
+		transform-origin: top center;
 	}
 }
 
@@ -171,4 +208,95 @@ button {
 }
 .stagger-5 {
 	animation-delay: 0.5s;
+}
+
+/* Animated gradient blobs */
+.blob {
+	animation-timing-function: ease-in-out;
+	animation-iteration-count: infinite;
+	animation-direction: alternate;
+}
+
+.blob-1 {
+	top: -20%;
+	left: 10%;
+	animation: blob-float-1 20s infinite alternate;
+}
+
+.blob-2 {
+	top: -10%;
+	right: -5%;
+	animation: blob-float-2 25s infinite alternate;
+}
+
+.blob-3 {
+	bottom: -15%;
+	left: 30%;
+	animation: blob-float-3 18s infinite alternate;
+}
+
+.blob-4 {
+	bottom: 10%;
+	right: 15%;
+	animation: blob-float-4 22s infinite alternate;
+}
+
+@keyframes blob-float-1 {
+	0% {
+		transform: translate(0, 0) scale(1);
+	}
+	33% {
+		transform: translate(30px, 50px) scale(1.05);
+	}
+	66% {
+		transform: translate(-20px, 30px) scale(0.95);
+	}
+	100% {
+		transform: translate(50px, -20px) scale(1.02);
+	}
+}
+
+@keyframes blob-float-2 {
+	0% {
+		transform: translate(0, 0) scale(1);
+	}
+	33% {
+		transform: translate(-40px, 30px) scale(0.98);
+	}
+	66% {
+		transform: translate(20px, -40px) scale(1.04);
+	}
+	100% {
+		transform: translate(-30px, -20px) scale(1);
+	}
+}
+
+@keyframes blob-float-3 {
+	0% {
+		transform: translate(0, 0) scale(1);
+	}
+	33% {
+		transform: translate(50px, -30px) scale(1.03);
+	}
+	66% {
+		transform: translate(-30px, -20px) scale(0.97);
+	}
+	100% {
+		transform: translate(20px, 40px) scale(1.01);
+	}
+}
+
+@keyframes blob-float-4 {
+	0% {
+		transform: translate(0, 0) scale(1);
+	}
+	33% {
+		transform: translate(-20px, -40px) scale(1.02);
+	}
+	66% {
+		transform: translate(40px, 20px) scale(0.96);
+	}
+	100% {
+		transform: translate(-40px, 30px) scale(1.04);
+	}
 }

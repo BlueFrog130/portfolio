@@ -1,0 +1,195 @@
+export const metadata = {
+	slug: 'duke-apartments',
+	title: 'Duke Apartments',
+	description: (
+		<>
+			A modern, performant web application for Duke Street Apartments in
+			Vermillion, South Dakota. This full-stack project showcases apartment
+			listings with an elegant UI, advanced image optimization, and progressive
+			web app capabilities.
+		</>
+	),
+	technologies: ['SvelteKit', 'TypeScript', 'SEO'],
+	link: 'https://dukestreetvermillion.com/',
+	featured: true,
+};
+
+## Overview
+
+Duke Apartments is a marketing website designed to provide prospective tenants with property information, an interactive photo gallery, and easy contact options. Built with a modern tech stack emphasizing performance and user experience, the site achieves fast load times through static site generation, responsive image delivery, and intelligent caching strategies.
+
+The project follows a monorepo architecture with separate packages for the public-facing client and an admin dashboard, backed by Firebase serverless infrastructure.
+
+---
+
+## Key Features
+
+### Interactive Photo Gallery
+
+- Masonry grid layout with high-quality apartment photos
+- Full-screen lightbox modal with smooth transitions
+- Keyboard navigation (arrow keys) and touch/swipe support for mobile
+- Lazy loading with Intersection Observer API
+- Multi-format image delivery (AVIF, WebP, PNG) for optimal performance
+
+### Progressive Web App
+
+- Service worker with cache-first strategy
+- Offline support for previously visited pages
+- Automatic cache versioning and cleanup
+- Update notifications prompting users to refresh for new content
+
+### Smart Contact Form
+
+- Real-time validation with custom Svelte actions
+- Phone number auto-formatting
+- Integrated Google Static Maps (lazy-loaded)
+- Direct email integration
+
+### Responsive Design
+
+- Mobile-first approach with Tailwind CSS
+- Custom breakpoint store for component-level responsive logic
+- Optimized layouts from mobile to 2xl screens
+
+---
+
+## Problems Solved
+
+### Responsive Image Delivery at Scale
+
+**Challenge:** Serving optimized images across varying device sizes and connection speeds without manual asset management.
+
+**Solution:** Implemented `vite-imagetools` to automatically generate multiple image formats (AVIF, WebP, PNG) and responsive srcsets during the build process. The browser selects the optimal format and size, reducing bandwidth by up to 70% on modern browsers.
+
+### Complex Gallery UX Across Input Methods
+
+**Challenge:** Creating a gallery that supports keyboard navigation, touch gestures, mouse interactions, and accessibility—all without external dependencies.
+
+**Solution:** Built a custom event handling system with gesture tracking, event delegation, and proper focus management. The gallery responds to arrow keys, swipe gestures, and click/tap events while maintaining accessibility standards.
+
+### Form Validation Without Library Bloat
+
+**Challenge:** Implementing robust form validation without adding heavy dependencies to a performance-focused static site.
+
+**Solution:** Created a reusable Svelte action (`use:formValidation`) that provides event-driven validation, real-time error messaging, and form state management in minimal code.
+
+### Static Site with Dynamic Analytics
+
+**Challenge:** Adding analytics tracking to a pre-rendered static site without compromising build-time rendering or causing hydration issues.
+
+**Solution:** Implemented conditional browser environment checks with lazy Firebase initialization, enabling full analytics functionality while maintaining zero server costs and fast initial page loads.
+
+### Service Worker Cache Management
+
+**Challenge:** Managing cache versions across deployments to ensure users receive updated content while still benefiting from caching.
+
+**Solution:** Implemented versioned cache names with automatic cleanup of stale caches during service worker activation, ensuring smooth updates without manual cache invalidation.
+
+---
+
+## SEO Implementation
+
+### Meta Tags & Descriptions
+
+- Descriptive meta description targeting local search terms ("Vermillion SD", "Two-bedroom Apartments")
+- Proper document title structure
+- Semantic HTML with appropriate lang attribute
+
+### Performance as SEO
+
+- Static site generation for instant page loads (improves Core Web Vitals)
+- Optimized image delivery with proper width/height attributes (prevents CLS)
+- Font preconnect hints for faster rendering
+- Non-blocking font loading with print media trick and noscript fallback
+
+### Technical SEO
+
+- Clean URL structure with SvelteKit routing
+- Proper heading hierarchy (h1, h2, h3)
+- Semantic HTML5 elements (article, section, nav, footer)
+- Mobile-first responsive design (mobile-friendliness ranking factor)
+
+---
+
+## Technologies Used
+
+### Frontend
+
+| Technology          | Purpose                                    |
+| ------------------- | ------------------------------------------ |
+| **SvelteKit**       | Full-stack framework with SSG capabilities |
+| **Svelte**          | Reactive, compiler-driven UI components    |
+| **TypeScript**      | Type-safe development                      |
+| **Tailwind CSS**    | Utility-first styling                      |
+| **vite-imagetools** | Build-time image optimization              |
+
+### Backend & Infrastructure
+
+| Technology             | Purpose                      |
+| ---------------------- | ---------------------------- |
+| **Firebase Hosting**   | Static site hosting with CDN |
+| **Firebase Analytics** | User tracking and insights   |
+| **Firestore**          | NoSQL database               |
+| **Cloud Functions**    | Serverless backend           |
+
+### Build & DevOps
+
+| Technology            | Purpose                       |
+| --------------------- | ----------------------------- |
+| **Vite**              | Next-generation build tooling |
+| **pnpm Workspaces**   | Monorepo package management   |
+| **GitHub Actions**    | CI/CD pipeline                |
+| **Vitest**            | Unit testing framework        |
+| **ESLint + Prettier** | Code quality and formatting   |
+
+---
+
+## Technical Highlights
+
+### Performance Optimizations
+
+- **Static Site Generation:** Pre-rendered at build time for instant page loads
+- **Multi-format Images:** AVIF/WebP/PNG with responsive srcsets
+- **Lazy Loading:** Images load on scroll via Intersection Observer
+- **Service Worker Caching:** Offline-first architecture
+- **Font Loading Strategy:** Non-blocking fonts with preconnect hints
+
+### Accessibility
+
+- Semantic HTML structure
+- ARIA labels and landmark roles
+- Keyboard navigation throughout
+- Focus management and visible focus states
+- Screen reader optimized content
+
+### Code Quality
+
+- TypeScript for type safety
+- Component-scoped styles
+- Custom Svelte actions for reusable behavior
+- Reactive stores for state management
+- Automated linting and formatting
+
+---
+
+## Lessons Learned
+
+1. **Image optimization is crucial:** Implementing vite-imagetools reduced image payloads significantly while automating what would otherwise be tedious manual work.
+
+2. **Svelte actions are powerful:** Custom actions like `use:formValidation` enable reusable behavior patterns that keep components clean and focused.
+
+3. **Service workers require careful versioning:** Without proper cache management, users can get stuck on old versions. Versioned cache names solved this elegantly.
+
+4. **Monorepos simplify multi-site projects:** pnpm workspaces allow shared configuration while maintaining independent build processes for each site.
+
+5. **Static sites can still be dynamic:** Firebase Analytics and client-side interactivity prove that static generation doesn't mean sacrificing functionality.
+
+---
+
+## Future Enhancements
+
+- Admin dashboard for property management
+- Online application submission
+- Availability calendar
+- Virtual tour integration

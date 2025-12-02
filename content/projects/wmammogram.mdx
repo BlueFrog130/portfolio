@@ -3,38 +3,237 @@ export const metadata = {
 	title: 'wMammogram',
 	description: (
 		<>
-			Interactive web course promoting mammogram awareness that substantially
-			increased the number of mammograms performed.
+			7-day interactive health education platform increasing mammogram screening
+			rates among American Indian women in South Dakota through daily video
+			lessons, quizzes, and SMS engagement.
 		</>
 	),
-	technologies: ['React', 'TypeScript', 'Cloud Deployment', 'Healthcare'],
+	technologies: ['Vue', 'TypeScript', 'Firebase'],
+	link: 'https://wmammogram.com/',
 	featured: true,
 };
 
-## Overview
+## The Problem I Solved
 
-wMammogram is an interactive educational web course designed to increase awareness about mammograms and breast cancer screening. The project was developed through Grady Development and has had measurable impact on healthcare outcomes.
+American Indian women experience one of the highest breast cancer mortality rates across all racial/ethnic groups
+in the United States. Key barriers include:
 
-## Impact
+- Lack of awareness about free screening programs
+- Confusion around insurance and healthcare navigation
+- Geographic and cultural barriers to accessing care
+- Low engagement with traditional health education materials
 
-The course substantially increased the number of mammograms performed in the target population, demonstrating the power of well-designed educational technology in healthcare settings.
+My solution created an accessible, culturally-sensitive digital platform that meets users where they are—on their
+phones—delivering bite-sized daily education with SMS reminders to maintain engagement.
 
-## Technical Implementation
+---
 
-The application was built with a focus on accessibility and user engagement, ensuring that the educational content was easy to understand and navigate for users of all technical skill levels.
+## Technologies Used
 
-### Key Features
+### Frontend
 
-- **Interactive Modules**: Engaging content with quizzes and progress tracking
-- **Accessibility First**: WCAG-compliant design for maximum reach
-- **Mobile Responsive**: Optimized experience across all devices
-- **Analytics**: Tracking engagement and completion rates for continuous improvement
+| Technology           | Purpose                                                       |
+| -------------------- | ------------------------------------------------------------- |
+| Vue.js 2             | Progressive framework for building the reactive UI            |
+| TypeScript           | Static typing for improved code quality and maintainability   |
+| Vuetify              | Material Design component library for polished, accessible UI |
+| Vue Router           | Client-side routing with history and hash mode support        |
+| Vuex                 | Centralized state management for user/session data            |
+| Vue Class Components | Decorator-based component architecture                        |
+
+### Backend & Infrastructure
+
+| Technology               | Purpose                                                 |
+| ------------------------ | ------------------------------------------------------- |
+| Firebase Authentication  | User registration, login, and session management        |
+| Cloud Firestore          | NoSQL database for user progress, answers, and settings |
+| Firebase Cloud Functions | Serverless backend for SMS scheduling and confirmations |
+| Firebase Hosting         | CDN-backed hosting with automatic SSL                   |
+| Firebase App Check       | ReCaptcha v3 integration for bot protection             |
+
+### Integrations
+
+| Technology | Purpose                                                          |
+| ---------- | ---------------------------------------------------------------- |
+| Twilio     | SMS messaging for registration confirmations and daily reminders |
+
+### Cross-Platform
+
+| Technology    | Purpose                                                   |
+| ------------- | --------------------------------------------------------- |
+| Electron      | Desktop application wrapper for offline/kiosk deployments |
+| PWA (Workbox) | Offline-first capability with service worker caching      |
+
+---
+
+## Key Features I Implemented
+
+### 1. Dynamic Content Management System
+
+Built a custom ContentManager class (src/services/contentManager.ts:1-88) that handles sequential content
+navigation with:
+
+- Progress tracking and resume capability
+- Forward/backward navigation with max-reached tracking
+- Iterator pattern for flexible content traversal
+
+### 2. Custom Video Player
+
+Developed a fully custom video player (src/components/WVideo.vue:1-327) featuring:
+
+- Multi-quality source selection (SD/HD/UHD)
+- Custom playback controls with progress bar
+- Buffer progress visualization
+- Fullscreen support with auto-hiding controls
+- Keyboard shortcuts (spacebar for play/pause)
+- Watch-time tracking for analytics
+
+### 3. Real-Time Progress Synchronization
+
+Implemented Firestore real-time listeners (src/views/Course.vue:99-103) for:
+
+- Instant progress updates across devices
+- Day completion status tracking
+- Active session management with proper cleanup (unsubscribe patterns)
+
+### 4. SMS Engagement System
+
+Created Cloud Functions (functions/src/index.ts:1-121) for:
+
+- Automated welcome messages on registration
+- Daily reminder scheduling at 5 PM Central
+- Personalized messages with ribbon count
+- E.164 phone number validation
+- Automatic opt-out for completed users
+
+### 5. Gamification with Ribbons
+
+Built an achievement system (src/services/ribbonService.ts) that:
+
+- Awards ribbons for correct quiz answers
+- Displays real-time ribbon counts via Firestore queries
+- Provides engagement motivation through rewards
+
+### 6. Progressive Course Unlocking
+
+Implemented gated content (src/views/DayDashboard.vue:135-141) where:
+
+- Each day unlocks after completing the previous
+- Review mode available for completed days
+- Visual status indicators (checkmarks/x icons)
+
+---
+
+## Technical Challenges & Solutions
+
+### Challenge 1: Cross-Platform Routing
+
+**Problem:** Electron requires hash-based routing while web deployments work best with history mode.
+
+**Solution:** Created environment-based router configuration that detects VUE_APP_MODE and switches between hash
+(#/route) and history (/route) modes, enabling a single codebase for both platforms.
+
+### Challenge 2: Video Playback Reliability
+
+**Problem:** Video sources needed fallback options and the ended event wasn't reliably firing on all devices.
+
+**Solution:** Implemented multiple video source options (local + Google Drive) and added a workaround
+(src/components/WVideo.vue:158-160) that triggers the "ended" event at 90% progress to ensure content advancement.
+
+### Challenge 3: Real-Time State Management with Cleanup
+
+**Problem:** Firebase listeners can cause memory leaks if not properly unsubscribed.
+
+**Solution:** Stored unsubscribe functions and consistently called them in beforeDestroy lifecycle hooks and before
+re-establishing listeners on user changes.
+
+### Challenge 4: Offline-First Architecture
+
+**Problem:** Users in rural areas needed access with intermittent connectivity.
+
+**Solution:** Configured Workbox with IndexedDB persistence and unlimited cache size, enabling full offline
+functionality after initial load.
+
+---
 
 ## Lessons Learned
 
-This project reinforced the importance of:
+### 1. TypeScript Pays Dividends
 
-- Building accessible applications that work for everyone
-- Collaborating with domain experts (healthcare professionals)
-- Measuring real-world impact of software solutions
-- Optimizing for user engagement in educational contexts
+Using TypeScript with Vue Class Components caught numerous bugs at compile time and made refactoring significantly
+safer. The type definitions for Firebase and Twilio improved development velocity by enabling IDE autocompletion.
+
+### 2. Real-Time Listeners Require Discipline
+
+Firebase's onSnapshot creates persistent connections that must be managed carefully. I learned to always:
+
+- Store unsubscribe functions
+- Clean up in lifecycle hooks
+- Guard against null states during transitions
+
+### 3. Content-Driven Architecture Scales
+
+By defining course content as TypeScript modules with a consistent interface, adding new days or modifying content
+became a data change rather than a code change—making the system maintainable by non-developers.
+
+### 4. SMS Engagement Works
+
+The daily reminder system significantly improved course completion rates. Users responded well to personalized
+messages with their ribbon counts, demonstrating the value of multi-channel engagement.
+
+### 5. Serverless Functions Have Constraints
+
+Cloud Functions cold starts and execution time limits required careful optimization. Batch operations and
+efficient Firestore queries were essential for the scheduled reminder function to complete within limits.
+
+---
+
+## Impact & Outcomes
+
+- Culturally Sensitive Design: Worked with American Indian health navigators to ensure content resonated with the
+  target audience
+- Accessibility: Phone-first design with dedicated helpline integration (605-202-1418)
+- Scalability: Firebase backend handles growth without infrastructure management
+- Maintainability: TypeScript codebase with clear separation of concerns enables ongoing development
+
+---
+
+## Code Architecture Highlights
+
+```
+src/
+├── assets/days/ # Course content as TypeScript modules
+├── components/ # Reusable Vue components (WVideo, Question, etc.)
+├── models/ # TypeScript interfaces (User, Content, Day)
+├── services/ # Business logic (ContentManager, DayManager)
+├── views/ # Page-level components (Course, Dashboard)
+├── plugins/ # Firebase & Vuetify initialization
+└── store/ # Vuex state management
+```
+
+The architecture emphasizes:
+
+- Separation of concerns: Views handle routing, components handle UI, services handle logic
+- Type safety: All data models defined with TypeScript interfaces
+- Lazy loading: Day content loaded on-demand to reduce initial bundle
+- Security: Firestore rules enforce user-scoped access (firestore.rules:4-5)
+
+---
+
+## Skills Demonstrated
+
+- Full-stack TypeScript/JavaScript development
+- Vue.js ecosystem (Vue, Vuex, Vue Router, Vuetify)
+- Firebase platform (Auth, Firestore, Functions, Hosting)
+- Third-party API integration (Twilio SMS)
+- Cross-platform development (Web + Electron)
+- PWA implementation with offline support
+- Real-time data synchronization
+- Security-conscious development (input validation, auth rules)
+- User engagement and gamification strategies
+
+---
+
+This project represents a meaningful application of technical skills to address a real public health challenge,
+demonstrating ability to deliver production-ready software that serves client needs while maintaining code quality
+and scalability.
