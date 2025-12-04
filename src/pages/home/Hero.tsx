@@ -1,4 +1,5 @@
 import { profile, links } from '@/lib/data';
+import { ArrowRight } from 'lucide-react';
 
 export function Hero() {
 	return (
@@ -50,30 +51,11 @@ export function Hero() {
 							className="inline-flex items-center justify-center rounded-lg border border-surface-300 bg-white px-6 py-3 text-sm font-semibold text-surface-700 shadow-sm hover:bg-surface-50 focus-visible:outline-accent-600"
 						>
 							View GitHub
-							<ArrowIcon className="ml-2 h-4 w-4" />
+							<ArrowRight className="ml-2 h-4 w-4" />
 						</a>
 					</div>
 				</div>
 			</div>
 		</section>
-	);
-}
-
-function ArrowIcon({ className }: { className?: string }) {
-	return (
-		<svg
-			className={className}
-			fill="none"
-			viewBox="0 0 24 24"
-			stroke="currentColor"
-			strokeWidth={2}
-			aria-hidden="true"
-		>
-			<path
-				strokeLinecap="round"
-				strokeLinejoin="round"
-				d="M17 8l4 4m0 0l-4 4m4-4H3"
-			/>
-		</svg>
 	);
 }
