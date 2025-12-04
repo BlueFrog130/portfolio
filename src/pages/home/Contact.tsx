@@ -26,7 +26,7 @@ export function Contact() {
 					<div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
 						<a
 							href={links.email}
-							className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-accent-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-accent-700 focus-visible:outline-accent-600 sm:w-auto"
+							className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-accent-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-accent-700 hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-accent-600 sm:w-auto"
 						>
 							<Mail className="h-5 w-5" />
 							{profile.email}
@@ -36,7 +36,7 @@ export function Contact() {
 							href={links.linkedin}
 							target="_blank"
 							rel="noopener noreferrer"
-							className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-surface-300 bg-white px-6 py-3 text-sm font-semibold text-surface-700 shadow-sm hover:bg-surface-50 focus-visible:outline-accent-600 sm:w-auto"
+							className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-surface-300 bg-white px-6 py-3 text-sm font-semibold text-surface-700 shadow-sm hover:bg-surface-50 hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-accent-600 sm:w-auto"
 						>
 							<LinkedInIcon className="h-5 w-5" />
 							Connect on LinkedIn
@@ -48,10 +48,10 @@ export function Contact() {
 							href={links.github}
 							target="_blank"
 							rel="noopener noreferrer"
-							className="flex items-center gap-2 text-surface-500 hover:text-accent-600"
+							className="group flex items-center gap-2 text-surface-500 hover:text-accent-600"
 							aria-label="GitHub Profile"
 						>
-							<GitHubIcon className="h-6 w-6" />
+							<GitHubIcon className="h-6 w-6 group-hover:scale-110" />
 							<span className="text-sm font-medium">GitHub</span>
 						</a>
 
@@ -61,10 +61,10 @@ export function Contact() {
 							href={links.website}
 							target="_blank"
 							rel="noopener noreferrer"
-							className="flex items-center gap-2 text-surface-500 hover:text-accent-600"
+							className="group flex items-center gap-2 text-surface-500 hover:text-accent-600"
 							aria-label="Grady Development Website"
 						>
-							<Globe className="h-6 w-6" />
+							<Globe className="h-6 w-6 group-hover:scale-110" />
 							<span className="text-sm font-medium">Grady Development</span>
 						</a>
 					</div>

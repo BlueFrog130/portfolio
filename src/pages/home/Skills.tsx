@@ -47,7 +47,7 @@ export function Skills() {
 								{category.items.map((skill) => (
 									<span
 										key={skill}
-										className="inline-flex items-center rounded-full border border-surface-200 bg-surface-50 px-3 py-1 text-sm font-medium text-surface-700 transition-colors hover:border-accent-300 hover:bg-accent-50 hover:text-accent-700"
+										className="inline-flex items-center rounded-full border border-surface-200 bg-surface-50 px-3 py-1 text-sm font-medium text-surface-700 transition-all duration-200 hover:border-accent-300 hover:bg-accent-50 hover:text-accent-700 hover:scale-105 hover:-translate-y-0.5 cursor-default"
 									>
 										{skill}
 									</span>

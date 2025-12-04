@@ -172,7 +172,13 @@ body {
 /* Smooth transitions for interactive elements */
 a,
 button {
-	@apply transition-colors duration-150;
+	@apply transition-all duration-200;
+}
+
+/* Ensure icons and child elements animate smoothly */
+a svg,
+button svg {
+	@apply transition-transform duration-200;
 }
 
 /* Custom scrollbar */

@@ -30,10 +30,10 @@ export function ModeSwitcher() {
 					aria-current={mode === m ? 'page' : undefined}
 					aria-label={MODE_CONFIGS[m].name}
 					title={MODE_CONFIGS[m].description}
-					className={`rounded-md p-2 transition-colors ${
+					className={`rounded-md p-2 ${
 						mode === m
 							? 'bg-accent-600 text-white'
-							: 'text-surface-600 hover:bg-surface-200 hover:text-surface-900'
+							: 'text-surface-600 hover:bg-surface-200 hover:text-surface-900 hover:scale-105'
 					}`}
 				>
 					{modeIcons[m]}

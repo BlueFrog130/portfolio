@@ -17,7 +17,7 @@ export function Header() {
 			<nav className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
 				<Link
 					to="/"
-					className="text-lg font-semibold text-surface-900 hover:text-accent-600"
+					className="text-lg font-semibold text-surface-900 hover:text-accent-600 hover:scale-105"
 					aria-label="Home"
 				>
 					AG
@@ -28,7 +28,7 @@ export function Header() {
 						<li key={item.href}>
 							<Link
 								to={item.href}
-								className="text-sm font-medium text-surface-600 hover:text-accent-600"
+								className="text-sm font-medium text-surface-600 hover:text-accent-600 hover:-translate-y-0.5"
 							>
 								{item.label}
 							</Link>
@@ -43,7 +43,7 @@ export function Header() {
 						href={links.github}
 						target="_blank"
 						rel="noopener noreferrer"
-						className="text-surface-600 hover:text-accent-600"
+						className="text-surface-600 hover:text-accent-600 hover:scale-110"
 						aria-label="GitHub Profile"
 					>
 						<GitHubIcon className="h-5 w-5" />
@@ -52,7 +52,7 @@ export function Header() {
 						href={links.linkedin}
 						target="_blank"
 						rel="noopener noreferrer"
-						className="text-surface-600 hover:text-accent-600"
+						className="text-surface-600 hover:text-accent-600 hover:scale-110"
 						aria-label="LinkedIn Profile"
 					>
 						<LinkedInIcon className="h-5 w-5" />

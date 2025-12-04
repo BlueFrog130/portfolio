@@ -23,9 +23,9 @@ export default function ProjectDetail() {
 						</p>
 						<Link
 							to="/"
-							className="mt-6 inline-flex items-center text-accent-600 hover:text-accent-700"
+							className="group mt-6 inline-flex items-center text-accent-600 hover:text-accent-700"
 						>
-							<ArrowLeft className="mr-2 h-4 w-4" />
+							<ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1" />
 							Back to Home
 						</Link>
 					</div>
@@ -40,9 +40,9 @@ export default function ProjectDetail() {
 				<div className="mx-auto max-w-3xl px-4 sm:px-6">
 					<Link
 						to="/"
-						className="inline-flex items-center text-sm text-surface-600 hover:text-accent-600"
+						className="group inline-flex items-center text-sm text-surface-600 hover:text-accent-600"
 					>
-						<ArrowLeft className="mr-2 h-4 w-4" />
+						<ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1" />
 						Back to Home
 					</Link>
 
@@ -95,7 +95,7 @@ export default function ProjectDetail() {
 												href={project.link}
 												target="_blank"
 												rel="noopener noreferrer"
-												className="inline-flex items-center rounded-lg bg-accent-600 px-4 py-2 text-sm font-medium text-white hover:bg-accent-700 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2"
+												className="inline-flex items-center rounded-lg bg-accent-600 px-4 py-2 text-sm font-medium text-white hover:bg-accent-700 hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2"
 											>
 												<ExternalLink className="mr-2 h-4 w-4" />
 												View Live Project
@@ -106,7 +106,7 @@ export default function ProjectDetail() {
 												href={project.github}
 												target="_blank"
 												rel="noopener noreferrer"
-												className="inline-flex items-center rounded-lg border border-surface-300 bg-white px-4 py-2 text-sm font-medium text-surface-700 hover:bg-surface-50 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2"
+												className="inline-flex items-center rounded-lg border border-surface-300 bg-white px-4 py-2 text-sm font-medium text-surface-700 hover:bg-surface-50 hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2"
 											>
 												<GitHubIcon className="mr-2 h-4 w-4" />
 												View on GitHub

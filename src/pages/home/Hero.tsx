@@ -40,7 +40,7 @@ export function Hero() {
 					<div className="mt-10 flex flex-wrap items-center justify-center gap-4">
 						<a
 							href="#contact"
-							className="inline-flex items-center justify-center rounded-lg bg-accent-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-accent-700 focus-visible:outline-accent-600"
+							className="inline-flex items-center justify-center rounded-lg bg-accent-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-accent-700 hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-accent-600"
 						>
 							Get in touch
 						</a>
@@ -48,10 +48,10 @@ export function Hero() {
 							href={links.github}
 							target="_blank"
 							rel="noopener noreferrer"
-							className="inline-flex items-center justify-center rounded-lg border border-surface-300 bg-white px-6 py-3 text-sm font-semibold text-surface-700 shadow-sm hover:bg-surface-50 focus-visible:outline-accent-600"
+							className="group inline-flex items-center justify-center rounded-lg border border-surface-300 bg-white px-6 py-3 text-sm font-semibold text-surface-700 shadow-sm hover:bg-surface-50 hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-accent-600"
 						>
 							View GitHub
-							<ArrowRight className="ml-2 h-4 w-4" />
+							<ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-0.5" />
 						</a>
 					</div>
 				</div>

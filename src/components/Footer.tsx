@@ -18,7 +18,7 @@ export function Footer() {
 									href={links.github}
 									target="_blank"
 									rel="noopener noreferrer"
-									className="text-sm text-surface-500 hover:text-accent-600"
+									className="text-sm text-surface-500 hover:text-accent-600 hover:-translate-y-0.5"
 								>
 									GitHub
 								</a>
@@ -28,7 +28,7 @@ export function Footer() {
 									href={links.linkedin}
 									target="_blank"
 									rel="noopener noreferrer"
-									className="text-sm text-surface-500 hover:text-accent-600"
+									className="text-sm text-surface-500 hover:text-accent-600 hover:-translate-y-0.5"
 								>
 									LinkedIn
 								</a>
@@ -36,7 +36,7 @@ export function Footer() {
 							<li>
 								<a
 									href={links.email}
-									className="text-sm text-surface-500 hover:text-accent-600"
+									className="text-sm text-surface-500 hover:text-accent-600 hover:-translate-y-0.5"
 								>
 									Email
 								</a>
@@ -51,7 +51,7 @@ export function Footer() {
 						href={`${links.github}/portfolio`}
 						target="_blank"
 						rel="noopener noreferrer"
-						className="text-accent-500 hover:text-accent-600"
+						className="text-accent-500 hover:text-accent-600 hover:-translate-y-0.5"
 					>
 						View source
 					</a>
