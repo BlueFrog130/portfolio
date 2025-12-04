@@ -1,5 +1,6 @@
 import { Link } from '@/lib/router';
 import { links } from '@/lib/data';
+import { ModeSwitcher } from './ModeSwitcher';
 
 const navItems = [
 	{ href: '/#experience', label: 'Experience' },
@@ -35,6 +36,8 @@ export function Header() {
 				</ul>
 
 				<div className="flex items-center gap-4">
+					<ModeSwitcher />
+					<div className="hidden h-6 w-px bg-surface-200 sm:block" />
 					<a
 						href={links.github}
 						target="_blank"

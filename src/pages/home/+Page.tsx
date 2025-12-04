@@ -1,12 +1,5 @@
 import { Layout } from '@/components/Layout';
-import {
-	Hero,
-	Experience,
-	Projects,
-	Skills,
-	Education,
-	Contact,
-} from '@/components/sections';
+import { Hero, Experience, Projects, Skills, Education, Contact } from '.';
 
 export default function Home() {
 	return (

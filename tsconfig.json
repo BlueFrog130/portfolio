@@ -17,10 +17,14 @@
 		"noUncheckedSideEffectImports": true,
 		"baseUrl": ".",
 		"paths": {
-			"@/*": ["src/*"],
-			"@content/*": ["content/*"]
+			"@/*": ["src/*"]
 		}
 	},
-	"include": ["src", "content"],
-	"references": [{ "path": "./tsconfig.node.json" }]
+	"include": ["src"],
+	"references": [
+		{ "path": "./tsconfig.node.json" },
+		{
+			"path": "./tsconfig.worker.json"
+		}
+	]
 }

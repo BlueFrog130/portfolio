@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import mdx from '@mdx-js/rollup';
 import { mdxMetadataPlugin } from './vite-plugin-mdx-metadata';
 import gfm from 'remark-gfm';
+import { cloudflare } from '@cloudflare/vite-plugin';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -25,11 +26,11 @@ export default defineConfig({
 				plugins: ['babel-plugin-react-compiler'],
 			},
 		}),
+		cloudflare(),
 	],
 	resolve: {
 		alias: {
 			'@': resolve(__dirname, 'src'),
-			'@content': resolve(__dirname, 'content'),
 		},
 	},
 	build: {

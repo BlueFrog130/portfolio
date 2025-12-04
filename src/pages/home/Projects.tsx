@@ -1,4 +1,4 @@
-import { getFeaturedProjects } from '@content/projects';
+import { getFeaturedProjects } from '@/content/projects';
 import { Link } from '@/lib/router';
 import { ViewTransition } from 'react';
 

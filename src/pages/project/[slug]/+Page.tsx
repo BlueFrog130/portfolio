@@ -1,5 +1,5 @@
 import { useParams, Link } from '@/lib/router';
-import { getProject } from '@content/projects';
+import { getProject } from '@/content/projects';
 import { Layout } from '@/components/Layout';
 import { Suspense } from 'react';
 import { ViewTransition } from 'react';

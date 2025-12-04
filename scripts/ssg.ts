@@ -145,13 +145,25 @@ async function main() {
 		pages.push({ path, html });
 	}
 
+	// Render 404 page (not discoverable via crawling)
+	console.log(`  -> Rendering /404`);
+	const notFoundHtml = await render('/404');
+	pages.push({ path: '/404', html: notFoundHtml });
+
 	console.log(`\nGenerated ${pages.length} pages:\n`);
 
 	// Write all pages
 	for (const { path, html } of pages) {
 		const fullHtml = injectHtml(template, html);
-		writeHtmlFile(path, fullHtml);
-		console.log(`  - ${path === '/' ? '/index.html' : path + '/index.html'}`);
+
+		// 404 page gets written as 404.html at root, not 404/index.html
+		if (path === '/404') {
+			writeFileSync(join(OUTPUT_DIR, '404.html'), fullHtml, 'utf-8');
+			console.log(`  - /404.html`);
+		} else {
+			writeHtmlFile(path, fullHtml);
+			console.log(`  - ${path === '/' ? '/index.html' : path + '/index.html'}`);
+		}
 	}
 
 	// Copy static assets from client build

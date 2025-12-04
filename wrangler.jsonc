@@ -1,0 +1,15 @@
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "portfolio",
+	"compatibility_date": "2025-11-17",
+	"compatibility_flags": ["nodejs_compat"],
+	"main": "./worker/index.ts",
+	"ai": {
+		"binding": "AI",
+	},
+	"assets": {
+		"directory": "./dist/static",
+		"not_found_handling": "404-page",
+		"binding": "ASSETS",
+	},
+}

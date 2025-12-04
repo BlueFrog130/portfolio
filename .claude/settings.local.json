@@ -1,9 +1,11 @@
 {
-	"permissions": {
-		"allow": [
-			"Bash(del \"c:\\Users\\adamg\\Documents\\GitHub\\portfolio\\src\\routes.tsx\")"
-		],
-		"deny": [],
-		"ask": []
-	}
+  "permissions": {
+    "allow": [
+      "Bash(del \"c:\\Users\\adamg\\Documents\\GitHub\\portfolio\\src\\routes.tsx\")",
+      "Bash(find:*)",
+      "Bash(pnpm build:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
 }

@@ -4,14 +4,18 @@ import type { Route } from './lib/router';
 export const routes: Route[] = [
 	{
 		path: '/',
-		component: lazy(() => import('./pages/Home')),
+		component: lazy(() => import('./pages/home/+Page')),
 	},
 	{
 		path: '/projects/:slug',
-		component: lazy(() => import('./pages/ProjectDetail')),
+		component: lazy(() => import('./pages/project/[slug]/+Page')),
+	},
+	{
+		path: '/terminal',
+		component: lazy(() => import('./pages/terminal/+Page')),
 	},
 	{
 		path: '*',
-		component: lazy(() => import('./pages/NotFound')),
+		component: lazy(() => import('./pages/404/+Page')),
 	},
 ];
