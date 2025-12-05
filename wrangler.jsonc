@@ -7,6 +7,15 @@
 	"ai": {
 		"binding": "AI",
 	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "portfolio-analytics",
+			"database_id": "003c5abd-f56d-415a-8788-22d31d71861e",
+			"migrations_dir": "./migrations",
+			// "remote": true,
+		},
+	],
 	"assets": {
 		"directory": "./dist/static",
 		"not_found_handling": "404-page",

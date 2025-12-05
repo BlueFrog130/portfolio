@@ -14,6 +14,7 @@ import type {
 	MatchResult,
 	Route,
 } from './types';
+import { getAnalyticsClient } from '@/lib/analytics/client';
 
 function scrollToHash(hash: string) {
 	if (!hash) return;
@@ -133,6 +134,9 @@ export function RouterProvider({
 				scrollToHash(newHash);
 			} else {
 				// Full navigation
+				const analytics = getAnalyticsClient();
+				analytics?.trackNavigation(newPath);
+
 				window.history.pushState({}, '', to);
 				startTransition(() => {
 					setPath(newPath);
@@ -161,6 +165,9 @@ export function RouterProvider({
 		const handlePopState = () => {
 			const newPath = window.location.pathname;
 			const newHash = window.location.hash;
+
+			const analytics = getAnalyticsClient();
+			analytics?.trackNavigation(newPath);
 
 			startTransition(() => {
 				setPath(newPath);

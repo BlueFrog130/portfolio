@@ -30,7 +30,8 @@
 	"dependencies": {
 		"lucide-react": "^0.555.0",
 		"react": "19.3.0-canary-fd524fe0-20251121",
-		"react-dom": "19.3.0-canary-fd524fe0-20251121"
+		"react-dom": "19.3.0-canary-fd524fe0-20251121",
+		"web-vitals": "^5.1.0"
 	},
 	"devDependencies": {
 		"@cloudflare/ai-utils": "^1.0.1",

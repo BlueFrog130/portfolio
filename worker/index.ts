@@ -43,16 +43,150 @@ function getProjectContent({ slug }: { slug: string }) {
 }
 
 export interface Env {
-	// If you set another name in the Wrangler config file as the value for 'binding',
-	// replace "AI" with the variable name you defined.
 	AI: Ai;
+	DB: D1Database;
 }
 
 const app = new Hono<{
 	Bindings: {
 		AI: Ai;
+		DB: D1Database;
 	};
 }>();
+
+interface SessionPayload {
+	type: 'session';
+	id: string;
+	deviceType: string;
+	browser: string;
+	browserVersion: string;
+	os: string;
+	screenWidth: number;
+	screenHeight: number;
+	referrer: string | null;
+	utmSource: string | null;
+	utmMedium: string | null;
+	utmCampaign: string | null;
+}
+
+interface PageViewPayload {
+	type: 'pageview';
+	sessionId: string;
+	path: string;
+	timestamp: number;
+	duration?: number;
+	referrerPath?: string;
+}
+
+interface WebVitalPayload {
+	type: 'webvital';
+	sessionId: string;
+	path: string;
+	timestamp: number;
+	name: string;
+	value: number;
+	rating: string;
+	id: string;
+	navigationType: string;
+}
+
+type AnalyticsPayload = SessionPayload | PageViewPayload | WebVitalPayload;
+
+app.post('/api/analytics', async (c) => {
+	const db = c.env.DB;
+	const batch: AnalyticsPayload[] = await c.req.json();
+
+	const country = c.req.header('cf-ipcountry') || null;
+	const cfData = (c.req.raw as Request & { cf?: { region?: string } }).cf;
+	const region = cfData?.region || null;
+
+	const statements: D1PreparedStatement[] = [];
+
+	for (const event of batch) {
+		switch (event.type) {
+			case 'session':
+				statements.push(
+					db
+						.prepare(
+							`INSERT INTO sessions (
+							id, started_at, country, region, device_type,
+							browser, browser_version, os, screen_width, screen_height,
+							referrer, utm_source, utm_medium, utm_campaign
+						) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+						ON CONFLICT(id) DO NOTHING`,
+						)
+						.bind(
+							event.id,
+							Date.now(),
+							country,
+							region,
+							event.deviceType,
+							event.browser,
+							event.browserVersion,
+							event.os,
+							event.screenWidth,
+							event.screenHeight,
+							event.referrer,
+							event.utmSource,
+							event.utmMedium,
+							event.utmCampaign,
+						),
+				);
+				break;
+
+			case 'pageview':
+				statements.push(
+					db
+						.prepare(
+							`INSERT INTO page_views (
+							session_id, path, timestamp, duration, referrer_path
+						) VALUES (?, ?, ?, ?, ?)`,
+						)
+						.bind(
+							event.sessionId,
+							event.path,
+							event.timestamp,
+							event.duration || null,
+							event.referrerPath || null,
+						),
+				);
+				statements.push(
+					db
+						.prepare(`UPDATE sessions SET ended_at = ? WHERE id = ?`)
+						.bind(event.timestamp, event.sessionId),
+				);
+				break;
+
+			case 'webvital':
+				statements.push(
+					db
+						.prepare(
+							`INSERT INTO web_vitals (
+							session_id, path, timestamp, metric_name,
+							metric_value, metric_rating, metric_id, navigation_type
+						) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+						)
+						.bind(
+							event.sessionId,
+							event.path,
+							event.timestamp,
+							event.name,
+							event.value,
+							event.rating,
+							event.id,
+							event.navigationType,
+						),
+				);
+				break;
+		}
+	}
+
+	if (statements.length > 0) {
+		await db.batch(statements);
+	}
+
+	return c.json({ success: true });
+});
 
 const SYSTEM_PROMPT = `You are Adam Grady, a Senior Software Engineer. You speak in first person about your own experience, projects, and skills. Be conversational, helpful, and enthusiastic about your work.
 

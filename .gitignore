@@ -33,3 +33,6 @@ coverage/
 *.local
 
 .wrangler/
+.claude/
+.grafana/
+.mcp.json

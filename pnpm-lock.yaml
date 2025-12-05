@@ -17,6 +17,9 @@ importers:
       react-dom:
         specifier: 19.3.0-canary-fd524fe0-20251121
         version: 19.3.0-canary-fd524fe0-20251121(react@19.3.0-canary-fd524fe0-20251121)
+      web-vitals:
+        specifier: ^5.1.0
+        version: 5.1.0
     devDependencies:
       '@cloudflare/ai-utils':
         specifier: ^1.0.1
@@ -1928,6 +1931,9 @@ packages:
         optional: true
       yaml:
         optional: true
+
+  web-vitals@5.1.0:
+    resolution: {integrity: sha512-ArI3kx5jI0atlTtmV0fWU3fjpLmq/nD3Zr1iFFlJLaqa5wLBkUSzINwBPySCX/8jRyjlmy1Volw1kz1g9XE4Jg==}
 
   workerd@1.20251125.0:
     resolution: {integrity: sha512-oQYfgu3UZ15HlMcEyilKD1RdielRnKSG5MA0xoi1theVs99Rop9AEFYicYCyK1R4YjYblLRYEiL1tMgEFqpReA==}
@@ -3940,6 +3946,8 @@ snapshots:
       lightningcss: 1.30.2
       tsx: 4.21.0
       yaml: 2.8.2
+
+  web-vitals@5.1.0: {}
 
   workerd@1.20251125.0:
     optionalDependencies:
