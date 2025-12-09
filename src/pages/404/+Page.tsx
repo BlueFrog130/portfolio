@@ -1,4 +1,4 @@
-import { Layout } from '@/components/Layout';
+import { Layout } from '@/lib/components/Layout';
 import { Link } from '@/lib/router';
 
 export default function NotFound() {

@@ -1,6 +1,6 @@
 import { profile, links } from '@/lib/data';
 import { Mail, Globe } from 'lucide-react';
-import { GitHubIcon, LinkedInIcon } from '@/components/icons';
+import { GitHubIcon, LinkedInIcon } from '@/lib/components/icons';
 
 export function Contact() {
 	return (

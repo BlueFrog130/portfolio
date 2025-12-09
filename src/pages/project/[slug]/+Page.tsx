@@ -1,10 +1,10 @@
 import { useParams, Link } from '@/lib/router';
 import { getProject } from '@/content/projects';
-import { Layout } from '@/components/Layout';
+import { Layout } from '@/lib/components/Layout';
 import { Suspense } from 'react';
 import { ViewTransition } from 'react';
 import { ArrowLeft, FolderOpen, ExternalLink } from 'lucide-react';
-import { GitHubIcon } from '@/components/icons';
+import { GitHubIcon } from '@/lib/components/icons';
 
 export default function ProjectDetail() {
 	const { slug } = useParams();

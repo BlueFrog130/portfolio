@@ -4,7 +4,7 @@ import type { Route } from './lib/router';
 export const routes: Route[] = [
 	{
 		path: '/',
-		component: lazy(() => import('./pages/home/+Page')),
+		component: lazy(() => import('./pages/+Page')),
 	},
 	{
 		path: '/projects/:slug',

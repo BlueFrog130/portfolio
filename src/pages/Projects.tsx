@@ -2,7 +2,7 @@ import { getFeaturedProjects } from '@/content/projects';
 import { Link } from '@/lib/router';
 import { ViewTransition } from 'react';
 import { FolderOpen, ArrowRight, ExternalLink } from 'lucide-react';
-import { GitHubIcon } from '@/components/icons';
+import { GitHubIcon } from '@/lib/components/icons';
 
 export function Projects() {
 	const featuredProjects = getFeaturedProjects();

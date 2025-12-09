@@ -1,4 +1,4 @@
-import { Layout } from '@/components/Layout';
+import { Layout } from '@/lib/components/Layout';
 import { Hero, Experience, Projects, Skills, Education, Contact } from '.';
 
 export default function Home() {
