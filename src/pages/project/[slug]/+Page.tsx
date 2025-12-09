@@ -46,7 +46,7 @@ export default function ProjectDetail() {
 						Back to Home
 					</Link>
 
-					<ViewTransition name={`PROJECT-${project.slug}`}>
+					<ViewTransition name={`project-${project.slug}`}>
 						<article className="mt-8">
 							<header>
 								<div className="flex h-16 w-16 items-center justify-center rounded-xl bg-accent-100">

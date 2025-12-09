@@ -37,7 +37,25 @@ export interface WebVitalData {
 	navigationType: string;
 }
 
+export type ChatEventType =
+	| 'chat_opened'
+	| 'chat_closed'
+	| 'message_sent'
+	| 'starter_question_clicked'
+	| 'chat_cleared'
+	| 'stream_completed'
+	| 'stream_errored';
+
+export interface EventData {
+	sessionId: string;
+	timestamp: number;
+	eventType: string;
+	eventCategory: string;
+	eventData?: Record<string, unknown>;
+}
+
 export type AnalyticsEvent =
 	| ({ type: 'session' } & SessionData)
 	| ({ type: 'pageview' } & PageViewData)
-	| ({ type: 'webvital' } & WebVitalData);
+	| ({ type: 'webvital' } & WebVitalData)
+	| ({ type: 'event' } & EventData);

@@ -6,6 +6,7 @@
 	"main": "./worker/index.ts",
 	"ai": {
 		"binding": "AI",
+		"remote": true,
 	},
 	"d1_databases": [
 		{

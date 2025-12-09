@@ -13,7 +13,7 @@ const navItems = [
 
 export function Header() {
 	return (
-		<header className="sticky top-0 z-40 w-full border-b border-surface-200 bg-surface-50/80 backdrop-blur-sm">
+		<header className="sticky top-0 z-30 w-full border-b border-surface-200 bg-surface-50/80 backdrop-blur-sm">
 			<nav className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
 				<Link
 					to="/"

@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/typography';
+@plugin '@tailwindcss/container-queries';
 
 @theme {
 	/* Indigo as standout accent color */
@@ -73,6 +74,7 @@
 /* Base styles */
 html {
 	scroll-behavior: smooth;
+	scrollbar-gutter: stable;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -305,4 +307,9 @@ button svg {
 	100% {
 		transform: translate(-40px, 30px) scale(1.04);
 	}
+}
+
+::view-transition-old(.project),
+::view-transition-new(.project) {
+	z-index: 999;
 }

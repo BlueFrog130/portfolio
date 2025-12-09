@@ -4,6 +4,7 @@ export interface CommandResult {
 	output: string[];
 	isError?: boolean;
 	clear?: boolean;
+	enterChatMode?: { projectSlug: string; projectTitle: string };
 }
 
 export interface CommandContext {

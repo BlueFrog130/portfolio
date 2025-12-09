@@ -169,6 +169,25 @@ class AnalyticsClient {
 		this.trackPageView(newPath, previousPath);
 	}
 
+	trackEvent(
+		eventType: string,
+		eventCategory: string,
+		eventData?: Record<string, unknown>,
+	): void {
+		this.enqueue({
+			type: 'event',
+			sessionId: this.sessionId,
+			timestamp: Date.now(),
+			eventType,
+			eventCategory,
+			eventData,
+		});
+	}
+
+	getSessionId(): string {
+		return this.sessionId;
+	}
+
 	destroy(): void {
 		this.stopFlushTimer();
 		this.flush();
