@@ -38,28 +38,45 @@ export const profile = {
 
 export const experiences: Experience[] = [
 	{
-		company: 'Solarity Health',
+		company: 'Solarity',
 		role: 'Senior Software Engineer',
-		location: 'Sioux Falls, SD',
-		period: 'May 2019 - Present',
+		location: 'Sioux Falls, SD (Hybrid)',
+		period: 'Jun 2025 - Present',
 		current: true,
 		description: [
-			'Full-stack web developer working with JavaScript, TypeScript, React, CSS, HTML, C#, and SQL',
-			'Led migration to modern tech stack, championing TypeScript and React adoption',
-			'Created internal full-stack web application for billing and operating system configuration using ASP.NET Core and Vue',
+			'Leading software infrastructure and design initiatives for enterprise-level applications',
+			'Full-stack development with React, TypeScript, C#, .NET Core, and ASP.NET Core',
 		],
 	},
 	{
-		company: 'Grady Development',
-		role: 'Founder',
-		location: 'Vermillion, SD',
-		period: 'Jan 2022 - Present',
-		current: true,
+		company: 'Solarity',
+		role: 'Software Engineer II',
+		location: 'Sioux Falls, SD (Remote)',
+		period: 'Apr 2023 - Jun 2025',
 		description: [
-			'Founded software development company providing custom solutions to small businesses',
-			'Developed SEO-optimized websites achieving first-page search rankings',
-			'Created wMammogram, an interactive course that substantially increased mammogram awareness',
-			'Deployed applications across AWS, Azure, Google Cloud, and Cloudflare',
+			'Full-stack developer handling database design to UI design for enterprise web and WPF applications',
+			'Worked with ASP.NET MVC, TypeScript, SQL Server, and modern front-end technologies',
+			'Implemented continuous delivery pipelines and RESTful API development',
+		],
+	},
+	{
+		company: 'Solarity',
+		role: 'Software Engineer',
+		location: 'Sioux Falls, SD',
+		period: 'Jan 2022 - Apr 2023',
+		description: [
+			'Full-stack development with C#, TypeScript, and REST APIs',
+			'Contributed to database design and back-end web development',
+		],
+	},
+	{
+		company: 'Solarity',
+		role: 'Software Engineer Intern',
+		location: 'Sioux Falls, SD',
+		period: 'May 2019 - Jun 2022',
+		description: [
+			'Full-stack web developer creating interactive web applications',
+			'Developed skills in C#, TypeScript, SQL, and front-end technologies',
 		],
 	},
 ];
