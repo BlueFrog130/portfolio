@@ -93,20 +93,67 @@ export const education: Education[] = [
 	},
 ];
 
-export const skills = {
-	languages: ['JavaScript', 'TypeScript', 'C#', 'Python', 'Rust', 'Go', 'SQL'],
-	frontend: ['React', 'Svelte', 'Vue', 'HTML', 'CSS', 'Tailwind'],
-	backend: ['Node.js', 'ASP.NET Core', 'REST APIs', 'GraphQL'],
-	tools: [
-		'Docker',
-		'Git',
-		'CI/CD',
-		'AWS',
-		'Azure',
-		'Google Cloud',
-		'Cloudflare',
-	],
-};
+export interface Skill {
+	name: string;
+	level: 1 | 2 | 3 | 4 | 5; // 1=Learning, 2=Familiar, 3=Proficient, 4=Advanced, 5=Expert
+}
+
+export interface SkillCategory {
+	title: string;
+	skills: Skill[];
+}
+
+export const skills: SkillCategory[] = [
+	{
+		title: 'Languages',
+		skills: [
+			{ name: 'TypeScript', level: 5 },
+			{ name: 'JavaScript', level: 5 },
+			{ name: 'C#', level: 5 },
+			{ name: 'SQL', level: 4 },
+			{ name: 'Python', level: 3 },
+			{ name: 'Java', level: 3 },
+			{ name: 'Go', level: 2 },
+			{ name: 'Rust', level: 2 },
+		],
+	},
+	{
+		title: 'Frontend',
+		skills: [
+			{ name: 'React', level: 5 },
+			{ name: 'HTML', level: 5 },
+			{ name: 'CSS', level: 5 },
+			{ name: 'Tailwind', level: 5 },
+			{ name: 'Vue', level: 4 },
+			{ name: 'Svelte', level: 3 },
+			{ name: 'UI Design', level: 4 },
+			{ name: 'UX Design', level: 3 },
+		],
+	},
+	{
+		title: 'Backend',
+		skills: [
+			{ name: 'ASP.NET Core', level: 5 },
+			{ name: '.NET', level: 5 },
+			{ name: 'REST APIs', level: 5 },
+			{ name: 'Node.js', level: 4 },
+			{ name: 'GraphQL', level: 3 },
+			{ name: 'Redis', level: 3 },
+		],
+	},
+	{
+		title: 'Tools & Infrastructure',
+		skills: [
+			{ name: 'Git', level: 5 },
+			{ name: 'Docker', level: 4 },
+			{ name: 'CI/CD', level: 4 },
+			{ name: 'Azure', level: 4 },
+			{ name: 'AWS', level: 3 },
+			{ name: 'Cloudflare', level: 4 },
+			{ name: 'Google Cloud', level: 2 },
+		],
+	},
+];
 
 export const links = {
 	github: 'https://github.com/BlueFrog130',

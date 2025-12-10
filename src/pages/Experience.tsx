@@ -15,13 +15,18 @@ export function Experience() {
 					Experience
 				</h2>
 
-				<div className="mt-12 space-y-4">
+				<div className="group/list mt-12 space-y-4">
 					{experiences.map((exp, index) => (
 						<article
 							key={`${exp.company}-${exp.role}`}
-							className="relative pl-8 before:absolute before:left-0 before:top-2 before:h-3 before:w-3 before:rounded-full before:bg-accent-500 after:absolute after:left-[5px] after:top-5 after:h-[calc(100%+1rem)] after:w-0.5 after:bg-surface-200 last:after:hidden"
+							className="group relative pl-8 transition-opacity duration-300 group-has-[article:hover]/list:opacity-40 hover:opacity-100! after:absolute after:left-[5px] after:top-5 after:h-[calc(100%+1rem)] after:w-0.5 after:bg-surface-200 last:after:hidden"
 							style={{ animationDelay: `${index * 0.1}s` }}
 						>
+							{/* Timeline dot with ping effect on hover */}
+							<span className="absolute left-0 top-2 flex h-3 w-3">
+								<span className="absolute inline-flex h-full w-full rounded-full bg-accent-400 opacity-0 group-hover:animate-ping group-hover:opacity-75" />
+								<span className="relative inline-flex h-3 w-3 rounded-full bg-accent-500" />
+							</span>
 							<div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
 								<h3 className="text-lg font-semibold text-surface-900">
 									{exp.role}
