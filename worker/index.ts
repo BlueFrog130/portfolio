@@ -7,7 +7,6 @@ import { ReactNode } from 'react';
 import TurndownService from 'turndown';
 // @ts-ignore: no types available
 import { gfm } from 'turndown-plugin-gfm';
-import { runWithTools } from '@cloudflare/ai-utils';
 import { z } from 'zod';
 
 interface AIAnalyticsData {
@@ -169,15 +168,6 @@ const projects: Record<
 const td = new TurndownService();
 td.use(gfm);
 
-function getProjects() {
-	return Object.values(projects).map((mod) => ({
-		...mod.metadata,
-		description: td.turndown(
-			renderToString(mod.metadata.description as ReactNode),
-		),
-	}));
-}
-
 function getProject(slug: string) {
 	const project = projects[slug];
 	if (!project) return;
@@ -186,14 +176,6 @@ function getProject(slug: string) {
 		...project.metadata,
 		content: td.turndown(renderToString(project.default())),
 	};
-}
-
-function getProjectContent({ slug }: { slug: string }) {
-	const project = projects[slug];
-	if (!project) return;
-
-	const content = td.turndown(renderToString(project.default()));
-	return content;
 }
 
 export interface Env {
