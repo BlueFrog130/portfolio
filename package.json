@@ -30,6 +30,7 @@
 	"dependencies": {
 		"@floating-ui/react": "^0.27.16",
 		"lucide-react": "^0.559.0",
+		"node-html-markdown": "^2.0.0",
 		"react": "19.3.0-canary-fd524fe0-20251121",
 		"react-dom": "19.3.0-canary-fd524fe0-20251121",
 		"web-vitals": "^5.1.0"
@@ -46,7 +47,6 @@
 		"@types/node": "^22.19.2",
 		"@types/react": "^19.2.7",
 		"@types/react-dom": "^19.2.3",
-		"@types/turndown": "^5.0.6",
 		"@vitejs/plugin-react": "^5.1.2",
 		"babel-plugin-react-compiler": "^1.0.0",
 		"clsx": "^2.1.1",
@@ -56,8 +56,6 @@
 		"remark-gfm": "^4.0.1",
 		"tailwindcss": "^4.1.17",
 		"tsx": "^4.21.0",
-		"turndown": "^7.2.2",
-		"turndown-plugin-gfm": "^1.0.2",
 		"typescript": "^5.9.3",
 		"vite": "^7.2.7",
 		"wrangler": "^4.53.0",

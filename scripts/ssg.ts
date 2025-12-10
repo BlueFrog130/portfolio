@@ -14,7 +14,7 @@ import { fileURLToPath, pathToFileURL } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
 const CLIENT_DIR = join(ROOT, 'dist', 'client');
-const SERVER_DIR = join(ROOT, 'dist', 'server');
+const SERVER_DIR = join(ROOT, 'dist', 'ssg');
 const OUTPUT_DIR = join(ROOT, 'dist', 'static');
 
 /**

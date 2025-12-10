@@ -26,18 +26,15 @@ export default defineConfig({
 				plugins: ['babel-plugin-react-compiler'],
 			},
 		}),
-		cloudflare(),
+		cloudflare({
+			viteEnvironment: {
+				name: 'ssr',
+			},
+		}),
 	],
 	resolve: {
 		alias: {
 			'@': resolve(__dirname, 'src'),
-		},
-	},
-	build: {
-		rollupOptions: {
-			input: {
-				main: resolve(__dirname, 'index.html'),
-			},
 		},
 	},
 	environments: {
@@ -50,6 +47,12 @@ export default defineConfig({
 			build: {
 				outDir: 'dist/server',
 				ssr: true,
+			},
+		},
+		ssg: {
+			build: {
+				outDir: 'dist/ssg',
+				ssr: true,
 				rollupOptions: {
 					input: resolve(__dirname, 'src/entry-server.tsx'),
 				},
@@ -58,8 +61,11 @@ export default defineConfig({
 	},
 	builder: {
 		async buildApp(builder) {
-			await builder.build(builder.environments.client);
-			await builder.build(builder.environments.ssr);
+			await Promise.all([
+				builder.build(builder.environments.client),
+				builder.build(builder.environments.ssr),
+				builder.build(builder.environments.ssg),
+			]);
 		},
 	},
 });

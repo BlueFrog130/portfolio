@@ -4,9 +4,7 @@ import { validator } from 'hono/validator';
 
 import type { ProjectMetadata } from '../src/content/projects';
 import { ReactNode } from 'react';
-import TurndownService from 'turndown';
-// @ts-ignore: no types available
-import { gfm } from 'turndown-plugin-gfm';
+import { NodeHtmlMarkdown } from 'node-html-markdown';
 import { z } from 'zod';
 
 interface AIAnalyticsData {
@@ -165,8 +163,7 @@ const projects: Record<
 	{} as Record<string, { metadata: ProjectMetadata; default: () => ReactNode }>,
 );
 
-const td = new TurndownService();
-td.use(gfm);
+const nhm = new NodeHtmlMarkdown();
 
 function getProject(slug: string) {
 	const project = projects[slug];
@@ -174,7 +171,7 @@ function getProject(slug: string) {
 
 	return {
 		...project.metadata,
-		content: td.turndown(renderToString(project.default())),
+		content: nhm.translate(renderToString(project.default())),
 	};
 }
 
