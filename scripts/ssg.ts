@@ -15,6 +15,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
 const CLIENT_DIR = join(ROOT, 'dist', 'client');
 const SERVER_DIR = join(ROOT, 'dist', 'ssg');
+const WORKER_DIR = join(ROOT, 'dist', 'server');
 const OUTPUT_DIR = join(ROOT, 'dist', 'static');
 
 /**
@@ -174,6 +175,17 @@ async function main() {
 	const publicDir = join(ROOT, 'public');
 	if (existsSync(publicDir)) {
 		copyDir(publicDir, OUTPUT_DIR);
+	}
+
+	// Update wrangler.json to point to static assets directory
+	const wranglerPath = join(WORKER_DIR, 'wrangler.json');
+	if (existsSync(wranglerPath)) {
+		console.log('\nUpdating wrangler.json assets directory...');
+		const wranglerConfig = JSON.parse(readFileSync(wranglerPath, 'utf-8'));
+		if (wranglerConfig.assets) {
+			wranglerConfig.assets.directory = '../static';
+		}
+		writeFileSync(wranglerPath, JSON.stringify(wranglerConfig, null, 2), 'utf-8');
 	}
 
 	console.log('\nSSG build complete!');
