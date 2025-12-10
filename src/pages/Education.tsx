@@ -1,5 +1,5 @@
-import { education } from '@/lib/data';
-import { GraduationCap, Sparkles } from 'lucide-react';
+import { education, research, publications } from '@/lib/data';
+import { GraduationCap, Sparkles, FlaskConical, FileText } from 'lucide-react';
 
 const monthMap: Record<string, number> = {
 	Jan: 0,
@@ -218,6 +218,62 @@ export function Education() {
 								</div>
 							)}
 						</article>
+					))}
+				</div>
+
+				{/* Research Experience */}
+				<h3 className="mt-16 flex items-center gap-3 text-2xl font-bold tracking-tight text-surface-900">
+					<FlaskConical className="h-6 w-6 text-accent-600" />
+					Research Experience
+				</h3>
+
+				<div className="mt-8 space-y-6">
+					{research.map((res) => (
+						<article
+							key={`${res.institution}-${res.role}`}
+							className="rounded-xl border border-surface-200 bg-white p-6 transition-shadow hover:shadow-md"
+						>
+							<div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+								<h4 className="text-lg font-semibold text-surface-900">
+									{res.role}
+								</h4>
+								<span className="text-sm font-medium text-accent-600">
+									{res.institution}
+								</span>
+							</div>
+
+							<p className="mt-1 text-sm text-surface-500">
+								{res.period} • {res.location}
+							</p>
+
+							<p className="mt-3 text-surface-600">{res.description}</p>
+						</article>
+					))}
+				</div>
+
+				{/* Publications */}
+				<h3 className="mt-16 flex items-center gap-3 text-2xl font-bold tracking-tight text-surface-900">
+					<FileText className="h-6 w-6 text-accent-600" />
+					Publications
+				</h3>
+
+				<div className="mt-8 space-y-4">
+					{publications.map((pub) => (
+						<a
+							key={pub.title}
+							href={pub.url}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="group block rounded-xl border border-surface-200 bg-white p-6 transition-all hover:border-accent-300 hover:shadow-md"
+						>
+							<h4 className="text-lg font-semibold text-surface-900 group-hover:text-accent-600">
+								{pub.title}
+							</h4>
+							<p className="mt-1 text-sm text-surface-500">{pub.date}</p>
+							<p className="mt-2 text-sm text-accent-600 group-hover:underline">
+								View on IEEE Xplore →
+							</p>
+						</a>
 					))}
 				</div>
 			</div>

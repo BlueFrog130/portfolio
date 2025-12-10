@@ -27,6 +27,12 @@ export interface Research {
 	description: string;
 }
 
+export interface Publication {
+	title: string;
+	date: string;
+	url: string;
+}
+
 export const profile = {
 	name: 'Adam Grady',
 	title: 'Senior Software Engineer',
@@ -132,6 +138,14 @@ export const education: Education[] = [
 			'Machine Learning',
 			'Programming',
 		],
+	},
+];
+
+export const publications: Publication[] = [
+	{
+		title: 'Experimental Study of Network Traffic Overhead in Cloud Environments',
+		date: 'Oct 3, 2020',
+		url: 'https://ieeexplore.ieee.org/document/9249222',
 	},
 ];
 

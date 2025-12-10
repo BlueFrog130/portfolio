@@ -1,4 +1,4 @@
-import { experiences, research } from '@/lib/data';
+import { experiences } from '@/lib/data';
 
 export function Experience() {
 	return (
@@ -53,35 +53,6 @@ export function Experience() {
 									</li>
 								))}
 							</ul>
-						</article>
-					))}
-				</div>
-
-				{/* Research Section */}
-				<h3 className="mt-16 text-2xl font-bold tracking-tight text-surface-900">
-					Research
-				</h3>
-
-				<div className="mt-8 space-y-8">
-					{research.map((res) => (
-						<article
-							key={`${res.institution}-${res.role}`}
-							className="rounded-lg border border-surface-200 p-6"
-						>
-							<div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-								<h4 className="text-lg font-semibold text-surface-900">
-									{res.role}
-								</h4>
-								<span className="text-sm font-medium text-accent-600">
-									{res.institution}
-								</span>
-							</div>
-
-							<p className="mt-1 text-sm text-surface-500">
-								{res.period} • {res.location}
-							</p>
-
-							<p className="mt-3 text-surface-600">{res.description}</p>
 						</article>
 					))}
 				</div>
