@@ -10,8 +10,13 @@ export interface Experience {
 export interface Education {
 	institution: string;
 	degree: string;
-	date: string;
+	field: string;
+	startDate: string;
+	endDate: string;
 	location: string;
+	highlight?: string;
+	activities?: string[];
+	skills?: string[];
 }
 
 export interface Research {
@@ -81,15 +86,35 @@ export const research: Research[] = [
 export const education: Education[] = [
 	{
 		institution: 'University of South Dakota',
-		degree: 'Masters in Computer Science',
-		date: 'Dec 2021',
+		degree: 'Master of Science',
+		field: 'Computer Science',
+		startDate: 'Aug 2020',
+		endDate: 'Dec 2021',
 		location: 'Vermillion, SD',
+		highlight: '4+1 Accelerated Program',
+		skills: [
+			'Machine Learning',
+			'Artificial Intelligence',
+			'Databases',
+			'Mentoring',
+			'Teaching',
+		],
 	},
 	{
 		institution: 'University of South Dakota',
-		degree: 'BS in Computer Science',
-		date: 'May 2021',
+		degree: 'Bachelor of Science',
+		field: 'Computer Science',
+		startDate: 'Aug 2017',
+		endDate: 'May 2021',
 		location: 'Vermillion, SD',
+		activities: ['ACM', 'Research', 'eSports'],
+		skills: [
+			'Web Development',
+			'Core Java',
+			'Databases',
+			'Machine Learning',
+			'Programming',
+		],
 	},
 ];
 
