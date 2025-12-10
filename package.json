@@ -28,6 +28,7 @@
 		"url": "https://github.com/BlueFrog130/portfolio"
 	},
 	"dependencies": {
+		"@floating-ui/react": "^0.27.16",
 		"lucide-react": "^0.555.0",
 		"react": "19.3.0-canary-fd524fe0-20251121",
 		"react-dom": "19.3.0-canary-fd524fe0-20251121",

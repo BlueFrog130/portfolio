@@ -2,6 +2,7 @@
 
 import { useMode, MODE_CONFIGS, type PortfolioMode } from '@/lib/mode';
 import { Link } from '@/lib/router';
+import { Tooltip } from './Tooltip';
 import { Globe, Terminal } from 'lucide-react';
 import { ReactNode } from 'react';
 
@@ -24,20 +25,20 @@ export function ModeSwitcher() {
 			aria-label="Portfolio mode"
 		>
 			{(['web', 'terminal'] as const).map((m) => (
-				<Link
-					key={m}
-					to={modeRoutes[m]}
-					aria-current={mode === m ? 'page' : undefined}
-					aria-label={MODE_CONFIGS[m].name}
-					title={MODE_CONFIGS[m].description}
-					className={`rounded-md p-2 ${
-						mode === m
-							? 'bg-accent-600 text-white'
-							: 'text-surface-600 hover:bg-surface-200 hover:text-surface-900 hover:scale-105'
-					}`}
-				>
-					{modeIcons[m]}
-				</Link>
+				<Tooltip key={m} content={MODE_CONFIGS[m].description}>
+					<Link
+						to={modeRoutes[m]}
+						aria-current={mode === m ? 'page' : undefined}
+						aria-label={MODE_CONFIGS[m].name}
+						className={`inline-flex rounded-md p-2 ${
+							mode === m
+								? 'bg-accent-600 text-white'
+								: 'text-surface-600 hover:bg-surface-200 hover:text-surface-900 hover:scale-105'
+						}`}
+					>
+						{modeIcons[m]}
+					</Link>
+				</Tooltip>
 			))}
 		</nav>
 	);

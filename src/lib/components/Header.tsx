@@ -1,6 +1,7 @@
 import { Link } from '@/lib/router';
 import { links } from '@/lib/data';
 import { ModeSwitcher } from './ModeSwitcher';
+import { Tooltip } from './Tooltip';
 import { GitHubIcon, LinkedInIcon } from './icons';
 
 const navItems = [
@@ -39,24 +40,28 @@ export function Header() {
 				<div className="flex items-center gap-4">
 					<ModeSwitcher />
 					<div className="hidden h-6 w-px bg-surface-200 sm:block" />
-					<a
-						href={links.github}
-						target="_blank"
-						rel="noopener noreferrer"
-						className="text-surface-600 hover:text-accent-600 hover:scale-110"
-						aria-label="GitHub Profile"
-					>
-						<GitHubIcon className="h-5 w-5" />
-					</a>
-					<a
-						href={links.linkedin}
-						target="_blank"
-						rel="noopener noreferrer"
-						className="text-surface-600 hover:text-accent-600 hover:scale-110"
-						aria-label="LinkedIn Profile"
-					>
-						<LinkedInIcon className="h-5 w-5" />
-					</a>
+					<Tooltip content="GitHub">
+						<a
+							href={links.github}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="inline-flex text-surface-600 hover:text-accent-600 hover:scale-110"
+							aria-label="GitHub Profile"
+						>
+							<GitHubIcon className="h-5 w-5" />
+						</a>
+					</Tooltip>
+					<Tooltip content="LinkedIn">
+						<a
+							href={links.linkedin}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="inline-flex text-surface-600 hover:text-accent-600 hover:scale-110"
+							aria-label="LinkedIn Profile"
+						>
+							<LinkedInIcon className="h-5 w-5" />
+						</a>
+					</Tooltip>
 				</div>
 			</nav>
 		</header>

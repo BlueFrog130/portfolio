@@ -20,6 +20,7 @@ import {
 	RotateCcw,
 } from 'lucide-react';
 import { GitHubIcon } from '@/lib/components/icons';
+import { Tooltip } from '@/lib/components/Tooltip';
 import { createPortal } from 'react-dom';
 import { clsx } from 'clsx';
 import { useProjectChat } from '@/lib/chat';
@@ -93,18 +94,20 @@ export function Projects() {
 													<GitHubIcon className="h-5 w-5" />
 												</a>
 											)}
-											<button
-												className="text-surface-400 hover:text-accent-600 hover:scale-110 cursor-pointer"
-												aria-label={`Open ${project.title} details`}
-												onClick={() => {
-													setClickedProject(project);
-													startTransition(() => {
-														setOpenProject(project);
-													});
-												}}
-											>
-												<Sparkles className="h-5 w-5" />
-											</button>
+											<Tooltip content="Ask AI about this project">
+												<button
+													className="text-surface-400 hover:text-accent-600 hover:scale-110 cursor-pointer"
+													aria-label={`Open ${project.title} details`}
+													onClick={() => {
+														setClickedProject(project);
+														startTransition(() => {
+															setOpenProject(project);
+														});
+													}}
+												>
+													<Sparkles className="h-5 w-5" />
+												</button>
+											</Tooltip>
 										</div>
 										<h3 className="mt-4 text-lg font-semibold text-surface-900 group-hover:text-accent-600">
 											<Link
@@ -185,25 +188,28 @@ function ProjectDialog({ project, onClose }: ProjectDialogProps) {
 		messageCountRef.current = count;
 	}, []);
 
-	const outClickRef = useCallback((node: HTMLDivElement | null) => {
-		if (!node) return;
+	const outClickRef = useCallback(
+		(node: HTMLDivElement | null) => {
+			if (!node) return;
 
-		function handleClick(event: MouseEvent) {
-			if (
-				node &&
-				(event.target as HTMLElement)?.isConnected &&
-				!node.contains(event.target as Node)
-			) {
-				handleClose();
+			function handleClick(event: MouseEvent) {
+				if (
+					node &&
+					(event.target as HTMLElement)?.isConnected &&
+					!node.contains(event.target as Node)
+				) {
+					handleClose();
+				}
 			}
-		}
 
-		document.addEventListener('click', handleClick);
+			document.addEventListener('click', handleClick);
 
-		return () => {
-			document.removeEventListener('click', handleClick);
-		};
-	}, [handleClose]);
+			return () => {
+				document.removeEventListener('click', handleClick);
+			};
+		},
+		[handleClose],
+	);
 
 	return (
 		<div className="fixed inset-0 flex justify-center items-center z-40">
@@ -281,7 +287,7 @@ function ProjectDialog({ project, onClose }: ProjectDialogProps) {
 								)}
 							</div>
 						</div>
-						<div className="mt-6 border-t border-surface-200 @3xl:col-span-8 @3xl:pl-6 @3xl:border-l @3xl:border-t-0 @3xl:pt-6 @3xl:overflow-y-auto @3xl:max-h-[calc(90vh-5rem)]">
+						<div className="pt-6 border-t border-surface-200 @3xl:col-span-8 @3xl:pl-6 @3xl:border-l @3xl:border-t-0 @3xl:pt-6 @3xl:overflow-y-auto @3xl:max-h-[calc(90vh-5rem)]">
 							<ProjectChat
 								project={project}
 								onMessageCountChange={handleMessageCountChange}
@@ -409,7 +415,7 @@ function ProjectChat({ project, onMessageCountChange }: ProjectChatProps) {
 						<div
 							key={idx}
 							className={clsx(
-								'text-sm px-3 py-2 rounded-lg w-fit max-w-[85%] prose-sm prose-h1:text-xl prose-h2:text-lg prose-h3:text-base prose-headings:font-semibold prose-headings:my-1 prose-p:my-1 prose-ul:my-1 prose-ol:my-1',
+								'text-sm px-3 py-2 rounded-lg w-fit max-w-[85%] prose-sm prose-h1:text-xl prose-h2:text-lg prose-h3:text-base prose-headings:font-semibold prose-headings:my-1 prose-p:my-1 prose-ul:my-1 prose-ul:list-inside prose-ul:list-disc prose-ul:pl-2 prose-ol:my-1 prose-ol:list-inside prose-ol:list-decimal prose-ol:pl-2',
 								msg.role === 'user'
 									? 'bg-accent-600 text-white ml-auto'
 									: 'bg-surface-100 text-surface-800',
