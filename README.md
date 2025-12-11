@@ -55,9 +55,6 @@ This starts Vite with the Cloudflare plugin, providing hot reload for both clien
 # Full production build (client + server + SSG)
 pnpm build
 
-# Build without SSG (useful for testing)
-pnpm build:environments
-
 # Preview production build
 pnpm preview
 ```

@@ -6,7 +6,7 @@
 	"scripts": {
 		"dev": "vite",
 		"build": "vite build --app",
-		"preview": "vite preview --outDir dist/client",
+		"preview": "pnpm build && wrangler dev",
 		"format": "prettier --write .",
 		"format:check": "prettier --check .",
 		"generate:og": "node --import tsx scripts/generate-og-image.ts"
