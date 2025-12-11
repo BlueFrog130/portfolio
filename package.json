@@ -5,12 +5,11 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite",
-		"build": "vite build --app && pnpm ssg",
-		"build:environments": "vite build --app",
-		"ssg": "node --import tsx scripts/ssg.ts",
+		"build": "vite build --app",
 		"preview": "vite preview --outDir dist/client",
 		"format": "prettier --write .",
-		"format:check": "prettier --check ."
+		"format:check": "prettier --check .",
+		"generate:og": "node --import tsx scripts/generate-og-image.ts"
 	},
 	"keywords": [
 		"portfolio",
@@ -54,6 +53,7 @@
 		"prettier": "^3.7.4",
 		"react-markdown": "^10.1.0",
 		"remark-gfm": "^4.0.1",
+		"sharp": "^0.34.5",
 		"tailwindcss": "^4.1.17",
 		"tsx": "^4.21.0",
 		"typescript": "^5.9.3",

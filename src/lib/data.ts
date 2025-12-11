@@ -143,7 +143,8 @@ export const education: Education[] = [
 
 export const publications: Publication[] = [
 	{
-		title: 'Experimental Study of Network Traffic Overhead in Cloud Environments',
+		title:
+			'Experimental Study of Network Traffic Overhead in Cloud Environments',
 		date: 'Oct 3, 2020',
 		url: 'https://ieeexplore.ieee.org/document/9249222',
 	},
@@ -214,6 +215,6 @@ export const skills: SkillCategory[] = [
 export const links = {
 	github: 'https://github.com/BlueFrog130',
 	linkedin: 'https://www.linkedin.com/in/adam-grady/',
-	website: 'https://gradydevelopment.com/',
+	website: 'https://adamgrady.dev/',
 	email: 'mailto:adam.grady@live.com',
 };

@@ -22,7 +22,7 @@ registerCommand({
 			});
 
 			output.push('');
-			output.push("Example: ai projects portfolio");
+			output.push('Example: ai projects portfolio');
 
 			return { output };
 		}
@@ -47,7 +47,10 @@ registerCommand({
 
 			return {
 				output: [],
-				enterChatMode: { projectSlug: project.slug, projectTitle: project.title },
+				enterChatMode: {
+					projectSlug: project.slug,
+					projectTitle: project.title,
+				},
 			};
 		}
 

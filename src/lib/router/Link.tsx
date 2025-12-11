@@ -1,8 +1,10 @@
 import type { AnchorHTMLAttributes, MouseEvent } from 'react';
 import { useRouter } from './context';
 
-interface LinkProps
-	extends Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> {
+interface LinkProps extends Omit<
+	AnchorHTMLAttributes<HTMLAnchorElement>,
+	'href'
+> {
 	to: string;
 }
 

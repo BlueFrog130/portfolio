@@ -76,25 +76,30 @@ dist/
 ## Key Features
 
 ### Dual Mode UI
+
 - **Web mode**: Standard portfolio view at `/`
 - **Terminal mode**: CLI-style interface at `/terminal` with AI commands
 
 ### Custom Router
+
 - File-based-like routing with lazy loading
 - Dynamic routes (e.g., `/projects/:slug`)
 - View transitions support
 
 ### MDX Projects
+
 - Projects defined as MDX files in `src/content/projects/`
 - Metadata exported from each MDX file (title, description, technologies, etc.)
 - Custom Vite plugin for metadata extraction (`vite-plugin-mdx-metadata.ts`)
 
 ### Analytics
+
 - Client-side analytics with session tracking
 - Web Vitals collection (LCP, FID, CLS, etc.)
 - D1 database storage via Worker API
 
 ### AI Chat
+
 - Per-project AI chat feature using Cloudflare AI
 - Streaming responses with SSE
 - Usage tracking and analytics

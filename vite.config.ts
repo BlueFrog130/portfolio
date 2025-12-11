@@ -5,13 +5,16 @@ import { dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import mdx from '@mdx-js/rollup';
 import { mdxMetadataPlugin } from './vite-plugin-mdx-metadata';
+import { ssrDevPlugin } from './vite-plugin-ssr-dev';
 import gfm from 'remark-gfm';
 import { cloudflare } from '@cloudflare/vite-plugin';
+import { ssg } from './scripts/ssg';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
 	plugins: [
+		ssrDevPlugin(),
 		tailwindcss(),
 		mdxMetadataPlugin(),
 		{
@@ -41,6 +44,7 @@ export default defineConfig({
 		client: {
 			build: {
 				outDir: 'dist/client',
+				manifest: true,
 			},
 		},
 		ssr: {
@@ -61,11 +65,14 @@ export default defineConfig({
 	},
 	builder: {
 		async buildApp(builder) {
+			// Build all environments in parallel
 			await Promise.all([
 				builder.build(builder.environments.client),
 				builder.build(builder.environments.ssr),
 				builder.build(builder.environments.ssg),
 			]);
+
+			await ssg();
 		},
 	},
 });

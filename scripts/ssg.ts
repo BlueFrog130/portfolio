@@ -6,7 +6,7 @@ import {
 	copyFileSync,
 	readdirSync,
 	statSync,
-	rmdirSync,
+	rmSync,
 } from 'fs';
 import { dirname, join, resolve } from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
@@ -18,6 +18,190 @@ const SERVER_DIR = join(ROOT, 'dist', 'ssg');
 const WORKER_DIR = join(ROOT, 'dist', 'server');
 const OUTPUT_DIR = join(ROOT, 'dist', 'static');
 
+interface RenderResult {
+	html: string;
+	head: string;
+}
+
+interface ManifestEntry {
+	file: string;
+	name?: string;
+	src?: string;
+	isEntry?: boolean;
+	isDynamicEntry?: boolean;
+	imports?: string[];
+	dynamicImports?: string[];
+	css?: string[];
+}
+
+type Manifest = Record<string, ManifestEntry>;
+
+interface RouteMapping {
+	pattern: RegExp;
+	source: string;
+	contentSource?: (path: string) => string | null;
+}
+
+/**
+ * Build route mappings dynamically from manifest
+ * Discovers page sources and content sources automatically
+ */
+function buildRouteMappings(manifest: Manifest): RouteMapping[] {
+	const mappings: RouteMapping[] = [];
+	const contentDirs = new Map<string, string[]>(); // dir name -> list of slugs
+
+	// First pass: discover all content files
+	for (const src of Object.keys(manifest)) {
+		const contentMatch = src.match(/^src\/content\/([^/]+)\/([^/]+)\.(mdx|md)$/);
+		if (contentMatch) {
+			const dirName = contentMatch[1];
+			const slug = contentMatch[2];
+			if (!contentDirs.has(dirName)) {
+				contentDirs.set(dirName, []);
+			}
+			contentDirs.get(dirName)!.push(slug);
+		}
+	}
+
+	// Second pass: build route mappings from pages
+	for (const src of Object.keys(manifest)) {
+		// Match page components: src/pages/**/+Page.tsx
+		const pageMatch = src.match(/^src\/pages\/(.+\/)?(\+Page\.tsx)$/);
+		if (pageMatch) {
+			// Remove trailing slash from captured path
+			const pagePath = (pageMatch[1] || '').replace(/\/$/, '');
+
+			if (!pagePath) {
+				// Root page: src/pages/+Page.tsx -> /
+				mappings.push({
+					pattern: /^\/$/,
+					source: src,
+				});
+			} else if (pagePath.includes('[') && pagePath.includes(']')) {
+				// Dynamic route: src/pages/project/[slug]/+Page.tsx
+				const paramMatch = pagePath.match(/^(.+)\/\[([^\]]+)\]$/);
+				if (paramMatch) {
+					const basePath = paramMatch[1]; // e.g., "project"
+
+					// Find matching content directory (try both singular and plural forms)
+					let contentDir: string | null = null;
+					const possibleDirs = [basePath, basePath + 's', basePath.replace(/s$/, '')];
+					for (const dir of possibleDirs) {
+						if (contentDirs.has(dir)) {
+							contentDir = dir;
+							break;
+						}
+					}
+
+					// The URL path might be different from file path
+					// Try to infer from content directory (e.g., "projects" content -> "/projects" URL)
+					const urlBasePath = contentDir || basePath;
+
+					mappings.push({
+						pattern: new RegExp(`^\\/${urlBasePath}\\/([^/]+)$`),
+						source: src,
+						contentSource: contentDir
+							? (path: string) => {
+									const slug = path.replace(new RegExp(`^\\/${urlBasePath}\\/`), '');
+									return `src/content/${contentDir}/${slug}.mdx`;
+								}
+							: undefined,
+					});
+				}
+			} else {
+				// Static route: src/pages/terminal/+Page.tsx -> /terminal
+				mappings.push({
+					pattern: new RegExp(`^\\/${pagePath}$`),
+					source: src,
+				});
+			}
+		}
+	}
+
+	return mappings;
+}
+
+/**
+ * Find the manifest source for a given URL path
+ */
+function findRouteSource(
+	path: string,
+	mappings: RouteMapping[],
+): { source: string; contentSource: string | null } | null {
+	for (const mapping of mappings) {
+		if (mapping.pattern.test(path)) {
+			return {
+				source: mapping.source,
+				contentSource: mapping.contentSource ? mapping.contentSource(path) : null,
+			};
+		}
+	}
+	return null;
+}
+
+/**
+ * Get all modules that should be preloaded for a given route
+ */
+function getModulePreloads(
+	path: string,
+	manifest: Manifest,
+	routeMappings: RouteMapping[],
+): string[] {
+	const preloads = new Set<string>();
+
+	// Find the route source for this path
+	const route = findRouteSource(path, routeMappings);
+	if (!route) return [];
+
+	// Recursively collect all imports
+	function collectImports(key: string, visited = new Set<string>()) {
+		if (visited.has(key)) return;
+		visited.add(key);
+
+		const entry = manifest[key];
+		if (!entry) return;
+
+		// Add the file itself (except for the main entry which is already loaded as script)
+		if (!entry.isEntry) {
+			preloads.add(entry.file);
+		}
+
+		// Collect imports recursively
+		if (entry.imports) {
+			for (const imp of entry.imports) {
+				collectImports(imp, visited);
+			}
+		}
+	}
+
+	// Start from the route's source
+	collectImports(route.source);
+
+	// Also preload content if applicable (e.g., MDX files for project pages)
+	if (route.contentSource) {
+		collectImports(route.contentSource);
+	}
+
+	return [...preloads];
+}
+
+/**
+ * Generate head tags for stylesheets and module preloads
+ */
+function generateHeadTags(
+	modules: string[],
+	stylesheets: string[],
+): string {
+	const cssLinks = stylesheets
+		.map((file) => `<link rel="stylesheet" href="/${file}">`)
+		.join('\n\t');
+	const modulePreloads = modules
+		.map((file) => `<link rel="modulepreload" href="/${file}">`)
+		.join('\n\t');
+
+	return [cssLinks, modulePreloads].filter(Boolean).join('\n\t');
+}
+
 /**
  * Extract internal links from rendered HTML
  * Finds all href attributes that start with "/"
@@ -27,27 +211,43 @@ function extractLinks(html: string): string[] {
 	const links: string[] = [];
 	let match;
 
+	const ignoredExtensions = [
+		'.css',
+		'.js',
+		'.svg',
+		'.png',
+		'.jpg',
+		'.jpeg',
+		'.gif',
+		'.ico',
+		'.woff',
+		'.woff2',
+		'.ttf',
+		'.eot',
+		'.json',
+		'.xml',
+		'.txt',
+		'.pdf',
+	];
+
 	while ((match = linkRegex.exec(html)) !== null) {
-		// Normalize the path (remove trailing slashes except for root)
 		let path = match[1];
+
+		// Skip asset files
+		const hasExtension = ignoredExtensions.some((ext) =>
+			path.toLowerCase().endsWith(ext),
+		);
+		if (hasExtension) continue;
+		if (path.startsWith('/assets/')) continue;
+
+		// Normalize the path (remove trailing slashes except for root)
 		if (path !== '/' && path.endsWith('/')) {
 			path = path.slice(0, -1);
 		}
 		links.push(path);
 	}
 
-	// Return unique links
 	return [...new Set(links)];
-}
-
-/**
- * Inject rendered HTML into the template
- */
-function injectHtml(template: string, html: string): string {
-	return template.replace(
-		'<div id="root"></div>',
-		`<div id="root">${html}</div>`,
-	);
 }
 
 /**
@@ -92,13 +292,13 @@ function copyDir(src: string, dest: string): void {
 	}
 }
 
-async function main() {
+export async function ssg() {
 	console.log('Starting SSG build with auto-crawling...\n');
 
 	// Clear output directory
 	if (existsSync(OUTPUT_DIR)) {
 		console.log('Clearing output directory...');
-		rmdirSync(OUTPUT_DIR, { recursive: true });
+		rmSync(OUTPUT_DIR, { recursive: true });
 	}
 	mkdirSync(OUTPUT_DIR, { recursive: true });
 
@@ -106,12 +306,52 @@ async function main() {
 	const serverEntryPath = pathToFileURL(
 		join(SERVER_DIR, 'entry-server.js'),
 	).href;
-	const { render }: { render: (path: string) => Promise<string> } =
+	const { render }: { render: (path: string) => Promise<RenderResult> } =
 		await import(serverEntryPath);
 
-	// Read the template HTML
-	const templatePath = join(CLIENT_DIR, 'index.html');
-	const template = readFileSync(templatePath, 'utf-8');
+	// Read the template HTML from index.html (source)
+	const templatePath = join(ROOT, 'index.html');
+	let template = readFileSync(templatePath, 'utf-8');
+
+	// Read manifest to get asset paths
+	const manifestPath = join(CLIENT_DIR, '.vite', 'manifest.json');
+	let scripts: string[] = [];
+	let styles: string[] = [];
+	let manifest: Manifest = {};
+
+	if (existsSync(manifestPath)) {
+		manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'));
+
+		for (const [key, entry] of Object.entries(manifest)) {
+			if (entry.isEntry || key.includes('main.tsx')) {
+				scripts.push(entry.file);
+				if (entry.css) {
+					styles.push(...entry.css);
+				}
+			}
+		}
+	}
+
+	// Replace dev script with production script (styles go in head via generateHeadTags)
+	const scriptTags = scripts
+		.map((s) => `<script type="module" src="/${s}"></script>`)
+		.join('\n\t');
+
+	template = template.replace(
+		'<script type="module" src="/src/main.tsx"></script>',
+		scriptTags,
+	);
+
+	// Build route mappings from manifest
+	const routeMappings = buildRouteMappings(manifest);
+
+	console.log(`  Scripts: ${scripts.join(', ') || '(none)'}`);
+	console.log(`  Styles: ${styles.join(', ') || '(none)'}`);
+	console.log(`  Routes discovered: ${routeMappings.length}`);
+	for (const mapping of routeMappings) {
+		console.log(`    - ${mapping.pattern.source} -> ${mapping.source}${mapping.contentSource ? ' (with content)' : ''}`);
+	}
+	console.log('');
 
 	// Auto-crawl starting from root
 	const visited = new Set<string>();
@@ -123,46 +363,54 @@ async function main() {
 	while (queue.length > 0) {
 		const path = queue.shift()!;
 
-		// Skip if already visited
 		if (visited.has(path)) continue;
 		visited.add(path);
 
 		console.log(`  -> Rendering ${path}`);
 
-		// Render the page
-		const html = await render(path);
+		// Render the page - returns { html, head }
+		const { html, head } = await render(path);
+
+		// Get head tags (stylesheets + modulepreloads) for this route
+		const preloads = getModulePreloads(path, manifest, routeMappings);
+		const headTags = generateHeadTags(preloads, styles);
+
+		// Inject content into template
+		const pageHtml = template
+			.replace('<!--app-html-->', html)
+			.replace('<!--app-head-->', `${head}\n\t${headTags}`);
 
 		// Extract links from rendered HTML
-		const links = extractLinks(html);
+		const links = extractLinks(pageHtml);
 
-		// Add new links to queue
 		for (const link of links) {
 			if (!visited.has(link)) {
 				queue.push(link);
 			}
 		}
 
-		// Store the page for writing
-		pages.push({ path, html });
+		pages.push({ path, html: pageHtml });
 	}
 
 	// Render 404 page (not discoverable via crawling)
 	console.log(`  -> Rendering /404`);
-	const notFoundHtml = await render('/404');
+	const { html: notFoundBody, head: notFoundHead } = await render('/404');
+	const notFoundPreloads = getModulePreloads('/404', manifest, routeMappings);
+	const notFoundHeadTags = generateHeadTags(notFoundPreloads, styles);
+	const notFoundHtml = template
+		.replace('<!--app-html-->', notFoundBody)
+		.replace('<!--app-head-->', `${notFoundHead}\n\t${notFoundHeadTags}`);
 	pages.push({ path: '/404', html: notFoundHtml });
 
 	console.log(`\nGenerated ${pages.length} pages:\n`);
 
 	// Write all pages
 	for (const { path, html } of pages) {
-		const fullHtml = injectHtml(template, html);
-
-		// 404 page gets written as 404.html at root, not 404/index.html
 		if (path === '/404') {
-			writeFileSync(join(OUTPUT_DIR, '404.html'), fullHtml, 'utf-8');
+			writeFileSync(join(OUTPUT_DIR, '404.html'), html, 'utf-8');
 			console.log(`  - /404.html`);
 		} else {
-			writeHtmlFile(path, fullHtml);
+			writeHtmlFile(path, html);
 			console.log(`  - ${path === '/' ? '/index.html' : path + '/index.html'}`);
 		}
 	}
@@ -185,14 +433,13 @@ async function main() {
 		if (wranglerConfig.assets) {
 			wranglerConfig.assets.directory = '../static';
 		}
-		writeFileSync(wranglerPath, JSON.stringify(wranglerConfig, null, 2), 'utf-8');
+		writeFileSync(
+			wranglerPath,
+			JSON.stringify(wranglerConfig, null, 2),
+			'utf-8',
+		);
 	}
 
 	console.log('\nSSG build complete!');
 	console.log(`Output: ${OUTPUT_DIR}`);
 }
-
-main().catch((err) => {
-	console.error('SSG build failed:', err);
-	process.exit(1);
-});

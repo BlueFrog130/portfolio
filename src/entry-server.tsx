@@ -2,8 +2,15 @@ import { renderToReadableStream } from 'react-dom/server';
 import { StrictMode } from 'react';
 import { RouterProvider, Router } from './lib/router';
 import { routes } from './routes';
+import { getMetaForPath } from './lib/router/match';
+import { generateHead } from './lib/head';
 
-export async function render(path: string): Promise<string> {
+export interface RenderResult {
+	html: string;
+	head: string;
+}
+
+export async function render(path: string): Promise<RenderResult> {
 	const stream = await renderToReadableStream(
 		<StrictMode>
 			<RouterProvider initialPath={path} routes={routes}>
@@ -12,21 +19,41 @@ export async function render(path: string): Promise<string> {
 		</StrictMode>,
 	);
 
-	// Wait for all Suspense boundaries to resolve (required for SSG)
+	// Wait for all Suspense boundaries to resolve
 	await stream.allReady;
 
-	// Convert the stream to a string
+	const html = await streamToString(stream);
+
+	// Generate head based on route metadata
+	const meta = getMetaForPath(path, routes);
+	const head = meta
+		? generateHead({ ...meta, url: path })
+		: generateHead({
+				title: 'Adam Grady',
+				description: '',
+				url: path,
+			});
+
+	return { html, head };
+}
+
+async function streamToString(
+	stream: ReadableStream<Uint8Array>,
+): Promise<string> {
 	const reader = stream.getReader();
-	const chunks: Uint8Array[] = [];
+	const decoder = new TextDecoder();
+	const chunks: string[] = [];
 
 	while (true) {
 		const { done, value } = await reader.read();
 		if (done) break;
-		chunks.push(value);
+		chunks.push(decoder.decode(value, { stream: true }));
 	}
 
-	const decoder = new TextDecoder();
-	return chunks
-		.map((chunk) => decoder.decode(chunk, { stream: true }))
-		.join('');
+	return chunks.join('');
+}
+
+// Enable HMR for the server entry
+if (import.meta.hot) {
+	import.meta.hot.accept();
 }

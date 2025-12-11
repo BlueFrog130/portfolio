@@ -4,9 +4,16 @@ export interface RouteParams {
 	[key: string]: string;
 }
 
+export interface RouteMeta {
+	title: string;
+	description: string;
+	ogImage?: string;
+}
+
 export interface Route {
 	path: string;
 	component: ComponentType | LazyExoticComponent<ComponentType>;
+	meta?: RouteMeta | ((params: RouteParams) => RouteMeta);
 }
 
 export interface RouterContextValue {

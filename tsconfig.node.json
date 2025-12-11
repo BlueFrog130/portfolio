@@ -13,5 +13,5 @@
 		"noUnusedParameters": true,
 		"types": ["node", "react/canary"]
 	},
-	"include": ["vite.config.ts", "vite-plugin-mdx-metadata.ts", "scripts"]
+	"include": ["vite.config.ts", "vite-*.ts", "scripts"]
 }

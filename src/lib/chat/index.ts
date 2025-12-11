@@ -9,8 +9,14 @@ export interface ChatMessage {
 
 interface UseProjectChatOptions {
 	slug: string;
-	onStreamCompleted?: (responseLength: number, streamDurationMs: number) => void;
-	onStreamErrored?: (errorMessage: string, partialResponseLength?: number) => void;
+	onStreamCompleted?: (
+		responseLength: number,
+		streamDurationMs: number,
+	) => void;
+	onStreamErrored?: (
+		errorMessage: string,
+		partialResponseLength?: number,
+	) => void;
 	onClear?: (messageCount: number) => void;
 }
 
@@ -59,7 +65,9 @@ export function useProjectChat({
 	onStreamErrored,
 	onClear,
 }: UseProjectChatOptions): UseProjectChatReturn {
-	const [messages, setMessages] = useState<ChatMessage[]>(() => loadMessages(slug));
+	const [messages, setMessages] = useState<ChatMessage[]>(() =>
+		loadMessages(slug),
+	);
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const abortControllerRef = useRef<AbortController | null>(null);
@@ -81,7 +89,10 @@ export function useProjectChat({
 			setError(null);
 			setIsLoading(true);
 
-			const userMessage: ChatMessage = { role: 'user', content: content.trim() };
+			const userMessage: ChatMessage = {
+				role: 'user',
+				content: content.trim(),
+			};
 			const newMessages = [...messages, userMessage];
 			setMessages(newMessages);
 
@@ -169,7 +180,8 @@ export function useProjectChat({
 					return;
 				}
 
-				const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+				const errorMessage =
+					err instanceof Error ? err.message : 'An error occurred';
 				setError(errorMessage);
 
 				// Track stream error

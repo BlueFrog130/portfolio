@@ -28,8 +28,8 @@ const WELCOME_MESSAGE = [
 	'',
 	'╔═══════════════════════════════════════════════════════╗',
 	'║                                                       ║',
-	'║   Adam Grady\'s Portfolio Terminal                    ║',
-	'║   Type \'help\' for available commands                 ║',
+	"║   Adam Grady's Portfolio Terminal                     ║",
+	"║   Type 'help' for available commands                  ║",
 	'║                                                       ║',
 	'╚═══════════════════════════════════════════════════════╝',
 	'',
@@ -125,7 +125,11 @@ export function Terminal() {
 
 			setHistory((prev) => [
 				...prev,
-				{ input: `ai projects ${projectSlug}`, output: welcomeOutput, isChatMode: true },
+				{
+					input: `ai projects ${projectSlug}`,
+					output: welcomeOutput,
+					isChatMode: true,
+				},
 			]);
 		},
 		[],
@@ -312,7 +316,14 @@ export function Terminal() {
 		}
 		setInput('');
 		setHistoryIndex(-1);
-	}, [input, ctx, chatMode.active, exitChatMode, sendChatMessage, enterChatMode]);
+	}, [
+		input,
+		ctx,
+		chatMode.active,
+		exitChatMode,
+		sendChatMessage,
+		enterChatMode,
+	]);
 
 	// Auto-scroll to bottom
 	useEffect(() => {

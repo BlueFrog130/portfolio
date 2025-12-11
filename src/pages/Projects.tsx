@@ -173,9 +173,9 @@ function ProjectDialog({ project, onClose }: ProjectDialogProps) {
 
 	useEffect(() => {
 		trackChatOpened();
-		document.body.style.overflow = 'hidden';
+		document.documentElement.style.overflow = 'hidden';
 		return () => {
-			document.body.style.overflow = '';
+			document.documentElement.style.overflow = '';
 		};
 	}, [trackChatOpened]);
 
@@ -225,7 +225,7 @@ function ProjectDialog({ project, onClose }: ProjectDialogProps) {
 					>
 						<X className="h-5 w-5" />
 					</button>
-					<div className="flex flex-col @3xl:grid @3xl:grid-cols-12 gap-6">
+					<div className="flex flex-col @3xl:grid @3xl:grid-cols-12 gap-6 mt-6 @3xl:mt-0">
 						<div className="@3xl:col-span-4">
 							<div className="flex items-start gap-2">
 								<div className="grow">
