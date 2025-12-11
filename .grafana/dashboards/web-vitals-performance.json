@@ -1,0 +1,527 @@
+{
+  "editable": true,
+  "id": null,
+  "panels": [
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 2500 },
+              { "color": "red", "value": 4000 }
+            ]
+          },
+          "unit": "ms"
+        }
+      },
+      "gridPos": { "h": 4, "w": 5, "x": 0, "y": 0 },
+      "id": 1,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": {
+          "calcs": ["first"],
+          "fields": "/^lcp$/",
+          "values": true
+        }
+      },
+      "targets": [
+        {
+          "columns": [
+            { "selector": "lcp", "type": "number" },
+            { "selector": "fcp", "type": "number" },
+            { "selector": "ttfb", "type": "number" },
+            { "selector": "cls", "type": "number" },
+            { "selector": "inp", "type": "number" }
+          ],
+          "format": "table",
+          "parser": "backend",
+          "refId": "vitals",
+          "root_selector": "result.results",
+          "source": "url",
+          "type": "json",
+          "url": "",
+          "url_options": {
+            "body_content_type": "application/json",
+            "body_type": "raw",
+            "data": "{\"sql\": \"SELECT AVG(CASE WHEN event_type = 'LCP' THEN json_extract(event_data, '$.value') END) as lcp, AVG(CASE WHEN event_type = 'FCP' THEN json_extract(event_data, '$.value') END) as fcp, AVG(CASE WHEN event_type = 'TTFB' THEN json_extract(event_data, '$.value') END) as ttfb, AVG(CASE WHEN event_type = 'CLS' THEN json_extract(event_data, '$.value') END) as cls, AVG(CASE WHEN event_type = 'INP' THEN json_extract(event_data, '$.value') END) as inp FROM events WHERE event_category = 'performance' AND timestamp >= ? AND timestamp <= ?\", \"params\": [\"${__from}\", \"${__to}\"]}",
+            "method": "POST"
+          }
+        }
+      ],
+      "title": "LCP (Largest Contentful Paint)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1800 },
+              { "color": "red", "value": 3000 }
+            ]
+          },
+          "unit": "ms"
+        }
+      },
+      "gridPos": { "h": 4, "w": 5, "x": 5, "y": 0 },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": {
+          "calcs": ["first"],
+          "fields": "/^fcp$/",
+          "values": true
+        }
+      },
+      "targets": [
+        {
+          "columns": [
+            { "selector": "lcp", "type": "number" },
+            { "selector": "fcp", "type": "number" },
+            { "selector": "ttfb", "type": "number" },
+            { "selector": "cls", "type": "number" },
+            { "selector": "inp", "type": "number" }
+          ],
+          "format": "table",
+          "parser": "backend",
+          "refId": "vitals",
+          "root_selector": "result.results",
+          "source": "url",
+          "type": "json",
+          "url": "",
+          "url_options": {
+            "body_content_type": "application/json",
+            "body_type": "raw",
+            "data": "{\"sql\": \"SELECT AVG(CASE WHEN event_type = 'LCP' THEN json_extract(event_data, '$.value') END) as lcp, AVG(CASE WHEN event_type = 'FCP' THEN json_extract(event_data, '$.value') END) as fcp, AVG(CASE WHEN event_type = 'TTFB' THEN json_extract(event_data, '$.value') END) as ttfb, AVG(CASE WHEN event_type = 'CLS' THEN json_extract(event_data, '$.value') END) as cls, AVG(CASE WHEN event_type = 'INP' THEN json_extract(event_data, '$.value') END) as inp FROM events WHERE event_category = 'performance' AND timestamp >= ? AND timestamp <= ?\", \"params\": [\"${__from}\", \"${__to}\"]}",
+            "method": "POST"
+          }
+        }
+      ],
+      "title": "FCP (First Contentful Paint)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 800 },
+              { "color": "red", "value": 1800 }
+            ]
+          },
+          "unit": "ms"
+        }
+      },
+      "gridPos": { "h": 4, "w": 5, "x": 10, "y": 0 },
+      "id": 3,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": {
+          "calcs": ["first"],
+          "fields": "/^ttfb$/",
+          "values": true
+        }
+      },
+      "targets": [
+        {
+          "columns": [
+            { "selector": "lcp", "type": "number" },
+            { "selector": "fcp", "type": "number" },
+            { "selector": "ttfb", "type": "number" },
+            { "selector": "cls", "type": "number" },
+            { "selector": "inp", "type": "number" }
+          ],
+          "format": "table",
+          "parser": "backend",
+          "refId": "vitals",
+          "root_selector": "result.results",
+          "source": "url",
+          "type": "json",
+          "url": "",
+          "url_options": {
+            "body_content_type": "application/json",
+            "body_type": "raw",
+            "data": "{\"sql\": \"SELECT AVG(CASE WHEN event_type = 'LCP' THEN json_extract(event_data, '$.value') END) as lcp, AVG(CASE WHEN event_type = 'FCP' THEN json_extract(event_data, '$.value') END) as fcp, AVG(CASE WHEN event_type = 'TTFB' THEN json_extract(event_data, '$.value') END) as ttfb, AVG(CASE WHEN event_type = 'CLS' THEN json_extract(event_data, '$.value') END) as cls, AVG(CASE WHEN event_type = 'INP' THEN json_extract(event_data, '$.value') END) as inp FROM events WHERE event_category = 'performance' AND timestamp >= ? AND timestamp <= ?\", \"params\": [\"${__from}\", \"${__to}\"]}",
+            "method": "POST"
+          }
+        }
+      ],
+      "title": "TTFB (Time to First Byte)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 3,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.1 },
+              { "color": "red", "value": 0.25 }
+            ]
+          },
+          "unit": "none"
+        }
+      },
+      "gridPos": { "h": 4, "w": 5, "x": 15, "y": 0 },
+      "id": 4,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": {
+          "calcs": ["first"],
+          "fields": "/^cls$/",
+          "values": true
+        }
+      },
+      "targets": [
+        {
+          "columns": [
+            { "selector": "lcp", "type": "number" },
+            { "selector": "fcp", "type": "number" },
+            { "selector": "ttfb", "type": "number" },
+            { "selector": "cls", "type": "number" },
+            { "selector": "inp", "type": "number" }
+          ],
+          "format": "table",
+          "parser": "backend",
+          "refId": "vitals",
+          "root_selector": "result.results",
+          "source": "url",
+          "type": "json",
+          "url": "",
+          "url_options": {
+            "body_content_type": "application/json",
+            "body_type": "raw",
+            "data": "{\"sql\": \"SELECT AVG(CASE WHEN event_type = 'LCP' THEN json_extract(event_data, '$.value') END) as lcp, AVG(CASE WHEN event_type = 'FCP' THEN json_extract(event_data, '$.value') END) as fcp, AVG(CASE WHEN event_type = 'TTFB' THEN json_extract(event_data, '$.value') END) as ttfb, AVG(CASE WHEN event_type = 'CLS' THEN json_extract(event_data, '$.value') END) as cls, AVG(CASE WHEN event_type = 'INP' THEN json_extract(event_data, '$.value') END) as inp FROM events WHERE event_category = 'performance' AND timestamp >= ? AND timestamp <= ?\", \"params\": [\"${__from}\", \"${__to}\"]}",
+            "method": "POST"
+          }
+        }
+      ],
+      "title": "CLS (Cumulative Layout Shift)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 200 },
+              { "color": "red", "value": 500 }
+            ]
+          },
+          "unit": "ms"
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 20, "y": 0 },
+      "id": 5,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": {
+          "calcs": ["first"],
+          "fields": "/^inp$/",
+          "values": true
+        }
+      },
+      "targets": [
+        {
+          "columns": [
+            { "selector": "lcp", "type": "number" },
+            { "selector": "fcp", "type": "number" },
+            { "selector": "ttfb", "type": "number" },
+            { "selector": "cls", "type": "number" },
+            { "selector": "inp", "type": "number" }
+          ],
+          "format": "table",
+          "parser": "backend",
+          "refId": "vitals",
+          "root_selector": "result.results",
+          "source": "url",
+          "type": "json",
+          "url": "",
+          "url_options": {
+            "body_content_type": "application/json",
+            "body_type": "raw",
+            "data": "{\"sql\": \"SELECT AVG(CASE WHEN event_type = 'LCP' THEN json_extract(event_data, '$.value') END) as lcp, AVG(CASE WHEN event_type = 'FCP' THEN json_extract(event_data, '$.value') END) as fcp, AVG(CASE WHEN event_type = 'TTFB' THEN json_extract(event_data, '$.value') END) as ttfb, AVG(CASE WHEN event_type = 'CLS' THEN json_extract(event_data, '$.value') END) as cls, AVG(CASE WHEN event_type = 'INP' THEN json_extract(event_data, '$.value') END) as inp FROM events WHERE event_category = 'performance' AND timestamp >= ? AND timestamp <= ?\", \"params\": [\"${__from}\", \"${__to}\"]}",
+            "method": "POST"
+          }
+        }
+      ],
+      "title": "INP (Interaction to Next Paint)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 4 },
+      "id": 6,
+      "options": {
+        "legend": { "displayMode": "list", "placement": "right" },
+        "pieType": "pie",
+        "reduceOptions": { "calcs": ["sum"], "fields": "/^count$/", "values": true }
+      },
+      "targets": [
+        {
+          "columns": [
+            { "selector": "rating", "type": "string" },
+            { "selector": "count", "type": "number" }
+          ],
+          "format": "table",
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "result.results",
+          "source": "url",
+          "type": "json",
+          "url": "",
+          "url_options": {
+            "body_content_type": "application/json",
+            "body_type": "raw",
+            "data": "{\"sql\": \"SELECT json_extract(event_data, '$.rating') as rating, COUNT(*) as count FROM events WHERE event_category = 'performance' AND timestamp >= ? AND timestamp <= ? GROUP BY json_extract(event_data, '$.rating')\", \"params\": [\"${__from}\", \"${__to}\"]}",
+            "method": "POST"
+          }
+        }
+      ],
+      "title": "Core Web Vitals Ratings Distribution",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "smooth",
+            "pointSize": 5,
+            "showPoints": "auto"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 2500 },
+              { "color": "red", "value": 4000 }
+            ]
+          },
+          "unit": "ms"
+        }
+      },
+      "gridPos": { "h": 8, "w": 16, "x": 8, "y": 4 },
+      "id": 7,
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "single" }
+      },
+      "targets": [
+        {
+          "columns": [
+            { "selector": "time", "type": "timestamp" },
+            { "selector": "LCP", "type": "number" }
+          ],
+          "format": "table",
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "result.results",
+          "source": "url",
+          "type": "json",
+          "url": "",
+          "url_options": {
+            "body_content_type": "application/json",
+            "body_type": "raw",
+            "data": "{\"sql\": \"SELECT datetime(timestamp / 1000, 'unixepoch') as time, AVG(json_extract(event_data, '$.value')) as LCP FROM events WHERE event_type = 'LCP' AND event_category = 'performance' AND timestamp >= ? AND timestamp <= ? GROUP BY DATE(timestamp / 1000, 'unixepoch') ORDER BY time\", \"params\": [\"${__from}\", \"${__to}\"]}",
+            "method": "POST"
+          }
+        }
+      ],
+      "title": "LCP Over Time",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "avg_lcp" },
+            "properties": [
+              { "id": "unit", "value": "ms" },
+              { "id": "displayName", "value": "Avg LCP" }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "avg_fcp" },
+            "properties": [
+              { "id": "unit", "value": "ms" },
+              { "id": "displayName", "value": "Avg FCP" }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "avg_ttfb" },
+            "properties": [
+              { "id": "unit", "value": "ms" },
+              { "id": "displayName", "value": "Avg TTFB" }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "avg_cls" },
+            "properties": [
+              { "id": "decimals", "value": 3 },
+              { "id": "displayName", "value": "Avg CLS" }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "path" },
+            "properties": [{ "id": "displayName", "value": "Page" }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "samples" },
+            "properties": [{ "id": "displayName", "value": "Samples" }]
+          }
+        ]
+      },
+      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 12 },
+      "id": 8,
+      "options": { "cellHeight": "sm", "showHeader": true },
+      "targets": [
+        {
+          "columns": [
+            { "selector": "path", "type": "string" },
+            { "selector": "avg_lcp", "type": "number" },
+            { "selector": "avg_fcp", "type": "number" },
+            { "selector": "avg_ttfb", "type": "number" },
+            { "selector": "avg_cls", "type": "number" },
+            { "selector": "samples", "type": "number" }
+          ],
+          "format": "table",
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "result.results",
+          "source": "url",
+          "type": "json",
+          "url": "",
+          "url_options": {
+            "body_content_type": "application/json",
+            "body_type": "raw",
+            "data": "{\"sql\": \"SELECT json_extract(event_data, '$.path') as path, AVG(CASE WHEN event_type = 'LCP' THEN json_extract(event_data, '$.value') END) as avg_lcp, AVG(CASE WHEN event_type = 'FCP' THEN json_extract(event_data, '$.value') END) as avg_fcp, AVG(CASE WHEN event_type = 'TTFB' THEN json_extract(event_data, '$.value') END) as avg_ttfb, AVG(CASE WHEN event_type = 'CLS' THEN json_extract(event_data, '$.value') END) as avg_cls, COUNT(DISTINCT session_id) as samples FROM events WHERE event_category = 'performance' AND timestamp >= ? AND timestamp <= ? GROUP BY json_extract(event_data, '$.path') ORDER BY samples DESC\", \"params\": [\"${__from}\", \"${__to}\"]}",
+            "method": "POST"
+          }
+        }
+      ],
+      "title": "Performance by Page",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "lineInterpolation": "smooth",
+            "pointSize": 5,
+            "showPoints": "auto"
+          },
+          "unit": "ms"
+        }
+      },
+      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 12 },
+      "id": 9,
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "multi" }
+      },
+      "targets": [
+        {
+          "columns": [
+            { "selector": "time", "type": "timestamp" },
+            { "selector": "LCP", "type": "number" },
+            { "selector": "FCP", "type": "number" },
+            { "selector": "TTFB", "type": "number" }
+          ],
+          "format": "table",
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "result.results",
+          "source": "url",
+          "type": "json",
+          "url": "",
+          "url_options": {
+            "body_content_type": "application/json",
+            "body_type": "raw",
+            "data": "{\"sql\": \"SELECT datetime(timestamp / 1000, 'unixepoch') as time, AVG(CASE WHEN event_type = 'LCP' THEN json_extract(event_data, '$.value') END) as LCP, AVG(CASE WHEN event_type = 'FCP' THEN json_extract(event_data, '$.value') END) as FCP, AVG(CASE WHEN event_type = 'TTFB' THEN json_extract(event_data, '$.value') END) as TTFB FROM events WHERE event_category = 'performance' AND timestamp >= ? AND timestamp <= ? GROUP BY DATE(timestamp / 1000, 'unixepoch') ORDER BY time\", \"params\": [\"${__from}\", \"${__to}\"]}",
+            "method": "POST"
+          }
+        }
+      ],
+      "title": "All Metrics Over Time",
+      "type": "timeseries"
+    }
+  ],
+  "schemaVersion": 42,
+  "tags": ["portfolio", "performance", "web-vitals"],
+  "time": { "from": "now-7d", "to": "now" },
+  "timezone": "browser",
+  "title": "Web Vitals Performance",
+  "uid": "web-vitals-perf"
+}

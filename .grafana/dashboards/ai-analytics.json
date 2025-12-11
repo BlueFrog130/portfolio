@@ -1,0 +1,142 @@
+{
+  "editable": true,
+  "id": null,
+  "panels": [
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+      "fieldConfig": { "defaults": { "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] } } },
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 0 },
+      "id": 1,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "textMode": "auto", "reduceOptions": { "calcs": ["first"], "fields": "/^total_requests$/", "values": true } },
+      "targets": [{ "columns": [{ "selector": "total_requests", "type": "number" }, { "selector": "avg_latency", "type": "number" }, { "selector": "avg_ttft", "type": "number" }, { "selector": "total_tokens", "type": "number" }, { "selector": "avg_input", "type": "number" }, { "selector": "avg_output", "type": "number" }], "format": "table", "parser": "backend", "refId": "ai_stats", "root_selector": "result.results", "source": "url", "type": "json", "url": "", "url_options": { "body_content_type": "application/json", "body_type": "raw", "data": "{\"sql\": \"SELECT COUNT(*) as total_requests, AVG(json_extract(event_data, '$.latencyMs')) as avg_latency, AVG(json_extract(event_data, '$.firstTokenMs')) as avg_ttft, SUM(json_extract(event_data, '$.totalTokens')) as total_tokens, AVG(json_extract(event_data, '$.inputTokens')) as avg_input, AVG(json_extract(event_data, '$.outputTokens')) as avg_output FROM events WHERE event_type = 'ai_request' AND timestamp >= ? AND timestamp <= ?\", \"params\": [\"${__from}\", \"${__to}\"]}", "method": "POST" } }],
+      "title": "Total AI Requests",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+      "fieldConfig": { "defaults": { "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 2000 }, { "color": "red", "value": 5000 }] }, "unit": "ms" } },
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 0 },
+      "id": 2,
+      "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "textMode": "auto", "reduceOptions": { "calcs": ["first"], "fields": "/^avg_latency$/", "values": true } },
+      "targets": [{ "columns": [{ "selector": "total_requests", "type": "number" }, { "selector": "avg_latency", "type": "number" }, { "selector": "avg_ttft", "type": "number" }, { "selector": "total_tokens", "type": "number" }, { "selector": "avg_input", "type": "number" }, { "selector": "avg_output", "type": "number" }], "format": "table", "parser": "backend", "refId": "ai_stats", "root_selector": "result.results", "source": "url", "type": "json", "url": "", "url_options": { "body_content_type": "application/json", "body_type": "raw", "data": "{\"sql\": \"SELECT COUNT(*) as total_requests, AVG(json_extract(event_data, '$.latencyMs')) as avg_latency, AVG(json_extract(event_data, '$.firstTokenMs')) as avg_ttft, SUM(json_extract(event_data, '$.totalTokens')) as total_tokens, AVG(json_extract(event_data, '$.inputTokens')) as avg_input, AVG(json_extract(event_data, '$.outputTokens')) as avg_output FROM events WHERE event_type = 'ai_request' AND timestamp >= ? AND timestamp <= ?\", \"params\": [\"${__from}\", \"${__to}\"]}", "method": "POST" } }],
+      "title": "Avg Latency",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+      "fieldConfig": { "defaults": { "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 500 }, { "color": "red", "value": 1000 }] }, "unit": "ms" } },
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 0 },
+      "id": 3,
+      "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "textMode": "auto", "reduceOptions": { "calcs": ["first"], "fields": "/^avg_ttft$/", "values": true } },
+      "targets": [{ "columns": [{ "selector": "total_requests", "type": "number" }, { "selector": "avg_latency", "type": "number" }, { "selector": "avg_ttft", "type": "number" }, { "selector": "total_tokens", "type": "number" }, { "selector": "avg_input", "type": "number" }, { "selector": "avg_output", "type": "number" }], "format": "table", "parser": "backend", "refId": "ai_stats", "root_selector": "result.results", "source": "url", "type": "json", "url": "", "url_options": { "body_content_type": "application/json", "body_type": "raw", "data": "{\"sql\": \"SELECT COUNT(*) as total_requests, AVG(json_extract(event_data, '$.latencyMs')) as avg_latency, AVG(json_extract(event_data, '$.firstTokenMs')) as avg_ttft, SUM(json_extract(event_data, '$.totalTokens')) as total_tokens, AVG(json_extract(event_data, '$.inputTokens')) as avg_input, AVG(json_extract(event_data, '$.outputTokens')) as avg_output FROM events WHERE event_type = 'ai_request' AND timestamp >= ? AND timestamp <= ?\", \"params\": [\"${__from}\", \"${__to}\"]}", "method": "POST" } }],
+      "title": "Avg Time to First Token",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+      "fieldConfig": { "defaults": { "thresholds": { "mode": "absolute", "steps": [{ "color": "purple", "value": null }] } } },
+      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 0 },
+      "id": 4,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "textMode": "auto", "reduceOptions": { "calcs": ["first"], "fields": "/^total_tokens$/", "values": true } },
+      "targets": [{ "columns": [{ "selector": "total_requests", "type": "number" }, { "selector": "avg_latency", "type": "number" }, { "selector": "avg_ttft", "type": "number" }, { "selector": "total_tokens", "type": "number" }, { "selector": "avg_input", "type": "number" }, { "selector": "avg_output", "type": "number" }], "format": "table", "parser": "backend", "refId": "ai_stats", "root_selector": "result.results", "source": "url", "type": "json", "url": "", "url_options": { "body_content_type": "application/json", "body_type": "raw", "data": "{\"sql\": \"SELECT COUNT(*) as total_requests, AVG(json_extract(event_data, '$.latencyMs')) as avg_latency, AVG(json_extract(event_data, '$.firstTokenMs')) as avg_ttft, SUM(json_extract(event_data, '$.totalTokens')) as total_tokens, AVG(json_extract(event_data, '$.inputTokens')) as avg_input, AVG(json_extract(event_data, '$.outputTokens')) as avg_output FROM events WHERE event_type = 'ai_request' AND timestamp >= ? AND timestamp <= ?\", \"params\": [\"${__from}\", \"${__to}\"]}", "method": "POST" } }],
+      "title": "Total Tokens Used",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+      "fieldConfig": { "defaults": { "thresholds": { "mode": "absolute", "steps": [{ "color": "orange", "value": null }] } } },
+      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 0 },
+      "id": 5,
+      "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "textMode": "auto", "reduceOptions": { "calcs": ["first"], "fields": "/^avg_input$/", "values": true } },
+      "targets": [{ "columns": [{ "selector": "total_requests", "type": "number" }, { "selector": "avg_latency", "type": "number" }, { "selector": "avg_ttft", "type": "number" }, { "selector": "total_tokens", "type": "number" }, { "selector": "avg_input", "type": "number" }, { "selector": "avg_output", "type": "number" }], "format": "table", "parser": "backend", "refId": "ai_stats", "root_selector": "result.results", "source": "url", "type": "json", "url": "", "url_options": { "body_content_type": "application/json", "body_type": "raw", "data": "{\"sql\": \"SELECT COUNT(*) as total_requests, AVG(json_extract(event_data, '$.latencyMs')) as avg_latency, AVG(json_extract(event_data, '$.firstTokenMs')) as avg_ttft, SUM(json_extract(event_data, '$.totalTokens')) as total_tokens, AVG(json_extract(event_data, '$.inputTokens')) as avg_input, AVG(json_extract(event_data, '$.outputTokens')) as avg_output FROM events WHERE event_type = 'ai_request' AND timestamp >= ? AND timestamp <= ?\", \"params\": [\"${__from}\", \"${__to}\"]}", "method": "POST" } }],
+      "title": "Avg Input Tokens",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+      "fieldConfig": { "defaults": { "thresholds": { "mode": "absolute", "steps": [{ "color": "cyan", "value": null }] } } },
+      "gridPos": { "h": 4, "w": 4, "x": 20, "y": 0 },
+      "id": 6,
+      "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "textMode": "auto", "reduceOptions": { "calcs": ["first"], "fields": "/^avg_output$/", "values": true } },
+      "targets": [{ "columns": [{ "selector": "total_requests", "type": "number" }, { "selector": "avg_latency", "type": "number" }, { "selector": "avg_ttft", "type": "number" }, { "selector": "total_tokens", "type": "number" }, { "selector": "avg_input", "type": "number" }, { "selector": "avg_output", "type": "number" }], "format": "table", "parser": "backend", "refId": "ai_stats", "root_selector": "result.results", "source": "url", "type": "json", "url": "", "url_options": { "body_content_type": "application/json", "body_type": "raw", "data": "{\"sql\": \"SELECT COUNT(*) as total_requests, AVG(json_extract(event_data, '$.latencyMs')) as avg_latency, AVG(json_extract(event_data, '$.firstTokenMs')) as avg_ttft, SUM(json_extract(event_data, '$.totalTokens')) as total_tokens, AVG(json_extract(event_data, '$.inputTokens')) as avg_input, AVG(json_extract(event_data, '$.outputTokens')) as avg_output FROM events WHERE event_type = 'ai_request' AND timestamp >= ? AND timestamp <= ?\", \"params\": [\"${__from}\", \"${__to}\"]}", "method": "POST" } }],
+      "title": "Avg Output Tokens",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 20, "lineInterpolation": "smooth", "pointSize": 5, "showPoints": "auto" } } },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "id": 7,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "single" } },
+      "targets": [{ "columns": [{ "selector": "time", "type": "timestamp" }, { "selector": "requests", "type": "number" }], "format": "table", "parser": "backend", "refId": "A", "root_selector": "result.results", "source": "url", "type": "json", "url": "", "url_options": { "body_content_type": "application/json", "body_type": "raw", "data": "{\"sql\": \"SELECT datetime(timestamp / 1000, 'unixepoch') as time, COUNT(*) as requests FROM events WHERE event_type = 'ai_request' AND timestamp >= ? AND timestamp <= ? GROUP BY DATE(timestamp / 1000, 'unixepoch') ORDER BY time\", \"params\": [\"${__from}\", \"${__to}\"]}", "method": "POST" } }],
+      "title": "AI Requests Over Time",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 10, "lineInterpolation": "smooth", "pointSize": 5, "showPoints": "auto" }, "unit": "ms" } },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "id": 8,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi" } },
+      "targets": [{ "columns": [{ "selector": "time", "type": "timestamp" }, { "selector": "latency", "type": "number" }, { "selector": "ttft", "type": "number" }], "format": "table", "parser": "backend", "refId": "A", "root_selector": "result.results", "source": "url", "type": "json", "url": "", "url_options": { "body_content_type": "application/json", "body_type": "raw", "data": "{\"sql\": \"SELECT datetime(timestamp / 1000, 'unixepoch') as time, AVG(json_extract(event_data, '$.latencyMs')) as latency, AVG(json_extract(event_data, '$.firstTokenMs')) as ttft FROM events WHERE event_type = 'ai_request' AND timestamp >= ? AND timestamp <= ? GROUP BY DATE(timestamp / 1000, 'unixepoch') ORDER BY time\", \"params\": [\"${__from}\", \"${__to}\"]}", "method": "POST" } }],
+      "title": "Latency Over Time",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" } } },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 12 },
+      "id": 9,
+      "options": { "legend": { "displayMode": "list", "placement": "right" }, "pieType": "donut", "reduceOptions": { "calcs": ["sum"], "fields": "/^count$/", "values": true } },
+      "targets": [{ "columns": [{ "selector": "project", "type": "string" }, { "selector": "count", "type": "number" }], "format": "table", "parser": "backend", "refId": "A", "root_selector": "result.results", "source": "url", "type": "json", "url": "", "url_options": { "body_content_type": "application/json", "body_type": "raw", "data": "{\"sql\": \"SELECT COALESCE(json_extract(event_data, '$.projectSlug'), 'Unknown') as project, COUNT(*) as count FROM events WHERE event_type = 'ai_request' AND timestamp >= ? AND timestamp <= ? GROUP BY json_extract(event_data, '$.projectSlug') ORDER BY count DESC\", \"params\": [\"${__from}\", \"${__to}\"]}", "method": "POST" } }],
+      "title": "Requests by Project",
+      "type": "piechart"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } } },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 12 },
+      "id": 10,
+      "options": { "displayMode": "gradient", "namePlacement": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["first"], "fields": "/^count$/", "values": true }, "showUnfilled": true, "sizing": "auto" },
+      "targets": [{ "columns": [{ "selector": "model", "type": "string" }, { "selector": "count", "type": "number" }], "format": "table", "parser": "backend", "refId": "A", "root_selector": "result.results", "source": "url", "type": "json", "url": "", "url_options": { "body_content_type": "application/json", "body_type": "raw", "data": "{\"sql\": \"SELECT json_extract(event_data, '$.model') as model, COUNT(*) as count FROM events WHERE event_type = 'ai_request' AND timestamp >= ? AND timestamp <= ? GROUP BY json_extract(event_data, '$.model') ORDER BY count DESC\", \"params\": [\"${__from}\", \"${__to}\"]}", "method": "POST" } }],
+      "title": "Requests by Model",
+      "type": "bargauge"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 20, "lineInterpolation": "smooth", "pointSize": 5, "showPoints": "auto", "stacking": { "group": "A", "mode": "normal" } } } },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 12 },
+      "id": 11,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi" } },
+      "targets": [{ "columns": [{ "selector": "time", "type": "timestamp" }, { "selector": "input_tokens", "type": "number" }, { "selector": "output_tokens", "type": "number" }], "format": "table", "parser": "backend", "refId": "A", "root_selector": "result.results", "source": "url", "type": "json", "url": "", "url_options": { "body_content_type": "application/json", "body_type": "raw", "data": "{\"sql\": \"SELECT datetime(timestamp / 1000, 'unixepoch') as time, SUM(json_extract(event_data, '$.inputTokens')) as input_tokens, SUM(json_extract(event_data, '$.outputTokens')) as output_tokens FROM events WHERE event_type = 'ai_request' AND timestamp >= ? AND timestamp <= ? GROUP BY DATE(timestamp / 1000, 'unixepoch') ORDER BY time\", \"params\": [\"${__from}\", \"${__to}\"]}", "method": "POST" } }],
+      "title": "Token Usage Over Time",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+      "fieldConfig": { "defaults": {}, "overrides": [{ "matcher": { "id": "byName", "options": "project" }, "properties": [{ "id": "displayName", "value": "Project" }] }, { "matcher": { "id": "byName", "options": "requests" }, "properties": [{ "id": "displayName", "value": "Requests" }] }, { "matcher": { "id": "byName", "options": "total_tokens" }, "properties": [{ "id": "displayName", "value": "Total Tokens" }] }, { "matcher": { "id": "byName", "options": "avg_latency" }, "properties": [{ "id": "displayName", "value": "Avg Latency" }, { "id": "unit", "value": "ms" }] }, { "matcher": { "id": "byName", "options": "avg_ttft" }, "properties": [{ "id": "displayName", "value": "Avg TTFT" }, { "id": "unit", "value": "ms" }] }] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 20 },
+      "id": 12,
+      "options": { "cellHeight": "sm", "showHeader": true },
+      "targets": [{ "columns": [{ "selector": "project", "type": "string" }, { "selector": "requests", "type": "number" }, { "selector": "total_tokens", "type": "number" }, { "selector": "avg_latency", "type": "number" }, { "selector": "avg_ttft", "type": "number" }], "format": "table", "parser": "backend", "refId": "A", "root_selector": "result.results", "source": "url", "type": "json", "url": "", "url_options": { "body_content_type": "application/json", "body_type": "raw", "data": "{\"sql\": \"SELECT COALESCE(json_extract(event_data, '$.projectSlug'), 'Unknown') as project, COUNT(*) as requests, SUM(json_extract(event_data, '$.totalTokens')) as total_tokens, AVG(json_extract(event_data, '$.latencyMs')) as avg_latency, AVG(json_extract(event_data, '$.firstTokenMs')) as avg_ttft FROM events WHERE event_type = 'ai_request' AND timestamp >= ? AND timestamp <= ? GROUP BY json_extract(event_data, '$.projectSlug') ORDER BY requests DESC\", \"params\": [\"${__from}\", \"${__to}\"]}", "method": "POST" } }],
+      "title": "Performance by Project",
+      "type": "table"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+      "fieldConfig": { "defaults": {}, "overrides": [{ "matcher": { "id": "byName", "options": "time" }, "properties": [{ "id": "displayName", "value": "Time" }] }, { "matcher": { "id": "byName", "options": "project" }, "properties": [{ "id": "displayName", "value": "Project" }] }, { "matcher": { "id": "byName", "options": "user_message" }, "properties": [{ "id": "displayName", "value": "User Message" }, { "id": "custom.width", "value": 300 }] }, { "matcher": { "id": "byName", "options": "latency" }, "properties": [{ "id": "displayName", "value": "Latency" }, { "id": "unit", "value": "ms" }] }, { "matcher": { "id": "byName", "options": "tokens" }, "properties": [{ "id": "displayName", "value": "Tokens" }] }] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 20 },
+      "id": 13,
+      "options": { "cellHeight": "sm", "showHeader": true },
+      "targets": [{ "columns": [{ "selector": "time", "type": "string" }, { "selector": "project", "type": "string" }, { "selector": "user_message", "type": "string" }, { "selector": "latency", "type": "number" }, { "selector": "tokens", "type": "number" }], "format": "table", "parser": "backend", "refId": "A", "root_selector": "result.results", "source": "url", "type": "json", "url": "", "url_options": { "body_content_type": "application/json", "body_type": "raw", "data": "{\"sql\": \"SELECT datetime(timestamp / 1000, 'unixepoch') as time, COALESCE(json_extract(event_data, '$.projectSlug'), 'Unknown') as project, SUBSTR(json_extract(event_data, '$.userMessage'), 1, 100) as user_message, json_extract(event_data, '$.latencyMs') as latency, json_extract(event_data, '$.totalTokens') as tokens FROM events WHERE event_type = 'ai_request' AND timestamp >= ? AND timestamp <= ? ORDER BY timestamp DESC LIMIT 20\", \"params\": [\"${__from}\", \"${__to}\"]}", "method": "POST" } }],
+      "title": "Recent AI Requests",
+      "type": "table"
+    }
+  ],
+  "schemaVersion": 42,
+  "tags": ["portfolio", "ai", "chat", "llm"],
+  "time": { "from": "now-7d", "to": "now" },
+  "timezone": "browser",
+  "title": "AI Analytics",
+  "uid": "ai-analytics"
+}

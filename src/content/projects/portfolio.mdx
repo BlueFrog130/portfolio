@@ -4,15 +4,18 @@ export const metadata = {
 	description: (
 		<>
 			This portfolio website built with React 19, custom router, View
-			Transitions API, and custom SSG - no meta-frameworks.
+			Transitions API, auto-crawling SSG, and Cloudflare Workers - no meta-frameworks.
 		</>
 	),
 	technologies: [
 		'React 19',
 		'TypeScript',
-		'Vite',
-		'Tailwind CSS',
-		'Custom SSG',
+		'Vite 7',
+		'Tailwind CSS v4',
+		'Cloudflare Workers',
+		'Hono',
+		'D1 Database',
+		'Cloudflare AI',
 	],
 	github: 'https://github.com/BlueFrog130/portfolio',
 	featured: true,
@@ -20,7 +23,7 @@ export const metadata = {
 
 ## Overview
 
-This portfolio website is an exploration of building a modern React application from scratch, intentionally avoiding meta-frameworks like Next.js or Remix. The goal was to deeply understand the underlying technologies and patterns that these frameworks abstract away.
+This portfolio website is an exploration of building a modern React application from scratch, intentionally avoiding meta-frameworks like Next.js or Remix. The goal was to deeply understand the underlying technologies and patterns that these frameworks abstract away while building a production-ready, full-stack application.
 
 ## Architecture Decisions
 
@@ -28,9 +31,31 @@ This portfolio website is an exploration of building a modern React application 
 
 Rather than reaching for Next.js or similar, this project implements:
 
-- **Custom Router**: A lightweight routing solution with View Transitions API support
-- **Static Site Generation**: Build-time rendering for optimal performance
-- **Server Components**: Leveraging React 19's RSC capabilities without a framework
+- **Custom Router**: A lightweight routing solution with View Transitions API support and dynamic route parameters
+- **Auto-Crawling SSG**: Build-time rendering that automatically discovers all routes by crawling internal links
+- **React Compiler**: Using `babel-plugin-react-compiler` for automatic optimizations
+
+### Static Site Generation
+
+The custom SSG system uses an auto-crawling approach:
+
+1. Starts from the root page and renders it server-side
+2. Extracts all internal links from the rendered HTML
+3. Recursively renders discovered pages
+4. Generates optimized module preloads for each route based on the Vite manifest
+5. Outputs static HTML files with proper SEO metadata injected
+
+This approach ensures no pages are missed while keeping the build configuration minimal.
+
+### SEO and Meta Tags
+
+Each page generates comprehensive SEO metadata including:
+
+- Dynamic `<title>` and `<meta description>` based on route content
+- Open Graph tags for social media sharing (`og:title`, `og:description`, `og:image`)
+- Twitter Card tags for rich link previews
+- Canonical URLs for proper indexing
+- Dynamic OG image generation for project pages
 
 ### View Transitions API
 
@@ -38,20 +63,71 @@ The site uses the native View Transitions API to create smooth page transitions,
 
 ### MDX for Content
 
-Project content and descriptions are authored in MDX, allowing for rich content with embedded components while keeping the authoring experience simple.
+Project content and descriptions are authored in MDX, allowing for rich content with embedded components while keeping the authoring experience simple. A custom Vite plugin extracts metadata from MDX files at build time.
+
+## Backend Architecture
+
+### Cloudflare Workers with Hono
+
+The backend runs on Cloudflare Workers using the Hono framework, providing:
+
+- **Analytics API**: Tracks sessions, pageviews, and custom events
+- **Web Vitals Collection**: Captures Core Web Vitals (LCP, FID, CLS, INP, FCP, TTFB)
+- **AI Chat Endpoints**: Per-project chat functionality
+
+### D1 Database
+
+Analytics data is stored in Cloudflare D1 (SQLite at the edge):
+
+- Session tracking with device, browser, and geographic information
+- Pageview events with duration and navigation paths
+- Performance metrics per page
+- AI usage analytics including token counts and latency
+
+### AI-Powered Project Chat
+
+Each project page features an AI chat interface powered by Cloudflare AI (Llama 4):
+
+- Context-aware responses scoped to specific project content
+- Streaming responses via Server-Sent Events (SSE)
+- Usage tracking and analytics for AI interactions
+- Rate limiting and token management
+
+## Client-Side Features
+
+### Analytics Client
+
+A lightweight analytics system tracks user behavior:
+
+- Session management with batched event sending
+- Navigation tracking with page duration
+- Web Vitals reporting using the `web-vitals` library
+- Beacon API for reliable event delivery on page unload
+
+### Dual Mode UI
+
+The portfolio supports two viewing modes:
+
+- **Web Mode**: Standard portfolio view at `/`
+- **Terminal Mode**: CLI-style interface at `/terminal` with AI-powered commands
 
 ## Technical Stack
 
-- **React 19**: Latest React features including Server Components
-- **TypeScript**: Full type safety across the codebase
-- **Vite**: Fast development server and optimized production builds
-- **Tailwind CSS**: Utility-first styling for rapid UI development
+- **React 19**: Latest React features including View Transitions
+- **TypeScript**: Full type safety across client and server
+- **Vite 7**: Fast development with `@cloudflare/vite-plugin` for dual builds
+- **Tailwind CSS v4**: Utility-first styling with container queries
+- **Hono**: Lightweight web framework for Cloudflare Workers
+- **Cloudflare D1**: Edge SQLite database
+- **Cloudflare AI**: LLM inference at the edge
 
 ## Lessons Learned
 
 Building this portfolio reinforced several key insights:
 
-- Understanding what meta-frameworks provide by implementing it manually
-- The power and simplicity of the View Transitions API
-- React Server Components can work outside of meta-frameworks
-- The value of static site generation for content-focused sites
+- Understanding what meta-frameworks provide by implementing SSG, routing, and SEO manually
+- The power and simplicity of the View Transitions API for native-feeling page transitions
+- Cloudflare Workers + D1 provides a compelling full-stack edge deployment story
+- Auto-crawling SSG is simpler and more maintainable than explicit route configuration
+- Comprehensive SEO requires attention to many details (meta tags, OG images, canonical URLs)
+- The `web-vitals` library makes Core Web Vitals collection straightforward

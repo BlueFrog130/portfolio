@@ -1,0 +1,714 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "id": null,
+  "panels": [
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": {
+          "calcs": ["first"],
+          "fields": "/^sessions$/",
+          "values": true
+        }
+      },
+      "targets": [
+        {
+          "columns": [
+            { "selector": "sessions", "type": "number" },
+            { "selector": "views", "type": "number" },
+            { "selector": "avg_lcp", "type": "number" },
+            { "selector": "avg_duration", "type": "number" }
+          ],
+          "format": "table",
+          "parser": "backend",
+          "refId": "overview_stats",
+          "root_selector": "result.results",
+          "source": "url",
+          "type": "json",
+          "url": "",
+          "url_options": {
+            "body_content_type": "application/json",
+            "body_type": "raw",
+            "data": "{\"sql\": \"SELECT COUNT(DISTINCT e.session_id) as sessions, COUNT(*) as views, (SELECT AVG(json_extract(event_data, '$.value')) FROM events WHERE event_type = 'LCP' AND event_category = 'performance' AND timestamp >= ? AND timestamp <= ?) as avg_lcp, AVG(json_extract(e.event_data, '$.duration')) / 1000 as avg_duration FROM events e WHERE e.event_type = 'pageview' AND e.timestamp >= ? AND e.timestamp <= ?\", \"params\": [\"${__from}\", \"${__to}\", \"${__from}\", \"${__to}\"]}",
+            "method": "POST"
+          }
+        }
+      ],
+      "title": "Unique Sessions",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": {
+          "calcs": ["first"],
+          "fields": "/^views$/",
+          "values": true
+        }
+      },
+      "targets": [
+        {
+          "columns": [
+            { "selector": "sessions", "type": "number" },
+            { "selector": "views", "type": "number" },
+            { "selector": "avg_lcp", "type": "number" },
+            { "selector": "avg_duration", "type": "number" }
+          ],
+          "format": "table",
+          "parser": "backend",
+          "refId": "overview_stats",
+          "root_selector": "result.results",
+          "source": "url",
+          "type": "json",
+          "url": "",
+          "url_options": {
+            "body_content_type": "application/json",
+            "body_type": "raw",
+            "data": "{\"sql\": \"SELECT COUNT(DISTINCT e.session_id) as sessions, COUNT(*) as views, (SELECT AVG(json_extract(event_data, '$.value')) FROM events WHERE event_type = 'LCP' AND event_category = 'performance' AND timestamp >= ? AND timestamp <= ?) as avg_lcp, AVG(json_extract(e.event_data, '$.duration')) / 1000 as avg_duration FROM events e WHERE e.event_type = 'pageview' AND e.timestamp >= ? AND e.timestamp <= ?\", \"params\": [\"${__from}\", \"${__to}\", \"${__from}\", \"${__to}\"]}",
+            "method": "POST"
+          }
+        }
+      ],
+      "title": "Total Page Views",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 2500
+              },
+              {
+                "color": "red",
+                "value": 4000
+              }
+            ]
+          },
+          "unit": "ms"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
+      "id": 5,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": {
+          "calcs": ["first"],
+          "fields": "/^avg_lcp$/",
+          "values": true
+        }
+      },
+      "targets": [
+        {
+          "columns": [
+            { "selector": "sessions", "type": "number" },
+            { "selector": "views", "type": "number" },
+            { "selector": "avg_lcp", "type": "number" },
+            { "selector": "avg_duration", "type": "number" }
+          ],
+          "format": "table",
+          "parser": "backend",
+          "refId": "overview_stats",
+          "root_selector": "result.results",
+          "source": "url",
+          "type": "json",
+          "url": "",
+          "url_options": {
+            "body_content_type": "application/json",
+            "body_type": "raw",
+            "data": "{\"sql\": \"SELECT COUNT(DISTINCT e.session_id) as sessions, COUNT(*) as views, (SELECT AVG(json_extract(event_data, '$.value')) FROM events WHERE event_type = 'LCP' AND event_category = 'performance' AND timestamp >= ? AND timestamp <= ?) as avg_lcp, AVG(json_extract(e.event_data, '$.duration')) / 1000 as avg_duration FROM events e WHERE e.event_type = 'pageview' AND e.timestamp >= ? AND e.timestamp <= ?\", \"params\": [\"${__from}\", \"${__to}\", \"${__from}\", \"${__to}\"]}",
+            "method": "POST"
+          }
+        }
+      ],
+      "title": "Avg LCP",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "orange",
+                "value": null
+              }
+            ]
+          },
+          "unit": "s"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "id": 6,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "textMode": "auto",
+        "reduceOptions": {
+          "calcs": ["first"],
+          "fields": "/^avg_duration$/",
+          "values": true
+        }
+      },
+      "targets": [
+        {
+          "columns": [
+            { "selector": "sessions", "type": "number" },
+            { "selector": "views", "type": "number" },
+            { "selector": "avg_lcp", "type": "number" },
+            { "selector": "avg_duration", "type": "number" }
+          ],
+          "format": "table",
+          "parser": "backend",
+          "refId": "overview_stats",
+          "root_selector": "result.results",
+          "source": "url",
+          "type": "json",
+          "url": "",
+          "url_options": {
+            "body_content_type": "application/json",
+            "body_type": "raw",
+            "data": "{\"sql\": \"SELECT COUNT(DISTINCT e.session_id) as sessions, COUNT(*) as views, (SELECT AVG(json_extract(event_data, '$.value')) FROM events WHERE event_type = 'LCP' AND event_category = 'performance' AND timestamp >= ? AND timestamp <= ?) as avg_lcp, AVG(json_extract(e.event_data, '$.duration')) / 1000 as avg_duration FROM events e WHERE e.event_type = 'pageview' AND e.timestamp >= ? AND e.timestamp <= ?\", \"params\": [\"${__from}\", \"${__to}\", \"${__from}\", \"${__to}\"]}",
+            "method": "POST"
+          }
+        }
+      ],
+      "title": "Avg Session Duration",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byType",
+              "options": "time"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "hh:mm a"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 17,
+        "x": 0,
+        "y": 4
+      },
+      "id": 1,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.3.0",
+      "targets": [
+        {
+          "columns": [
+            {
+              "selector": "time",
+              "text": "Time",
+              "timestampFormat": "",
+              "type": "timestamp"
+            },
+            {
+              "selector": "views",
+              "text": "Views",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "infinity"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "result.results",
+          "source": "url",
+          "type": "json",
+          "url": "",
+          "url_options": {
+            "body_content_type": "application/json",
+            "body_type": "raw",
+            "data": "{\r\n  \"sql\": \"SELECT datetime(timestamp / 1000, 'unixepoch') as time, COUNT(*) as views FROM events WHERE event_type = 'pageview' AND timestamp >= ? AND timestamp <= ? GROUP BY DATE(timestamp / 1000, 'unixepoch'), strftime('%H', timestamp / 1000, 'unixepoch') ORDER BY time\",\r\n  \"params\": [\r\n    \"${__from}\",\r\n    \"${__to}\"\r\n  ]\r\n}",
+            "method": "POST"
+          }
+        }
+      ],
+      "title": "Page Views",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 7,
+        "x": 17,
+        "y": 4
+      },
+      "id": 2,
+      "options": {
+        "displayMode": "basic",
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "maxVizHeight": 300,
+        "minVizHeight": 16,
+        "minVizWidth": 8,
+        "namePlacement": "top",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "first"
+          ],
+          "fields": "/^views$/",
+          "values": true
+        },
+        "showUnfilled": true,
+        "sizing": "auto",
+        "text": {},
+        "valueMode": "color"
+      },
+      "pluginVersion": "12.3.0",
+      "targets": [
+        {
+          "columns": [
+            {
+              "selector": "path",
+              "text": "",
+              "type": "string"
+            },
+            {
+              "selector": "views",
+              "text": "",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "infinity"
+          },
+          "filters": [],
+          "format": "table",
+          "global_query_id": "",
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "result.results",
+          "source": "url",
+          "type": "json",
+          "url": "",
+          "url_options": {
+            "body_content_type": "application/json",
+            "body_type": "raw",
+            "data": "{\r\n  \"sql\": \"SELECT json_extract(event_data, '$.path') as path, COUNT(*) as views FROM events WHERE event_type = 'pageview' AND timestamp >= ? AND timestamp <= ? AND json_extract(event_data, '$.duration') IS NULL GROUP BY json_extract(event_data, '$.path') ORDER BY views DESC\",\r\n  \"params\": [\r\n    \"${__from}\",\r\n    \"${__to}\"\r\n  ]\r\n}",
+            "method": "POST"
+          }
+        }
+      ],
+      "title": "Views by Page",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          }
+        }
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 0,
+        "y": 14
+      },
+      "id": 7,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "right"
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "/^count$/",
+          "values": true
+        }
+      },
+      "targets": [
+        {
+          "columns": [
+            {
+              "selector": "device",
+              "type": "string"
+            },
+            {
+              "selector": "count",
+              "type": "number"
+            }
+          ],
+          "format": "table",
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "result.results",
+          "source": "url",
+          "type": "json",
+          "url": "",
+          "url_options": {
+            "body_content_type": "application/json",
+            "body_type": "raw",
+            "data": "{\"sql\": \"SELECT COALESCE(device_type, 'Unknown') as device, COUNT(*) as count FROM sessions WHERE started_at >= ? AND started_at <= ? GROUP BY device_type ORDER BY count DESC\", \"params\": [\"${__from}\", \"${__to}\"]}",
+            "method": "POST"
+          }
+        }
+      ],
+      "title": "Device Types",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          }
+        }
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 8,
+        "y": 14
+      },
+      "id": 8,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "right"
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "/^count$/",
+          "values": true
+        }
+      },
+      "targets": [
+        {
+          "columns": [
+            {
+              "selector": "browser",
+              "type": "string"
+            },
+            {
+              "selector": "count",
+              "type": "number"
+            }
+          ],
+          "format": "table",
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "result.results",
+          "source": "url",
+          "type": "json",
+          "url": "",
+          "url_options": {
+            "body_content_type": "application/json",
+            "body_type": "raw",
+            "data": "{\"sql\": \"SELECT COALESCE(browser, 'Unknown') as browser, COUNT(*) as count FROM sessions WHERE started_at >= ? AND started_at <= ? GROUP BY browser ORDER BY count DESC LIMIT 5\", \"params\": [\"${__from}\", \"${__to}\"]}",
+            "method": "POST"
+          }
+        }
+      ],
+      "title": "Browsers",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "infinity"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 16,
+        "y": 14
+      },
+      "id": 9,
+      "options": {
+        "displayMode": "gradient",
+        "namePlacement": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "first"
+          ],
+          "fields": "/^count$/",
+          "values": true
+        },
+        "showUnfilled": true,
+        "sizing": "auto"
+      },
+      "targets": [
+        {
+          "columns": [
+            {
+              "selector": "referrer",
+              "type": "string"
+            },
+            {
+              "selector": "count",
+              "type": "number"
+            }
+          ],
+          "format": "table",
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "result.results",
+          "source": "url",
+          "type": "json",
+          "url": "",
+          "url_options": {
+            "body_content_type": "application/json",
+            "body_type": "raw",
+            "data": "{\"sql\": \"SELECT COALESCE(referrer, 'Direct') as referrer, COUNT(*) as count FROM sessions WHERE started_at >= ? AND started_at <= ? GROUP BY referrer ORDER BY count DESC LIMIT 5\", \"params\": [\"${__from}\", \"${__to}\"]}",
+            "method": "POST"
+          }
+        }
+      ],
+      "title": "Top Referrers",
+      "type": "bargauge"
+    }
+  ],
+  "schemaVersion": 42,
+  "tags": [
+    "portfolio",
+    "overview"
+  ],
+  "time": {
+    "from": "now-7d",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "title": "Metrics",
+  "uid": "adk97x2"
+}

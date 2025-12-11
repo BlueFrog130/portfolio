@@ -1,0 +1,102 @@
+{
+  "editable": true,
+  "id": null,
+  "panels": [
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" } } },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 0 },
+      "id": 1,
+      "options": { "legend": { "displayMode": "list", "placement": "right" }, "pieType": "donut", "reduceOptions": { "calcs": ["sum"], "fields": "/^count$/", "values": true } },
+      "targets": [{ "columns": [{ "selector": "source", "type": "string" }, { "selector": "count", "type": "number" }], "format": "table", "parser": "backend", "refId": "A", "root_selector": "result.results", "source": "url", "type": "json", "url": "", "url_options": { "body_content_type": "application/json", "body_type": "raw", "data": "{\"sql\": \"SELECT CASE WHEN referrer IS NULL OR referrer = '' THEN 'Direct' ELSE 'Referred' END as source, COUNT(*) as count FROM sessions WHERE started_at >= ? AND started_at <= ? GROUP BY source\", \"params\": [\"${__from}\", \"${__to}\"]}", "method": "POST" } }],
+      "title": "Direct vs Referred Traffic",
+      "type": "piechart"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } } },
+      "gridPos": { "h": 8, "w": 16, "x": 8, "y": 0 },
+      "id": 2,
+      "options": { "displayMode": "gradient", "namePlacement": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["first"], "fields": "/^count$/", "values": true }, "showUnfilled": true, "sizing": "auto" },
+      "targets": [{ "columns": [{ "selector": "referrer", "type": "string" }, { "selector": "count", "type": "number" }], "format": "table", "parser": "backend", "refId": "A", "root_selector": "result.results", "source": "url", "type": "json", "url": "", "url_options": { "body_content_type": "application/json", "body_type": "raw", "data": "{\"sql\": \"SELECT referrer, COUNT(*) as count FROM sessions WHERE started_at >= ? AND started_at <= ? AND referrer IS NOT NULL AND referrer != '' GROUP BY referrer ORDER BY count DESC LIMIT 10\", \"params\": [\"${__from}\", \"${__to}\"]}", "method": "POST" } }],
+      "title": "Top Referrers",
+      "type": "bargauge"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" } } },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 8 },
+      "id": 3,
+      "options": { "legend": { "displayMode": "list", "placement": "right" }, "pieType": "pie", "reduceOptions": { "calcs": ["sum"], "fields": "/^count$/", "values": true } },
+      "targets": [{ "columns": [{ "selector": "source", "type": "string" }, { "selector": "count", "type": "number" }], "format": "table", "parser": "backend", "refId": "A", "root_selector": "result.results", "source": "url", "type": "json", "url": "", "url_options": { "body_content_type": "application/json", "body_type": "raw", "data": "{\"sql\": \"SELECT COALESCE(utm_source, 'None') as source, COUNT(*) as count FROM sessions WHERE started_at >= ? AND started_at <= ? GROUP BY utm_source ORDER BY count DESC LIMIT 10\", \"params\": [\"${__from}\", \"${__to}\"]}", "method": "POST" } }],
+      "title": "UTM Sources",
+      "type": "piechart"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" } } },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 8 },
+      "id": 4,
+      "options": { "legend": { "displayMode": "list", "placement": "right" }, "pieType": "pie", "reduceOptions": { "calcs": ["sum"], "fields": "/^count$/", "values": true } },
+      "targets": [{ "columns": [{ "selector": "medium", "type": "string" }, { "selector": "count", "type": "number" }], "format": "table", "parser": "backend", "refId": "A", "root_selector": "result.results", "source": "url", "type": "json", "url": "", "url_options": { "body_content_type": "application/json", "body_type": "raw", "data": "{\"sql\": \"SELECT COALESCE(utm_medium, 'None') as medium, COUNT(*) as count FROM sessions WHERE started_at >= ? AND started_at <= ? GROUP BY utm_medium ORDER BY count DESC LIMIT 10\", \"params\": [\"${__from}\", \"${__to}\"]}", "method": "POST" } }],
+      "title": "UTM Mediums",
+      "type": "piechart"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" } } },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 8 },
+      "id": 5,
+      "options": { "legend": { "displayMode": "list", "placement": "right" }, "pieType": "pie", "reduceOptions": { "calcs": ["sum"], "fields": "/^count$/", "values": true } },
+      "targets": [{ "columns": [{ "selector": "campaign", "type": "string" }, { "selector": "count", "type": "number" }], "format": "table", "parser": "backend", "refId": "A", "root_selector": "result.results", "source": "url", "type": "json", "url": "", "url_options": { "body_content_type": "application/json", "body_type": "raw", "data": "{\"sql\": \"SELECT COALESCE(utm_campaign, 'None') as campaign, COUNT(*) as count FROM sessions WHERE started_at >= ? AND started_at <= ? GROUP BY utm_campaign ORDER BY count DESC LIMIT 10\", \"params\": [\"${__from}\", \"${__to}\"]}", "method": "POST" } }],
+      "title": "UTM Campaigns",
+      "type": "piechart"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "drawStyle": "line", "fillOpacity": 20, "pointSize": 5, "showPoints": "auto", "stacking": { "group": "A", "mode": "normal" } } } },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 16 },
+      "id": 6,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi" } },
+      "targets": [{ "columns": [{ "selector": "time", "type": "timestamp" }, { "selector": "Direct", "type": "number" }, { "selector": "Referred", "type": "number" }], "format": "table", "parser": "backend", "refId": "A", "root_selector": "result.results", "source": "url", "type": "json", "url": "", "url_options": { "body_content_type": "application/json", "body_type": "raw", "data": "{\"sql\": \"SELECT datetime(started_at / 1000, 'unixepoch') as time, SUM(CASE WHEN referrer IS NULL OR referrer = '' THEN 1 ELSE 0 END) as Direct, SUM(CASE WHEN referrer IS NOT NULL AND referrer != '' THEN 1 ELSE 0 END) as Referred FROM sessions WHERE started_at >= ? AND started_at <= ? GROUP BY DATE(started_at / 1000, 'unixepoch') ORDER BY time\", \"params\": [\"${__from}\", \"${__to}\"]}", "method": "POST" } }],
+      "title": "Traffic by Source Over Time",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+      "fieldConfig": { "defaults": {}, "overrides": [{ "matcher": { "id": "byName", "options": "utm_source" }, "properties": [{ "id": "displayName", "value": "Source" }] }, { "matcher": { "id": "byName", "options": "utm_medium" }, "properties": [{ "id": "displayName", "value": "Medium" }] }, { "matcher": { "id": "byName", "options": "utm_campaign" }, "properties": [{ "id": "displayName", "value": "Campaign" }] }, { "matcher": { "id": "byName", "options": "sessions" }, "properties": [{ "id": "displayName", "value": "Sessions" }] }, { "matcher": { "id": "byName", "options": "pageviews" }, "properties": [{ "id": "displayName", "value": "Page Views" }] }, { "matcher": { "id": "byName", "options": "pages_per_session" }, "properties": [{ "id": "displayName", "value": "Pages/Session" }, { "id": "decimals", "value": 1 }] }] },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 24 },
+      "id": 7,
+      "options": { "cellHeight": "sm", "showHeader": true },
+      "targets": [{ "columns": [{ "selector": "utm_source", "type": "string" }, { "selector": "utm_medium", "type": "string" }, { "selector": "utm_campaign", "type": "string" }, { "selector": "sessions", "type": "number" }, { "selector": "pageviews", "type": "number" }, { "selector": "pages_per_session", "type": "number" }], "format": "table", "parser": "backend", "refId": "A", "root_selector": "result.results", "source": "url", "type": "json", "url": "", "url_options": { "body_content_type": "application/json", "body_type": "raw", "data": "{\"sql\": \"SELECT s.utm_source, s.utm_medium, s.utm_campaign, COUNT(DISTINCT s.id) as sessions, COUNT(e.id) as pageviews, CAST(COUNT(e.id) AS REAL) / COUNT(DISTINCT s.id) as pages_per_session FROM sessions s LEFT JOIN events e ON s.id = e.session_id AND e.event_type = 'pageview' WHERE s.started_at >= ? AND s.started_at <= ? AND (s.utm_source IS NOT NULL OR s.utm_medium IS NOT NULL OR s.utm_campaign IS NOT NULL) GROUP BY s.utm_source, s.utm_medium, s.utm_campaign ORDER BY sessions DESC LIMIT 20\", \"params\": [\"${__from}\", \"${__to}\"]}", "method": "POST" } }],
+      "title": "UTM Campaign Performance",
+      "type": "table"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] } } },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 32 },
+      "id": 8,
+      "options": { "displayMode": "gradient", "namePlacement": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["first"], "fields": "/^count$/", "values": true }, "showUnfilled": true, "sizing": "auto" },
+      "targets": [{ "columns": [{ "selector": "path", "type": "string" }, { "selector": "count", "type": "number" }], "format": "table", "parser": "backend", "refId": "A", "root_selector": "result.results", "source": "url", "type": "json", "url": "", "url_options": { "body_content_type": "application/json", "body_type": "raw", "data": "{\"sql\": \"SELECT json_extract(event_data, '$.path') as path, COUNT(*) as count FROM events WHERE event_type = 'pageview' AND timestamp >= ? AND timestamp <= ? AND json_extract(event_data, '$.referrerPath') IS NULL GROUP BY json_extract(event_data, '$.path') ORDER BY count DESC LIMIT 10\", \"params\": [\"${__from}\", \"${__to}\"]}", "method": "POST" } }],
+      "title": "Entry Pages (Landing Pages)",
+      "type": "bargauge"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+      "fieldConfig": { "defaults": {}, "overrides": [{ "matcher": { "id": "byName", "options": "referrer_path" }, "properties": [{ "id": "displayName", "value": "From Page" }] }, { "matcher": { "id": "byName", "options": "path" }, "properties": [{ "id": "displayName", "value": "To Page" }] }, { "matcher": { "id": "byName", "options": "count" }, "properties": [{ "id": "displayName", "value": "Navigations" }] }] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 32 },
+      "id": 9,
+      "options": { "cellHeight": "sm", "showHeader": true },
+      "targets": [{ "columns": [{ "selector": "referrer_path", "type": "string" }, { "selector": "path", "type": "string" }, { "selector": "count", "type": "number" }], "format": "table", "parser": "backend", "refId": "A", "root_selector": "result.results", "source": "url", "type": "json", "url": "", "url_options": { "body_content_type": "application/json", "body_type": "raw", "data": "{\"sql\": \"SELECT json_extract(event_data, '$.referrerPath') as referrer_path, json_extract(event_data, '$.path') as path, COUNT(*) as count FROM events WHERE event_type = 'pageview' AND timestamp >= ? AND timestamp <= ? AND json_extract(event_data, '$.referrerPath') IS NOT NULL GROUP BY json_extract(event_data, '$.referrerPath'), json_extract(event_data, '$.path') ORDER BY count DESC LIMIT 15\", \"params\": [\"${__from}\", \"${__to}\"]}", "method": "POST" } }],
+      "title": "Internal Navigation Flow",
+      "type": "table"
+    }
+  ],
+  "schemaVersion": 42,
+  "tags": ["portfolio", "traffic", "referrers", "utm"],
+  "time": { "from": "now-7d", "to": "now" },
+  "timezone": "browser",
+  "title": "Traffic Sources",
+  "uid": "traffic-sources"
+}

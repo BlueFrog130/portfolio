@@ -428,11 +428,8 @@ Content: ${project.content}`,
 				messages: [systemMessage, ...messages],
 				stream: true,
 				max_tokens: 512,
-				repetition_penalty: 1.2,
-				frequency_penalty: 0.7,
-				presence_penalty: 0.6,
-				temperature: 0,
-				top_p: 0.1,
+				temperature: 0.3,
+				top_p: 0.9,
 			},
 		);
 

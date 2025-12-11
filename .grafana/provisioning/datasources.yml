@@ -1,0 +1,16 @@
+apiVersion: 1
+
+datasources:
+  - name: Infinity
+    type: yesoreyeram-infinity-datasource
+    uid: infinity
+    access: proxy
+    isDefault: true
+    url: https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/d1/database/$CLOUDFLARE_D1_ID/query
+    jsonData:
+      datasource_mode: 'basic'
+      auth_method: 'bearerToken'
+      allowedHosts:
+        - 'https://api.cloudflare.com'
+    secureJsonData:
+      bearerToken: $CLOUDFLARE_D1_API_TOKEN

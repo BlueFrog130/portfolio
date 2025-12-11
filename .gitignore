@@ -34,5 +34,4 @@ coverage/
 
 .wrangler/
 .claude/
-.grafana/
 .mcp.json

@@ -1,0 +1,132 @@
+{
+  "editable": true,
+  "id": null,
+  "panels": [
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+      "fieldConfig": { "defaults": { "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] } } },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "id": 1,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "textMode": "auto", "reduceOptions": { "calcs": ["first"], "fields": "/^sessions$/", "values": true } },
+      "targets": [{ "columns": [{ "selector": "sessions", "type": "number" }, { "selector": "views", "type": "number" }, { "selector": "avg_duration", "type": "number" }, { "selector": "pages_per_session", "type": "number" }], "format": "table", "parser": "backend", "refId": "visitor_stats", "root_selector": "result.results", "source": "url", "type": "json", "url": "", "url_options": { "body_content_type": "application/json", "body_type": "raw", "data": "{\"sql\": \"SELECT COUNT(DISTINCT session_id) as sessions, COUNT(*) as views, AVG(json_extract(event_data, '$.duration')) / 1000 as avg_duration, CAST(COUNT(*) AS REAL) / COUNT(DISTINCT session_id) as pages_per_session FROM events WHERE event_type = 'pageview' AND timestamp >= ? AND timestamp <= ?\", \"params\": [\"${__from}\", \"${__to}\"]}", "method": "POST" } }],
+      "title": "Total Sessions",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+      "fieldConfig": { "defaults": { "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } } },
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "id": 2,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "textMode": "auto", "reduceOptions": { "calcs": ["first"], "fields": "/^views$/", "values": true } },
+      "targets": [{ "columns": [{ "selector": "sessions", "type": "number" }, { "selector": "views", "type": "number" }, { "selector": "avg_duration", "type": "number" }, { "selector": "pages_per_session", "type": "number" }], "format": "table", "parser": "backend", "refId": "visitor_stats", "root_selector": "result.results", "source": "url", "type": "json", "url": "", "url_options": { "body_content_type": "application/json", "body_type": "raw", "data": "{\"sql\": \"SELECT COUNT(DISTINCT session_id) as sessions, COUNT(*) as views, AVG(json_extract(event_data, '$.duration')) / 1000 as avg_duration, CAST(COUNT(*) AS REAL) / COUNT(DISTINCT session_id) as pages_per_session FROM events WHERE event_type = 'pageview' AND timestamp >= ? AND timestamp <= ?\", \"params\": [\"${__from}\", \"${__to}\"]}", "method": "POST" } }],
+      "title": "Total Page Views",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+      "fieldConfig": { "defaults": { "thresholds": { "mode": "absolute", "steps": [{ "color": "orange", "value": null }] }, "unit": "s" } },
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+      "id": 3,
+      "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "textMode": "auto", "reduceOptions": { "calcs": ["first"], "fields": "/^avg_duration$/", "values": true } },
+      "targets": [{ "columns": [{ "selector": "sessions", "type": "number" }, { "selector": "views", "type": "number" }, { "selector": "avg_duration", "type": "number" }, { "selector": "pages_per_session", "type": "number" }], "format": "table", "parser": "backend", "refId": "visitor_stats", "root_selector": "result.results", "source": "url", "type": "json", "url": "", "url_options": { "body_content_type": "application/json", "body_type": "raw", "data": "{\"sql\": \"SELECT COUNT(DISTINCT session_id) as sessions, COUNT(*) as views, AVG(json_extract(event_data, '$.duration')) / 1000 as avg_duration, CAST(COUNT(*) AS REAL) / COUNT(DISTINCT session_id) as pages_per_session FROM events WHERE event_type = 'pageview' AND timestamp >= ? AND timestamp <= ?\", \"params\": [\"${__from}\", \"${__to}\"]}", "method": "POST" } }],
+      "title": "Avg Session Duration",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+      "fieldConfig": { "defaults": { "decimals": 1, "thresholds": { "mode": "absolute", "steps": [{ "color": "purple", "value": null }] } } },
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+      "id": 4,
+      "options": { "colorMode": "value", "graphMode": "none", "justifyMode": "auto", "textMode": "auto", "reduceOptions": { "calcs": ["first"], "fields": "/^pages_per_session$/", "values": true } },
+      "targets": [{ "columns": [{ "selector": "sessions", "type": "number" }, { "selector": "views", "type": "number" }, { "selector": "avg_duration", "type": "number" }, { "selector": "pages_per_session", "type": "number" }], "format": "table", "parser": "backend", "refId": "visitor_stats", "root_selector": "result.results", "source": "url", "type": "json", "url": "", "url_options": { "body_content_type": "application/json", "body_type": "raw", "data": "{\"sql\": \"SELECT COUNT(DISTINCT session_id) as sessions, COUNT(*) as views, AVG(json_extract(event_data, '$.duration')) / 1000 as avg_duration, CAST(COUNT(*) AS REAL) / COUNT(DISTINCT session_id) as pages_per_session FROM events WHERE event_type = 'pageview' AND timestamp >= ? AND timestamp <= ?\", \"params\": [\"${__from}\", \"${__to}\"]}", "method": "POST" } }],
+      "title": "Pages per Session",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" } } },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 4 },
+      "id": 5,
+      "options": { "legend": { "displayMode": "list", "placement": "right" }, "pieType": "donut", "reduceOptions": { "calcs": ["sum"], "fields": "/^count$/", "values": true } },
+      "targets": [{ "columns": [{ "selector": "device", "type": "string" }, { "selector": "count", "type": "number" }], "format": "table", "parser": "backend", "refId": "A", "root_selector": "result.results", "source": "url", "type": "json", "url": "", "url_options": { "body_content_type": "application/json", "body_type": "raw", "data": "{\"sql\": \"SELECT COALESCE(device_type, 'Unknown') as device, COUNT(*) as count FROM sessions WHERE started_at >= ? AND started_at <= ? GROUP BY device_type ORDER BY count DESC\", \"params\": [\"${__from}\", \"${__to}\"]}", "method": "POST" } }],
+      "title": "Visitors by Device Type",
+      "type": "piechart"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" } } },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 4 },
+      "id": 6,
+      "options": { "legend": { "displayMode": "list", "placement": "right" }, "pieType": "donut", "reduceOptions": { "calcs": ["sum"], "fields": "/^count$/", "values": true } },
+      "targets": [{ "columns": [{ "selector": "browser", "type": "string" }, { "selector": "count", "type": "number" }], "format": "table", "parser": "backend", "refId": "A", "root_selector": "result.results", "source": "url", "type": "json", "url": "", "url_options": { "body_content_type": "application/json", "body_type": "raw", "data": "{\"sql\": \"SELECT COALESCE(browser, 'Unknown') as browser, COUNT(*) as count FROM sessions WHERE started_at >= ? AND started_at <= ? GROUP BY browser ORDER BY count DESC LIMIT 10\", \"params\": [\"${__from}\", \"${__to}\"]}", "method": "POST" } }],
+      "title": "Visitors by Browser",
+      "type": "piechart"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" } } },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 4 },
+      "id": 7,
+      "options": { "legend": { "displayMode": "list", "placement": "right" }, "pieType": "donut", "reduceOptions": { "calcs": ["sum"], "fields": "/^count$/", "values": true } },
+      "targets": [{ "columns": [{ "selector": "os", "type": "string" }, { "selector": "count", "type": "number" }], "format": "table", "parser": "backend", "refId": "A", "root_selector": "result.results", "source": "url", "type": "json", "url": "", "url_options": { "body_content_type": "application/json", "body_type": "raw", "data": "{\"sql\": \"SELECT COALESCE(os, 'Unknown') as os, COUNT(*) as count FROM sessions WHERE started_at >= ? AND started_at <= ? GROUP BY os ORDER BY count DESC\", \"params\": [\"${__from}\", \"${__to}\"]}", "method": "POST" } }],
+      "title": "Visitors by OS",
+      "type": "piechart"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "custom": { "barAlignment": 0, "barWidthFactor": 0.6, "drawStyle": "bars", "fillOpacity": 80, "pointSize": 5, "showPoints": "never" } } },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 },
+      "id": 8,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "single" } },
+      "targets": [{ "columns": [{ "selector": "time", "type": "timestamp" }, { "selector": "sessions", "type": "number" }], "format": "table", "parser": "backend", "refId": "A", "root_selector": "result.results", "source": "url", "type": "json", "url": "", "url_options": { "body_content_type": "application/json", "body_type": "raw", "data": "{\"sql\": \"SELECT datetime(started_at / 1000, 'unixepoch') as time, COUNT(*) as sessions FROM sessions WHERE started_at >= ? AND started_at <= ? GROUP BY DATE(started_at / 1000, 'unixepoch') ORDER BY time\", \"params\": [\"${__from}\", \"${__to}\"]}", "method": "POST" } }],
+      "title": "Sessions Over Time",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } } },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 },
+      "id": 9,
+      "options": { "displayMode": "gradient", "namePlacement": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["first"], "fields": "/^count$/", "values": true }, "showUnfilled": true, "sizing": "auto" },
+      "targets": [{ "columns": [{ "selector": "resolution", "type": "string" }, { "selector": "count", "type": "number" }], "format": "table", "parser": "backend", "refId": "A", "root_selector": "result.results", "source": "url", "type": "json", "url": "", "url_options": { "body_content_type": "application/json", "body_type": "raw", "data": "{\"sql\": \"SELECT screen_width || 'x' || screen_height as resolution, COUNT(*) as count FROM sessions WHERE started_at >= ? AND started_at <= ? AND screen_width IS NOT NULL GROUP BY resolution ORDER BY count DESC LIMIT 10\", \"params\": [\"${__from}\", \"${__to}\"]}", "method": "POST" } }],
+      "title": "Screen Resolutions",
+      "type": "bargauge"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+      "fieldConfig": { "defaults": {}, "overrides": [{ "matcher": { "id": "byName", "options": "path" }, "properties": [{ "id": "displayName", "value": "Page" }] }, { "matcher": { "id": "byName", "options": "views" }, "properties": [{ "id": "displayName", "value": "Views" }] }, { "matcher": { "id": "byName", "options": "unique_visitors" }, "properties": [{ "id": "displayName", "value": "Unique Visitors" }] }, { "matcher": { "id": "byName", "options": "avg_duration" }, "properties": [{ "id": "displayName", "value": "Avg Duration" }, { "id": "unit", "value": "s" }] }] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 20 },
+      "id": 10,
+      "options": { "cellHeight": "sm", "showHeader": true },
+      "targets": [{ "columns": [{ "selector": "path", "type": "string" }, { "selector": "views", "type": "number" }, { "selector": "unique_visitors", "type": "number" }, { "selector": "avg_duration", "type": "number" }], "format": "table", "parser": "backend", "refId": "A", "root_selector": "result.results", "source": "url", "type": "json", "url": "", "url_options": { "body_content_type": "application/json", "body_type": "raw", "data": "{\"sql\": \"SELECT json_extract(event_data, '$.path') as path, COUNT(*) as views, COUNT(DISTINCT session_id) as unique_visitors, AVG(json_extract(event_data, '$.duration')) / 1000 as avg_duration FROM events WHERE event_type = 'pageview' AND timestamp >= ? AND timestamp <= ? GROUP BY json_extract(event_data, '$.path') ORDER BY views DESC LIMIT 15\", \"params\": [\"${__from}\", \"${__to}\"]}", "method": "POST" } }],
+      "title": "Top Pages by Views",
+      "type": "table"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" }, "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] } } },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 20 },
+      "id": 11,
+      "options": { "displayMode": "gradient", "namePlacement": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["first"], "fields": "/^count$/", "values": true }, "showUnfilled": true, "sizing": "auto" },
+      "targets": [{ "columns": [{ "selector": "country", "type": "string" }, { "selector": "count", "type": "number" }], "format": "table", "parser": "backend", "refId": "A", "root_selector": "result.results", "source": "url", "type": "json", "url": "", "url_options": { "body_content_type": "application/json", "body_type": "raw", "data": "{\"sql\": \"SELECT COALESCE(country, 'Unknown') as country, COUNT(*) as count FROM sessions WHERE started_at >= ? AND started_at <= ? GROUP BY country ORDER BY count DESC LIMIT 15\", \"params\": [\"${__from}\", \"${__to}\"]}", "method": "POST" } }],
+      "title": "Visitors by Country",
+      "type": "bargauge"
+    },
+    {
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "infinity" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }, { "color": "green", "value": 5 }, { "color": "yellow", "value": 20 }, { "color": "orange", "value": 50 }, { "color": "red", "value": 100 }] } } },
+      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 28 },
+      "id": 12,
+      "options": { "basemap": { "config": { "showLabels": true, "theme": "auto" }, "name": "CARTO Basemap", "type": "carto" }, "controls": { "mouseWheelZoom": true, "showAttribution": true, "showDebug": false, "showMeasure": false, "showScale": false, "showZoom": true }, "layers": [{ "config": { "showLegend": true, "style": { "color": { "field": "count", "fixed": "dark-green" }, "opacity": 0.6, "rotation": { "fixed": 0, "max": 360, "min": -360, "mode": "mod" }, "size": { "field": "count", "fixed": 5, "max": 30, "min": 5 }, "symbol": { "fixed": "img/icons/marker/circle.svg", "mode": "fixed" }, "symbolAlign": { "horizontal": "center", "vertical": "center" }, "text": { "field": "region_display", "fixed": "", "mode": "field" }, "textConfig": { "fontSize": 10, "offsetX": 0, "offsetY": 0, "textAlign": "center", "textBaseline": "middle" } } }, "filterData": { "id": "byRefId", "options": "A" }, "location": { "latitude": "latitude", "longitude": "longitude", "mode": "coords" }, "name": "Visitors", "tooltip": true, "type": "markers" }], "tooltip": { "mode": "details" }, "view": { "allLayers": true, "id": "coords", "lat": 39, "lon": -98, "zoom": 3 } },
+      "targets": [{ "columns": [{ "selector": "country", "type": "string" }, { "selector": "region", "type": "string" }, { "selector": "region_display", "type": "string" }, { "selector": "latitude", "type": "number" }, { "selector": "longitude", "type": "number" }, { "selector": "count", "type": "number" }], "format": "table", "parser": "backend", "refId": "A", "root_selector": "result.results", "source": "url", "type": "json", "url": "", "url_options": { "body_content_type": "application/json", "body_type": "raw", "data": "{\"sql\": \"WITH region_coords(name, lat, lon) AS (VALUES ('Alabama',32.8,-86.8),('Alaska',64.0,-153.0),('Arizona',34.2,-111.6),('Arkansas',34.8,-92.2),('California',37.2,-119.4),('Colorado',39.0,-105.5),('Connecticut',41.6,-72.7),('Delaware',39.0,-75.5),('Florida',28.6,-82.4),('Georgia',32.6,-83.4),('Hawaii',20.8,-156.3),('Idaho',44.4,-114.6),('Illinois',40.0,-89.2),('Indiana',39.9,-86.3),('Iowa',42.0,-93.5),('Kansas',38.5,-98.4),('Kentucky',37.8,-85.7),('Louisiana',31.0,-92.0),('Maine',45.3,-69.0),('Maryland',39.0,-76.8),('Massachusetts',42.2,-71.5),('Michigan',44.3,-85.4),('Minnesota',46.3,-94.3),('Mississippi',32.7,-89.7),('Missouri',38.3,-92.4),('Montana',47.0,-109.6),('Nebraska',41.5,-99.8),('Nevada',39.5,-116.9),('New Hampshire',43.6,-71.5),('New Jersey',40.2,-74.7),('New Mexico',34.4,-106.1),('New York',42.9,-75.5),('North Carolina',35.5,-79.4),('North Dakota',47.4,-100.3),('Ohio',40.4,-82.8),('Oklahoma',35.6,-97.5),('Oregon',44.0,-120.5),('Pennsylvania',40.9,-77.8),('Rhode Island',41.7,-71.5),('South Carolina',33.9,-80.9),('South Dakota',44.4,-100.2),('Tennessee',35.8,-86.3),('Texas',31.5,-99.4),('Utah',39.3,-111.7),('Vermont',44.0,-72.7),('Virginia',37.5,-78.8),('Washington',47.4,-120.5),('West Virginia',38.9,-80.5),('Wisconsin',44.6,-89.7),('Wyoming',43.0,-107.5),('Ontario',50.0,-85.0),('Quebec',52.0,-72.0),('British Columbia',54.0,-125.0),('Alberta',55.0,-115.0),('England',52.5,-1.5),('Scotland',56.5,-4.0),('Wales',52.0,-3.5),('New South Wales',-33.0,146.0),('Victoria',-37.0,144.5),('Queensland',-22.0,145.0),('Bavaria',48.8,11.5),('Berlin',52.5,13.4),('Ile-de-France',48.8,2.6),('Noord-Holland',52.5,4.8)) SELECT s.country, s.region, COALESCE(s.region, s.country, 'Unknown') as region_display, COALESCE(r.lat, CASE s.country WHEN 'US' THEN 39.8 WHEN 'CA' THEN 56.0 WHEN 'GB' THEN 54.0 WHEN 'AU' THEN -25.0 WHEN 'DE' THEN 51.0 WHEN 'FR' THEN 46.0 WHEN 'NL' THEN 52.0 WHEN 'JP' THEN 36.0 WHEN 'IN' THEN 22.0 WHEN 'BR' THEN -10.0 ELSE 0 END) as latitude, COALESCE(r.lon, CASE s.country WHEN 'US' THEN -98.6 WHEN 'CA' THEN -106.0 WHEN 'GB' THEN -2.0 WHEN 'AU' THEN 135.0 WHEN 'DE' THEN 10.0 WHEN 'FR' THEN 2.0 WHEN 'NL' THEN 5.0 WHEN 'JP' THEN 138.0 WHEN 'IN' THEN 79.0 WHEN 'BR' THEN -55.0 ELSE 0 END) as longitude, COUNT(*) as count FROM sessions s LEFT JOIN region_coords r ON s.region = r.name WHERE s.started_at >= ? AND s.started_at <= ? AND s.country IS NOT NULL GROUP BY s.country, s.region ORDER BY count DESC\", \"params\": [\"${__from}\", \"${__to}\"]}", "method": "POST" } }],
+      "title": "Visitor Geographic Distribution",
+      "type": "geomap"
+    }
+  ],
+  "schemaVersion": 42,
+  "tags": ["portfolio", "visitors", "analytics"],
+  "time": { "from": "now-7d", "to": "now" },
+  "timezone": "browser",
+  "title": "Visitor Analytics",
+  "uid": "visitor-analytics"
+}
