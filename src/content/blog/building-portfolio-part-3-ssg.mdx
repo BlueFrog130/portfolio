@@ -1,0 +1,76 @@
+import ogImage from 'virtual:og-image?title=Static Site Generation Without the Framework&description=Auto-crawling SSG, route discovery from Vite manifests, and module preloading.&tags=SSG,Vite,Performance&type=blog&seriesPart=3&seriesTotalParts=10';
+
+export const metadata = {
+	slug: 'building-portfolio-part-3-ssg',
+	title: 'Static Site Generation Without the Framework',
+	description:
+		'Auto-crawling SSG, route discovery from Vite manifests, and module preloading.',
+	tags: ['SSG', 'Vite', 'Performance'],
+	publishedAt: '2025-02-03',
+	featuredImage: ogImage,
+	draft: true,
+	series: {
+		id: 'building-portfolio',
+		title: 'Building a Modern Portfolio Without a Meta-Framework',
+		part: 3,
+		totalParts: 10,
+	},
+};
+
+# Static Site Generation Without the Framework
+
+*Part 3 of the "Building a Modern Portfolio Without a Meta-Framework" series*
+
+---
+
+## The SSG Mental Model
+
+Static Site Generation is conceptually simple:
+
+1. Render pages at build time
+2. Serve static HTML files
+3. Hydrate on the client
+
+The complexity comes from discovering what to render and optimizing the output.
+
+## Auto-Crawling vs Explicit Routes
+
+Most SSG frameworks require you to define your routes explicitly. We take a different approach: **auto-crawling**.
+
+```typescript
+// TODO: Show the crawling algorithm
+```
+
+## Dynamic Routes with Content Discovery
+
+*TODO: Explain how MDX files map to routes*
+
+## Manifest Parsing
+
+*TODO: Show how we parse Vite's manifest for preloads*
+
+## Module Preloading
+
+*TODO: Discuss per-route modulepreload tags*
+
+## The Build Pipeline
+
+```
+client build -> SSG render -> static output
+```
+
+*TODO: Walk through each step*
+
+## Hydration Strategy
+
+*TODO: Discuss how React hydrates the SSG output*
+
+## Alternatives Considered
+
+- **Next.js getStaticProps** - Great DX, but framework lock-in
+- **Astro** - Static-first, but different component model
+- **Vite-SSG plugin** - Close to what we wanted
+
+---
+
+*Next up: [Part 4 - MDX Content & the Metadata Plugin](/blog/building-portfolio-part-4-mdx)*

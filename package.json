@@ -52,6 +52,7 @@
 		"hono": "^4.10.8",
 		"prettier": "^3.7.4",
 		"react-markdown": "^10.1.0",
+		"rehype-starry-night": "^2.2.0",
 		"remark-gfm": "^4.0.1",
 		"sharp": "^0.34.5",
 		"tailwindcss": "^4.1.18",

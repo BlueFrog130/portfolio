@@ -1,0 +1,242 @@
+export const metadata = {
+	slug: 'plan',
+	title: 'Planning Out some Blog Content',
+	description: 'Content roadmap for the portfolio blog',
+	tags: ['meta', 'planning'],
+	publishedAt: '2025-12-15',
+	draft: true,
+};
+
+# Blog Content Plan
+
+## Series: Building a Modern Portfolio Without a Meta-Framework
+
+A deep-dive into building a production React 19 portfolio with custom routing, SSG, AI chat, and Cloudflare Workers - without reaching for Next.js, Remix, or TanStack Start.
+
+---
+
+### Part 1: Why I Built My Own (Introduction & Philosophy)
+
+**Key Points:**
+- The meta-framework landscape in 2024/2025 (Next.js, Remix, TanStack Start, Astro)
+- Why I chose to go custom: learning, control, minimal footprint
+- Trade-offs: what you gain vs what you lose
+- Overview of the tech stack: React 19, Vite 7, Cloudflare Workers, Hono
+- Brief tour of the final architecture
+
+**Alternatives Discussed:**
+- Next.js (App Router) - full-featured but opinionated
+- Remix - great DX but heavier than needed
+- TanStack Start - promising but still maturing
+- Astro - content-focused but less flexible for app-like features
+- Vite + React Router - solid but still relies on external routing
+
+---
+
+### Part 2: The Custom Router
+
+**Key Points:**
+- Why build a router? (control over transitions, simpler mental model)
+- Pattern matching implementation (`/projects/:slug`)
+- React 19's `startTransition` for navigation
+- ViewTransition API integration for smooth page transitions
+- Hash navigation with smooth scrolling
+- Suspense boundaries and lazy loading
+- SSR/SSG considerations (initial path hydration)
+
+**Code Deep-Dive:**
+- `RouterProvider` context setup
+- `matchPath` function for dynamic routes
+- `navigate` function with analytics integration
+- `Link` component with prefetching potential
+- Handling browser back/forward (`popstate`)
+
+**Alternatives Discussed:**
+- React Router v6/v7
+- TanStack Router
+- Wouter (minimal alternative)
+
+---
+
+### Part 3: Static Site Generation Without the Framework
+
+**Key Points:**
+- The SSG mental model: render at build time, serve static HTML
+- Auto-crawling approach vs explicit route definitions
+- Dynamic routes with content discovery (MDX -> route mapping)
+- Manifest parsing to understand what to preload
+- Module preloading for fast subsequent navigations
+- Hydration strategy
+
+**Code Deep-Dive:**
+- Route mapping from Vite manifest
+- Link extraction from rendered HTML
+- Per-route preload tag generation
+- Template injection (HTML shell + rendered content)
+- The build pipeline: client -> SSG -> static output
+
+**Alternatives Discussed:**
+- Next.js `getStaticProps`/`generateStaticParams`
+- Astro's static-first approach
+- Vite-SSG plugin
+
+---
+
+### Part 4: MDX Content & the Metadata Plugin
+
+**Key Points:**
+- MDX for rich content (projects, blog posts)
+- The metadata extraction problem: need data without full MDX parse
+- Virtual modules in Vite
+- Read time calculation
+- HMR support for metadata changes
+
+**Code Deep-Dive:**
+- `vite-plugin-mdx-metadata.ts` implementation
+- The `?metadata` query pattern
+- Virtual module resolution (`\0` prefix)
+- `handleHotUpdate` for development experience
+
+**Alternatives Discussed:**
+- Frontmatter with gray-matter
+- Content Collections (Astro-style)
+- Contentlayer (RIP)
+- MDX compiler plugins
+
+---
+
+### Part 5: Cloudflare Workers & Hono Backend
+
+**Key Points:**
+- Edge-first architecture philosophy
+- Hono as a minimal, fast framework
+- D1 for analytics storage
+- Cloudflare AI integration
+- Vite's `@cloudflare/vite-plugin` for unified DX
+
+**Code Deep-Dive:**
+- Worker entry point setup
+- API routes with Hono
+- Request validation with Zod
+- D1 database operations
+
+**Alternatives Discussed:**
+- Express/Fastify (traditional Node)
+- tRPC
+- Serverless functions (Vercel, Netlify)
+
+---
+
+### Part 6: AI Chat with Streaming & Analytics
+
+**Key Points:**
+- Per-project AI chat: giving context to the model
+- System prompt engineering for personality/boundaries
+- Server-Sent Events (SSE) for streaming responses
+- Stream teeing for analytics (client gets response + we log it)
+- Token tracking and latency metrics
+- HTML to Markdown conversion for context
+
+**Code Deep-Dive:**
+- `createLoggingStream` implementation
+- System prompt construction
+- Cloudflare AI API usage
+- Execution context and `waitUntil` for background work
+
+**Alternatives Discussed:**
+- OpenAI API
+- Anthropic Claude
+- Ollama (self-hosted)
+- Non-streaming approaches
+
+---
+
+### Part 7: Analytics from Scratch
+
+**Key Points:**
+- Privacy-respecting analytics (no cookies, session-based)
+- What to track: sessions, pageviews, Web Vitals, custom events
+- Client-side batching for efficiency
+- D1 schema design
+- Web Vitals integration (LCP, FID, CLS, etc.)
+
+**Code Deep-Dive:**
+- Session fingerprinting (device, browser, screen)
+- Batch POST to `/api/analytics`
+- Web Vitals library integration
+- Database schema and queries
+
+**Alternatives Discussed:**
+- Google Analytics
+- Plausible/Fathom
+- Umami
+- PostHog
+
+---
+
+### Part 8: Dual Mode UI (Web vs Terminal)
+
+**Key Points:**
+- Creative portfolio differentiation
+- Mode context and persistence
+- Terminal emulator implementation
+- AI-powered terminal commands
+- Shared components between modes
+
+**Code Deep-Dive:**
+- Mode context provider
+- Terminal command parsing
+- ASCII art and styling
+- localStorage persistence
+
+---
+
+### Part 9: Performance & Production Hardening
+
+**Key Points:**
+- Vite 7 production build optimizations
+- React Compiler for automatic memoization
+- Asset optimization and caching
+- Cloudflare caching strategies
+- Lighthouse scores and Core Web Vitals
+- Monitoring with Grafana dashboards
+
+**Topics:**
+- Bundle analysis
+- Code splitting strategies
+- Image optimization
+- Font loading
+- Preloading critical resources
+
+---
+
+### Part 10: Lessons Learned & What I'd Do Differently
+
+**Key Points:**
+- Was it worth building custom? (honest assessment)
+- Time investment vs learning value
+- Features I wish I had (hot takes)
+- When to use a meta-framework vs roll your own
+- Future improvements planned
+
+---
+
+## Standalone Posts (Future Ideas)
+
+- **"React 19 Features I Actually Use"** - startTransition, ViewTransition, Compiler
+- **"Tailwind CSS v4 Migration Guide"** - what changed, gotchas
+- **"D1 for Small Projects"** - Cloudflare's SQLite, pros/cons
+- **"Cloudflare AI vs OpenAI for Chat"** - cost, latency, quality comparison
+- **"The ViewTransition API Changed How I Think About SPAs"**
+- **"Writing Good AI System Prompts"** - lessons from the project chat feature
+
+---
+
+## Publishing Strategy
+
+1. Release Part 1 first to gauge interest
+2. Parts 2-4 (Router, SSG, MDX) form the "core" - publish weekly
+3. Parts 5-7 (Backend, AI, Analytics) are the "backend deep-dive"
+4. Parts 8-10 wrap up with UX and retrospective
+
+Each post should be self-contained but link to others in the series.

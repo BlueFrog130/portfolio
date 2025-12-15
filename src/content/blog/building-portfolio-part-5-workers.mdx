@@ -1,0 +1,80 @@
+import ogImage from 'virtual:og-image?title=Cloudflare Workers and Hono Backend&description=Edge-first architecture with Hono, D1 database, and Vite integration.&tags=Cloudflare,Hono,Edge&type=blog&seriesPart=5&seriesTotalParts=10';
+
+export const metadata = {
+	slug: 'building-portfolio-part-5-workers',
+	title: 'Cloudflare Workers and Hono Backend',
+	description:
+		'Edge-first architecture with Hono, D1 database, and Vite integration.',
+	tags: ['Cloudflare', 'Hono', 'Edge'],
+	publishedAt: '2025-02-17',
+	featuredImage: ogImage,
+	draft: true,
+	series: {
+		id: 'building-portfolio',
+		title: 'Building a Modern Portfolio Without a Meta-Framework',
+		part: 5,
+		totalParts: 10,
+	},
+};
+
+# Cloudflare Workers and Hono Backend
+
+*Part 5 of the "Building a Modern Portfolio Without a Meta-Framework" series*
+
+---
+
+## Edge-First Architecture
+
+Why run code at the edge?
+
+- **Low latency** - Code runs close to users
+- **Global distribution** - No region selection needed
+- **Cost effective** - Pay per request, not per hour
+
+## Why Hono?
+
+Hono is a minimal, fast web framework designed for edge runtimes:
+
+```typescript
+// TODO: Show basic Hono setup
+```
+
+## D1 for Analytics Storage
+
+*TODO: Discuss Cloudflare's SQLite database*
+
+## Cloudflare AI Integration
+
+*TODO: Show how we integrate with Cloudflare AI*
+
+## Vite's @cloudflare/vite-plugin
+
+*TODO: Explain the unified dev experience*
+
+## Worker Entry Point
+
+```typescript
+// TODO: Walk through worker/index.ts setup
+```
+
+## API Routes with Hono
+
+*TODO: Show route definitions and handlers*
+
+## Request Validation with Zod
+
+*TODO: Show typed request validation*
+
+## D1 Database Operations
+
+*TODO: Show D1 queries and batch operations*
+
+## Alternatives Considered
+
+- **Express/Fastify** - Traditional Node, not edge-native
+- **tRPC** - Great type safety, but more complex
+- **Serverless functions** - Vercel/Netlify approach, less control
+
+---
+
+*Next up: [Part 6 - AI Chat with Streaming](/blog/building-portfolio-part-6-ai-chat)*

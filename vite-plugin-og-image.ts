@@ -9,6 +9,8 @@ interface OgImageParams {
 	description?: string;
 	tags?: string[];
 	type?: 'blog' | 'project';
+	seriesPart?: number;
+	seriesTotalParts?: number;
 }
 
 function escapeXml(text: string): string {
@@ -39,17 +41,26 @@ function wrapText(text: string, maxChars: number): string[] {
 }
 
 function generateSvg(params: OgImageParams): string {
-	const { title, description, tags = [], type = 'blog' } = params;
+	const {
+		title,
+		description,
+		tags = [],
+		type = 'blog',
+		seriesPart,
+		seriesTotalParts,
+	} = params;
 	const titleLines = wrapText(title, 35);
 	const descriptionLines = description
 		? wrapText(description, 60).slice(0, 2)
 		: [];
 
+	const hasSeries = seriesPart !== undefined && seriesTotalParts !== undefined;
 	const titleStartY = 220;
 	const titleLineHeight = 70;
 	const descriptionStartY =
 		titleStartY + titleLines.length * titleLineHeight + 20;
-	const tagsY = descriptionStartY + descriptionLines.length * 40 + 40;
+	const seriesY = descriptionStartY + descriptionLines.length * 40 + 30;
+	const tagsY = hasSeries ? seriesY + 50 : descriptionStartY + descriptionLines.length * 40 + 40;
 
 	const titleSvg = titleLines
 		.map(
@@ -80,6 +91,32 @@ function generateSvg(params: OgImageParams): string {
 	}
 
 	const typeLabel = type === 'blog' ? 'BLOG' : 'PROJECT';
+
+	// Generate series indicator SVG if applicable (placed below description, before tags)
+	let seriesIndicatorSvg = '';
+	if (hasSeries) {
+		// Series progress dots - offset by radius so left edge aligns with text
+		const dotRadius = 5;
+		const activeRadius = 6;
+		const dotSpacing = 20;
+		const startX = 80 + dotRadius; // Offset so left edge of first dot aligns with text
+
+		const dots = Array.from({ length: seriesTotalParts! }, (_, i) => {
+			const cx = startX + i * dotSpacing;
+			const isActive = i + 1 === seriesPart;
+			const isPast = i + 1 < seriesPart!;
+			const fill = isActive ? '#6366f1' : isPast ? '#a5b4fc' : '#e0e7ff';
+			const radius = isActive ? activeRadius : dotRadius;
+			return `<circle cx="${cx}" cy="${seriesY + 20}" r="${radius}" fill="${fill}"/>`;
+		}).join('\n    ');
+
+		seriesIndicatorSvg = `
+  <!-- Series indicator -->
+  <text x="80" y="${seriesY}" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="600" fill="#6366f1">PART ${seriesPart} OF ${seriesTotalParts}</text>
+  <g>
+    ${dots}
+  </g>`;
+	}
 
 	return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
   <defs>
@@ -132,6 +169,7 @@ function generateSvg(params: OgImageParams): string {
 
   <!-- Description -->
   ${descriptionSvg}
+  ${seriesIndicatorSvg}
 
   <!-- Tags -->
   ${tagsSvg}
@@ -143,11 +181,18 @@ function generateSvg(params: OgImageParams): string {
 
 function parseParams(query: string): OgImageParams {
 	const params = new URLSearchParams(query);
+	const seriesPart = params.get('seriesPart');
+	const seriesTotalParts = params.get('seriesTotalParts');
+
 	return {
 		title: params.get('title') || 'Untitled',
 		description: params.get('description') || undefined,
 		tags: params.get('tags')?.split(',').filter(Boolean) || undefined,
 		type: (params.get('type') as 'blog' | 'project') || 'blog',
+		seriesPart: seriesPart ? parseInt(seriesPart, 10) : undefined,
+		seriesTotalParts: seriesTotalParts
+			? parseInt(seriesTotalParts, 10)
+			: undefined,
 	};
 }
 

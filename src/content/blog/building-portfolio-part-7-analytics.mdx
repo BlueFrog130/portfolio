@@ -1,0 +1,83 @@
+import ogImage from 'virtual:og-image?title=Building Privacy-Respecting Analytics&description=Session tracking, Web Vitals collection, and client-side batching without cookies.&tags=Analytics,Privacy,Performance&type=blog&seriesPart=7&seriesTotalParts=10';
+
+export const metadata = {
+	slug: 'building-portfolio-part-7-analytics',
+	title: 'Building Privacy-Respecting Analytics',
+	description:
+		'Session tracking, Web Vitals collection, and client-side batching without cookies.',
+	tags: ['Analytics', 'Privacy', 'Performance'],
+	publishedAt: '2025-03-03',
+	featuredImage: ogImage,
+	draft: true,
+	series: {
+		id: 'building-portfolio',
+		title: 'Building a Modern Portfolio Without a Meta-Framework',
+		part: 7,
+		totalParts: 10,
+	},
+};
+
+# Building Privacy-Respecting Analytics
+
+*Part 7 of the "Building a Modern Portfolio Without a Meta-Framework" series*
+
+---
+
+## Privacy-First Approach
+
+No cookies. No personal data. Just useful metrics.
+
+- Session-based tracking (not user-based)
+- No cross-site tracking
+- Data stays in your own database
+
+## What to Track
+
+### Sessions
+
+*TODO: Show session fingerprinting (device, browser, screen)*
+
+### Page Views
+
+*TODO: Show pageview tracking with duration*
+
+### Web Vitals
+
+*TODO: Explain LCP, FID, CLS, etc.*
+
+### Custom Events
+
+*TODO: Show custom event tracking*
+
+## Client-Side Batching
+
+Sending every event immediately is wasteful. We batch events:
+
+```typescript
+// TODO: Show batching implementation
+```
+
+## D1 Schema Design
+
+```sql
+-- TODO: Show database schema
+```
+
+## Web Vitals Integration
+
+*TODO: Show integration with web-vitals library*
+
+## The Analytics Client
+
+*TODO: Walk through the client-side analytics code*
+
+## Alternatives Considered
+
+- **Google Analytics** - Powerful but privacy concerns
+- **Plausible/Fathom** - Great, but paid
+- **Umami** - Self-hosted, good option
+- **PostHog** - Feature-rich, might be overkill
+
+---
+
+*Next up: [Part 8 - Dual Mode UI](/blog/building-portfolio-part-8-dual-mode)*

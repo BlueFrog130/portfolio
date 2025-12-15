@@ -1,9 +1,10 @@
 import { useParams, Link } from '@/lib/router';
-import { getBlogPost } from '@/content/blog';
+import { getBlogPost, getAdjacentSeriesPosts } from '@/content/blog';
 import { Layout } from '@/lib/components/Layout';
 import { Suspense } from 'react';
 import { ViewTransition } from 'react';
-import { ArrowLeft, Calendar, Clock, Tag } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, Tag, BookOpen } from 'lucide-react';
+import { SeriesNav } from '@/lib/components/SeriesNav';
 
 export default function BlogPostPage() {
 	const { slug } = useParams();
@@ -39,6 +40,8 @@ export default function BlogPostPage() {
 		day: 'numeric',
 	});
 
+	const { prev, next } = getAdjacentSeriesPosts(post);
+
 	return (
 		<Layout>
 			<div className="py-20 sm:py-24">
@@ -54,6 +57,15 @@ export default function BlogPostPage() {
 					<ViewTransition name={`blog-${post.slug}`}>
 						<article className="mt-8">
 							<header>
+								{post.series && (
+									<div className="mb-4 inline-flex items-center gap-2 rounded-full bg-accent-100 px-3 py-1 text-sm font-medium text-accent-700">
+										<BookOpen className="h-3.5 w-3.5" />
+										<span>
+											{post.series.title} &middot; Part {post.series.part} of{' '}
+											{post.series.totalParts}
+										</span>
+									</div>
+								)}
 								<div className="flex flex-wrap items-center gap-4 text-sm text-surface-500">
 									<span className="inline-flex items-center gap-1">
 										<Calendar className="h-4 w-4" />
@@ -96,6 +108,8 @@ export default function BlogPostPage() {
 										<post.Content />
 									</ViewTransition>
 								</Suspense>
+
+								<SeriesNav post={post} prev={prev} next={next} />
 							</section>
 						</article>
 					</ViewTransition>

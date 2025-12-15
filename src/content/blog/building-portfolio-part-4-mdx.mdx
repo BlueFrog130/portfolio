@@ -1,0 +1,78 @@
+import ogImage from 'virtual:og-image?title=MDX Content and the Metadata Plugin&description=Virtual modules in Vite for extracting MDX metadata without full parsing.&tags=MDX,Vite,Plugins&type=blog&seriesPart=4&seriesTotalParts=10';
+
+export const metadata = {
+	slug: 'building-portfolio-part-4-mdx',
+	title: 'MDX Content and the Metadata Plugin',
+	description:
+		'Virtual modules in Vite for extracting MDX metadata without full parsing.',
+	tags: ['MDX', 'Vite', 'Plugins'],
+	publishedAt: '2025-02-10',
+	featuredImage: ogImage,
+	draft: true,
+	series: {
+		id: 'building-portfolio',
+		title: 'Building a Modern Portfolio Without a Meta-Framework',
+		part: 4,
+		totalParts: 10,
+	},
+};
+
+# MDX Content and the Metadata Plugin
+
+*Part 4 of the "Building a Modern Portfolio Without a Meta-Framework" series*
+
+---
+
+## The Problem
+
+MDX files contain both metadata (title, description, tags) and content. For list pages, we need the metadata without parsing the full MDX.
+
+```typescript
+// We want this to be fast
+const posts = getAllPosts(); // Just metadata
+```
+
+## Why Not Frontmatter?
+
+Traditional frontmatter with `gray-matter` works, but:
+
+- Requires parsing YAML
+- Can't use JavaScript expressions in metadata
+- No type safety
+
+## Virtual Modules in Vite
+
+Vite's plugin API lets us create "virtual" modules that don't exist on disk:
+
+```typescript
+// TODO: Show the resolveId and load hooks
+```
+
+## The `?metadata` Query Pattern
+
+*TODO: Explain how we intercept metadata imports*
+
+## Read Time Calculation
+
+*TODO: Show the word counting and read time logic*
+
+## HMR Support
+
+*TODO: Explain handleHotUpdate for metadata changes*
+
+## The Full Plugin
+
+```typescript
+// TODO: Walk through vite-plugin-mdx-metadata.ts
+```
+
+## Alternatives Considered
+
+- **gray-matter** - Standard but limited
+- **Content Collections** - Astro's approach, framework-specific
+- **Contentlayer** - Was great, now abandoned
+- **MDX compiler plugins** - Too complex for this use case
+
+---
+
+*Next up: [Part 5 - Cloudflare Workers & Hono Backend](/blog/building-portfolio-part-5-workers)*

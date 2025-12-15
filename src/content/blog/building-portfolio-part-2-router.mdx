@@ -1,0 +1,74 @@
+import ogImage from 'virtual:og-image?title=Building a Custom React Router&description=Pattern matching, ViewTransition API, and navigation with React 19 startTransition.&tags=React,Router,ViewTransitions&type=blog&seriesPart=2&seriesTotalParts=10';
+
+export const metadata = {
+	slug: 'building-portfolio-part-2-router',
+	title: 'Building a Custom React Router',
+	description:
+		'Pattern matching, ViewTransition API, and navigation with React 19 startTransition.',
+	tags: ['React', 'Router', 'ViewTransitions'],
+	publishedAt: '2025-01-27',
+	featuredImage: ogImage,
+	draft: true,
+	series: {
+		id: 'building-portfolio',
+		title: 'Building a Modern Portfolio Without a Meta-Framework',
+		part: 2,
+		totalParts: 10,
+	},
+};
+
+# Building a Custom React Router
+
+*Part 2 of the "Building a Modern Portfolio Without a Meta-Framework" series*
+
+---
+
+## Why Build a Router?
+
+When you hear "build your own router," you might think it's unnecessary complexity. But there are compelling reasons:
+
+- **Control over transitions** - The ViewTransition API changes everything
+- **Simpler mental model** - No framework magic to understand
+- **Tight integration** - Analytics, preloading, exactly how you want it
+
+## Pattern Matching
+
+The foundation of any router is pattern matching. Here's how we handle dynamic routes like `/projects/:slug`:
+
+```typescript
+// TODO: Add matchPath implementation
+```
+
+## React 19's startTransition
+
+*TODO: Explain how startTransition enables smoother navigations*
+
+## ViewTransition API Integration
+
+*TODO: Show how ViewTransitions create smooth page transitions*
+
+## Hash Navigation
+
+*TODO: Discuss hash links and smooth scrolling*
+
+## Suspense and Lazy Loading
+
+*TODO: Cover lazy-loaded routes with Suspense boundaries*
+
+## SSR/SSG Considerations
+
+*TODO: Discuss initial path hydration*
+
+## The Full Implementation
+
+*TODO: Walk through the complete Router and RouterProvider*
+
+## Alternatives Considered
+
+- **React Router v6/v7** - Full-featured but more than needed
+- **TanStack Router** - Type-safe but adds complexity
+- **Wouter** - Minimal, was a close second
+
+---
+
+*Next up: [Part 3 - Static Site Generation](/blog/building-portfolio-part-3-ssg)*

@@ -10,6 +10,7 @@ import { ssrDevPlugin } from './vite-plugin-ssr-dev';
 import gfm from 'remark-gfm';
 import { cloudflare } from '@cloudflare/vite-plugin';
 import { ssg } from './scripts/ssg';
+import rehypeStarryNight from 'rehype-starry-night';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -26,6 +27,7 @@ export default defineConfig({
 			enforce: 'pre',
 			...mdx({
 				remarkPlugins: [gfm],
+				rehypePlugins: [rehypeStarryNight],
 			}),
 		},
 		react({

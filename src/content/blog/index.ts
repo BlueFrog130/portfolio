@@ -1,5 +1,12 @@
 import { lazy, type ComponentType } from 'react';
 
+export interface SeriesInfo {
+	id: string;
+	title: string;
+	part: number;
+	totalParts: number;
+}
+
 export interface BlogPostMetadata {
 	slug: string;
 	title: string;
@@ -10,6 +17,7 @@ export interface BlogPostMetadata {
 	featured?: boolean;
 	draft?: boolean;
 	readTime: number;
+	series?: SeriesInfo;
 }
 
 export interface BlogPost extends BlogPostMetadata {
@@ -81,4 +89,30 @@ export function searchBlogPosts(
 
 		return true;
 	});
+}
+
+export function getSeriesPosts(seriesId: string): BlogPost[] {
+	return blogPosts
+		.filter((post) => post.series?.id === seriesId)
+		.sort((a, b) => (a.series?.part ?? 0) - (b.series?.part ?? 0));
+}
+
+export function getAdjacentSeriesPosts(post: BlogPost): {
+	prev: BlogPost | null;
+	next: BlogPost | null;
+} {
+	if (!post.series) {
+		return { prev: null, next: null };
+	}
+
+	const seriesPosts = getSeriesPosts(post.series.id);
+	const currentIndex = seriesPosts.findIndex((p) => p.slug === post.slug);
+
+	return {
+		prev: currentIndex > 0 ? seriesPosts[currentIndex - 1] : null,
+		next:
+			currentIndex < seriesPosts.length - 1
+				? seriesPosts[currentIndex + 1]
+				: null,
+	};
 }

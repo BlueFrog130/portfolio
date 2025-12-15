@@ -1,0 +1,71 @@
+import ogImage from 'virtual:og-image?title=AI Chat with Streaming and Analytics&description=Building per-project AI chat with SSE streaming, prompt engineering, and usage tracking.&tags=AI,Streaming,Cloudflare&type=blog&seriesPart=6&seriesTotalParts=10';
+
+export const metadata = {
+	slug: 'building-portfolio-part-6-ai-chat',
+	title: 'AI Chat with Streaming and Analytics',
+	description:
+		'Building per-project AI chat with SSE streaming, prompt engineering, and usage tracking.',
+	tags: ['AI', 'Streaming', 'Cloudflare'],
+	publishedAt: '2025-02-24',
+	featuredImage: ogImage,
+	draft: true,
+	series: {
+		id: 'building-portfolio',
+		title: 'Building a Modern Portfolio Without a Meta-Framework',
+		part: 6,
+		totalParts: 10,
+	},
+};
+
+# AI Chat with Streaming and Analytics
+
+*Part 6 of the "Building a Modern Portfolio Without a Meta-Framework" series*
+
+---
+
+## Per-Project AI Chat
+
+Each project page has an AI chat feature that can answer questions about that specific project. The key insight: give the model rich context about the project.
+
+## System Prompt Engineering
+
+The system prompt defines the AI's personality and boundaries:
+
+```typescript
+// TODO: Show the system prompt
+```
+
+## Server-Sent Events (SSE)
+
+*TODO: Explain why SSE over WebSockets for streaming*
+
+## Stream Teeing for Analytics
+
+Here's the clever part: we need to both send the response to the client AND log it for analytics. Stream teeing lets us do both:
+
+```typescript
+// TODO: Show createLoggingStream implementation
+```
+
+## Token Tracking and Latency Metrics
+
+*TODO: Show how we capture usage data*
+
+## HTML to Markdown Conversion
+
+*TODO: Explain converting MDX content for the AI context*
+
+## The Full Implementation
+
+*TODO: Walk through the chat endpoint*
+
+## Alternatives Considered
+
+- **OpenAI API** - Higher quality, higher cost
+- **Anthropic Claude** - Great, but more expensive
+- **Ollama** - Self-hosted option
+- **Non-streaming** - Simpler, but worse UX
+
+---
+
+*Next up: [Part 7 - Analytics from Scratch](/blog/building-portfolio-part-7-analytics)*
