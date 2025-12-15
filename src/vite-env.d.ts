@@ -33,3 +33,8 @@ declare module '*.mdx?metadata' {
 
 	export default metadata;
 }
+
+declare module 'virtual:og-image?*' {
+	const url: string;
+	export default url;
+}

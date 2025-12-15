@@ -64,26 +64,6 @@ export function Skills() {
 					Technologies I work with regularly to build modern web applications.
 				</p>
 
-				{/* Legend */}
-				<div className="mt-6 flex flex-wrap items-center gap-4 text-xs text-surface-500">
-					<span className="font-medium">Proficiency:</span>
-					{([1, 2, 3, 4, 5] as const).map((level) => (
-						<div key={level} className="flex items-center gap-1.5">
-							<div className="flex gap-0.5">
-								{[1, 2, 3, 4, 5].map((dot) => (
-									<div
-										key={dot}
-										className={`h-1.5 w-1.5 rounded-full ${
-											dot <= level ? 'bg-accent-500' : 'bg-surface-200'
-										}`}
-									/>
-								))}
-							</div>
-							<span>{LEVEL_LABELS[level]}</span>
-						</div>
-					))}
-				</div>
-
 				<div className="mt-12 grid gap-8 sm:grid-cols-2">
 					{skills.map((category, index) => {
 						const Icon = CATEGORY_ICONS[category.title] || Code;

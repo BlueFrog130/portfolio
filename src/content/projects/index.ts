@@ -8,6 +8,8 @@ export interface ProjectMetadata {
 	link?: string;
 	github?: string;
 	featured?: boolean;
+	featuredImage?: string;
+	readTime: number;
 }
 
 export interface Project extends ProjectMetadata {

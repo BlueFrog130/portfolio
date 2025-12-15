@@ -3,7 +3,7 @@ import { getProject } from '@/content/projects';
 import { Layout } from '@/lib/components/Layout';
 import { Suspense } from 'react';
 import { ViewTransition } from 'react';
-import { ArrowLeft, FolderOpen, ExternalLink } from 'lucide-react';
+import { ArrowLeft, FolderOpen, ExternalLink, Clock } from 'lucide-react';
 import { GitHubIcon } from '@/lib/components/icons';
 
 export default function ProjectDetail() {
@@ -49,8 +49,14 @@ export default function ProjectDetail() {
 					<ViewTransition name={`project-${project.slug}`}>
 						<article className="mt-8">
 							<header>
-								<div className="flex h-16 w-16 items-center justify-center rounded-xl bg-accent-100">
-									<FolderOpen className="h-8 w-8 text-accent-600" />
+								<div className="flex items-center gap-4">
+									<div className="flex h-16 w-16 items-center justify-center rounded-xl bg-accent-100">
+										<FolderOpen className="h-8 w-8 text-accent-600" />
+									</div>
+									<span className="inline-flex items-center gap-1 text-sm text-surface-500">
+										<Clock className="h-4 w-4" />
+										{project.readTime} min read
+									</span>
 								</div>
 
 								<h1 className="mt-6 text-4xl font-bold tracking-tight text-surface-900 sm:text-5xl">

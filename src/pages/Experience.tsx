@@ -19,7 +19,7 @@ export function Experience() {
 					{experiences.map((exp, index) => (
 						<article
 							key={`${exp.company}-${exp.role}`}
-							className="group relative pl-8 transition-opacity duration-300 group-has-[article:hover]/list:opacity-40 hover:opacity-100! after:absolute after:left-[5px] after:top-5 after:h-[calc(100%+1rem)] after:w-0.5 after:bg-surface-200 last:after:hidden"
+							className="group relative pl-8 transition-opacity duration-300 lg:group-has-[article:hover]/list:opacity-40 lg:hover:opacity-100! after:absolute after:left-1.25 after:top-5 after:h-[calc(100%+1rem)] after:w-0.5 after:bg-surface-200 last:after:hidden"
 							style={{ animationDelay: `${index * 0.1}s` }}
 						>
 							{/* Timeline dot with ping effect on hover */}

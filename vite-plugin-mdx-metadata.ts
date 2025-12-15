@@ -30,6 +30,12 @@ export function mdxMetadataPlugin(): Plugin {
 				);
 				const content = readFileSync(actualPath, 'utf-8');
 
+				// Extract import statements (to support imports used in metadata)
+				const importMatches = content.match(
+					/^import\s+.+\s+from\s+['"][^'"]+['"];?\s*$/gm,
+				);
+				const imports = importMatches ? importMatches.join('\n') : '';
+
 				// Extract the metadata export block
 				const match = content.match(
 					/export\s+const\s+metadata\s*=\s*(\{[\s\S]*?\n\});/,
@@ -39,10 +45,26 @@ export function mdxMetadataPlugin(): Plugin {
 					throw new Error(`No metadata export found in ${actualPath}`);
 				}
 
+				// Perform read time calculation
+				const words = content
+					.replace(/<[^>]+>/g, '') // Remove HTML tags
+					.replace(/```[\s\S]*?```/g, '') // Remove code blocks
+					// Remove import/export statements
+					.replace(/^import\s+.+\s+from\s+['"][^'"]+['"];?\s*$/gm, '')
+					.replace(
+						/^export\s+const\s+([A-Za-z0-9_]+)\s*=\s*\{[\s\S]*?\n\};/m,
+						'',
+					)
+					.split(/\s+/).length;
+
+				const readTime = Math.ceil(words / 200); // Assuming 200 WPM
+
 				const jsxCode = `
 import React from 'react';
+${imports}
 
 const metadata = ${match[1]};
+metadata.readTime = ${readTime};
 export default metadata;
 `;
 

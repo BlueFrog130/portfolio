@@ -1,18 +1,14 @@
+import { Plugin } from 'vite';
 import sharp from 'sharp';
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-import { parseArgs } from 'util';
+import { createHash } from 'crypto';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const ROOT = join(__dirname, '..');
+const VIRTUAL_PREFIX = 'virtual:og-image';
 
-interface OgImageOptions {
+interface OgImageParams {
 	title: string;
-	subtitle?: string;
+	description?: string;
 	tags?: string[];
-	type: 'default' | 'blog' | 'project';
-	output: string;
+	type?: 'blog' | 'project';
 }
 
 function escapeXml(text: string): string {
@@ -39,19 +35,21 @@ function wrapText(text: string, maxChars: number): string[] {
 	}
 	if (currentLine) lines.push(currentLine);
 
-	return lines.slice(0, 3); // Max 3 lines
+	return lines.slice(0, 3);
 }
 
-function generateBlogSvg(options: OgImageOptions): string {
-	const { title, subtitle, tags = [] } = options;
+function generateSvg(params: OgImageParams): string {
+	const { title, description, tags = [], type = 'blog' } = params;
 	const titleLines = wrapText(title, 35);
-	const subtitleLines = subtitle ? wrapText(subtitle, 60).slice(0, 2) : [];
+	const descriptionLines = description
+		? wrapText(description, 60).slice(0, 2)
+		: [];
 
-	// Calculate positions based on content
 	const titleStartY = 220;
 	const titleLineHeight = 70;
-	const subtitleStartY = titleStartY + titleLines.length * titleLineHeight + 20;
-	const tagsY = subtitleStartY + subtitleLines.length * 40 + 40;
+	const descriptionStartY =
+		titleStartY + titleLines.length * titleLineHeight + 20;
+	const tagsY = descriptionStartY + descriptionLines.length * 40 + 40;
 
 	const titleSvg = titleLines
 		.map(
@@ -60,14 +58,13 @@ function generateBlogSvg(options: OgImageOptions): string {
 		)
 		.join('\n  ');
 
-	const subtitleSvg = subtitleLines
+	const descriptionSvg = descriptionLines
 		.map(
 			(line, i) =>
-				`<text x="80" y="${subtitleStartY + i * 40}" font-family="system-ui, -apple-system, sans-serif" font-size="26" fill="#52525b">${escapeXml(line)}</text>`,
+				`<text x="80" y="${descriptionStartY + i * 40}" font-family="system-ui, -apple-system, sans-serif" font-size="26" fill="#52525b">${escapeXml(line)}</text>`,
 		)
 		.join('\n  ');
 
-	// Generate tag pills
 	let tagsSvg = '';
 	if (tags.length > 0) {
 		let xOffset = 0;
@@ -81,6 +78,8 @@ function generateBlogSvg(options: OgImageOptions): string {
 		});
 		tagsSvg = `<g transform="translate(80, ${tagsY})">${tagPills.join('')}</g>`;
 	}
+
+	const typeLabel = type === 'blog' ? 'BLOG' : 'PROJECT';
 
 	return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
   <defs>
@@ -124,15 +123,15 @@ function generateBlogSvg(options: OgImageOptions): string {
   <rect x="80" y="80" width="80" height="80" rx="16" fill="url(#accent-gradient)"/>
   <text x="120" y="138" font-family="system-ui, -apple-system, sans-serif" font-size="40" font-weight="700" fill="white" text-anchor="middle">AG</text>
 
-  <!-- Blog label -->
-  <text x="180" y="115" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="600" fill="#6366f1">BLOG</text>
+  <!-- Type label -->
+  <text x="180" y="115" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="600" fill="#6366f1">${typeLabel}</text>
   <text x="180" y="140" font-family="system-ui, -apple-system, sans-serif" font-size="16" fill="#71717a">Adam Grady</text>
 
   <!-- Title -->
   ${titleSvg}
 
-  <!-- Subtitle -->
-  ${subtitleSvg}
+  <!-- Description -->
+  ${descriptionSvg}
 
   <!-- Tags -->
   ${tagsSvg}
@@ -142,102 +141,74 @@ function generateBlogSvg(options: OgImageOptions): string {
 </svg>`;
 }
 
-async function generateOgImage(options?: OgImageOptions) {
-	let svgBuffer: Buffer;
-	let outputPath: string;
-
-	if (!options || options.type === 'default') {
-		// Default: convert existing SVG
-		const svgPath = join(ROOT, 'public', 'og-image.svg');
-		outputPath = options?.output || join(ROOT, 'public', 'og-image.png');
-		console.log('Reading SVG...');
-		svgBuffer = readFileSync(svgPath);
-	} else {
-		// Generate dynamic SVG
-		outputPath = options.output;
-		console.log(`Generating ${options.type} OG image: ${options.title}`);
-
-		const svg =
-			options.type === 'blog'
-				? generateBlogSvg(options)
-				: generateBlogSvg(options); // Can add project-specific later
-
-		svgBuffer = Buffer.from(svg);
-	}
-
-	// Ensure output directory exists
-	const outputDir = dirname(outputPath);
-	if (!existsSync(outputDir)) {
-		mkdirSync(outputDir, { recursive: true });
-	}
-
-	console.log('Converting to PNG...');
-	const pngBuffer = await sharp(svgBuffer)
-		.resize(1200, 630)
-		.png({ quality: 90 })
-		.toBuffer();
-
-	writeFileSync(outputPath, pngBuffer);
-	console.log(`Generated: ${outputPath}`);
+function parseParams(query: string): OgImageParams {
+	const params = new URLSearchParams(query);
+	return {
+		title: params.get('title') || 'Untitled',
+		description: params.get('description') || undefined,
+		tags: params.get('tags')?.split(',').filter(Boolean) || undefined,
+		type: (params.get('type') as 'blog' | 'project') || 'blog',
+	};
 }
 
-// Parse CLI arguments
-const { values } = parseArgs({
-	options: {
-		title: { type: 'string', short: 't' },
-		subtitle: { type: 'string', short: 's' },
-		tags: { type: 'string' },
-		type: { type: 'string', default: 'default' },
-		output: { type: 'string', short: 'o' },
-		help: { type: 'boolean', short: 'h' },
-	},
-	strict: true,
-	allowPositionals: false,
-});
-
-if (values.help) {
-	console.log(`
-Usage: pnpm og-image [options]
-
-Options:
-  -t, --title     Title text (required for blog/project types)
-  -s, --subtitle  Subtitle or description text
-  --tags          Comma-separated tags (e.g., "React,TypeScript,Vite")
-  --type          Image type: default, blog, project (default: "default")
-  -o, --output    Output file path (default: public/og-image.png)
-  -h, --help      Show this help message
-
-Examples:
-  pnpm og-image
-    Generate default OG image from public/og-image.svg
-
-  pnpm og-image --type blog --title "My Blog Post" --subtitle "Description" --tags "React,TypeScript" -o public/og/blog/my-post.png
-    Generate a blog post OG image
-`);
-	process.exit(0);
+function generateHash(params: OgImageParams): string {
+	const content = JSON.stringify(params);
+	return createHash('md5').update(content).digest('hex').slice(0, 8);
 }
 
-// Build options from CLI args
-const cliOptions: OgImageOptions | undefined =
-	values.type && values.type !== 'default'
-		? {
-				title: values.title || 'Untitled',
-				subtitle: values.subtitle,
-				tags: values.tags?.split(',').map((t) => t.trim()),
-				type: values.type as 'blog' | 'project',
-				output:
-					values.output ||
-					join(ROOT, 'public', 'og', values.type, 'image.png'),
+export function ogImagePlugin(): Plugin {
+	let isDev = false;
+
+	return {
+		name: 'og-image',
+		enforce: 'pre',
+
+		configResolved(config) {
+			isDev = config.command === 'serve';
+		},
+
+		resolveId(id) {
+			if (id.startsWith(VIRTUAL_PREFIX)) {
+				return '\0' + id;
 			}
-		: values.output
-			? {
-					title: '',
-					type: 'default',
-					output: values.output,
-				}
-			: undefined;
+		},
 
-generateOgImage(cliOptions).catch((err) => {
-	console.error('Failed to generate OG image:', err);
-	process.exit(1);
-});
+		async load(id) {
+			if (!id.startsWith('\0' + VIRTUAL_PREFIX)) {
+				return;
+			}
+
+			const query = id.slice(('\0' + VIRTUAL_PREFIX).length);
+			const params = parseParams(query);
+			const hash = generateHash(params);
+			const fileName = `og-${hash}.png`;
+
+			// Generate the SVG
+			const svg = generateSvg(params);
+
+			// Convert to PNG using sharp
+			const pngBuffer = await sharp(Buffer.from(svg))
+				.resize(1200, 630)
+				.png({ quality: 90 })
+				.toBuffer();
+
+			if (isDev) {
+				// In dev mode, return a data URL
+				const base64 = pngBuffer.toString('base64');
+				return `export default "data:image/png;base64,${base64}"`;
+			}
+
+			// Emit the file as an asset with explicit filename
+			// Using assets/ prefix to match Vite's default asset output
+			const assetPath = `assets/${fileName}`;
+			this.emitFile({
+				type: 'asset',
+				fileName: assetPath,
+				source: pngBuffer,
+			});
+
+			// Return a relative URL path for web usage
+			return `export default "/${assetPath}"`;
+		},
+	};
+}

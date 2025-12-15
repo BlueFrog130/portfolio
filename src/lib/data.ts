@@ -39,30 +39,36 @@ export const profile = {
 	summary:
 		'Experienced Software Engineer specializing in full-stack web development with React, TypeScript, and modern web technologies. Passionate about building performant, accessible applications.',
 	email: 'adam.grady@live.com',
-	phone: '402.616.5375',
+	phone: '402-616-5375',
 };
 
 export const experiences: Experience[] = [
 	{
 		company: 'Solarity',
 		role: 'Senior Software Engineer',
-		location: 'Sioux Falls, SD (Hybrid)',
+		location: 'Sioux Falls, SD',
 		period: 'Jun 2025 - Present',
 		current: true,
 		description: [
-			'Leading software infrastructure and design initiatives for enterprise-level applications',
-			'Full-stack development with React, TypeScript, C#, .NET Core, and ASP.NET Core',
+			'Leading the adoption of AI usage in software development processes',
+			'Creating internal MCP tools to speed up development and QA',
+			'Adopting Agentic AI technologies to integrate within existing systems',
+			'Mentoring team members on AI technologies and best practices',
 		],
 	},
 	{
 		company: 'Solarity',
 		role: 'Software Engineer II',
-		location: 'Sioux Falls, SD (Remote)',
+		location: 'Sioux Falls, SD',
 		period: 'Apr 2023 - Jun 2025',
 		description: [
-			'Full-stack developer handling database design to UI design for enterprise web and WPF applications',
-			'Worked with ASP.NET MVC, TypeScript, SQL Server, and modern front-end technologies',
-			'Implemented continuous delivery pipelines and RESTful API development',
+			'Led the adoption of React and TypeScript for new front-end development',
+			'Designed a replacement backend system for a critical component using .NET Core and state machine patterns',
+			'Mentored junior developers and interns',
+			'Created Figma training materials and led workshops for design best practices',
+			'Led the adoption of Postman for API testing and documentation',
+			'Developed patterns and best practices for front-end development with React and TypeScript',
+			'Maintained legacy WPF applications',
 		],
 	},
 	{
@@ -71,8 +77,11 @@ export const experiences: Experience[] = [
 		location: 'Sioux Falls, SD',
 		period: 'Jan 2022 - Apr 2023',
 		description: [
-			'Full-stack development with C#, TypeScript, and REST APIs',
-			'Contributed to database design and back-end web development',
+			'Led the adoption and usage of Figma for UI/UX design across multiple development teams',
+			'Contributed UI/UX design prototypes',
+			'Maintained and developed for a legacy ASP.NET MVC application using JavaScript and jQuery',
+			'Led the adoption of modern JavaScript practices',
+			'Maintained legacy WPF applications',
 		],
 	},
 	{
@@ -81,8 +90,10 @@ export const experiences: Experience[] = [
 		location: 'Sioux Falls, SD',
 		period: 'May 2019 - Jun 2022',
 		description: [
-			'Full-stack web developer creating interactive web applications',
-			'Developed skills in C#, TypeScript, SQL, and front-end technologies',
+			'Solo internship position with increasing responsibilities over three years',
+			'Explored modern web development technologies and best practices',
+			'Fully designed and implemented a full-stack web application using Vue.js and ASP.NET Core with a SQL Server database',
+			'Containerized application and automated deployment with Docker and GitLab CI/CD',
 		],
 	},
 ];
@@ -115,6 +126,7 @@ export const education: Education[] = [
 		endDate: 'Dec 2021',
 		location: 'Vermillion, SD',
 		highlight: '4+1 Accelerated Program',
+		activities: ['ACM', 'eSports'],
 		skills: [
 			'Machine Learning',
 			'Artificial Intelligence',

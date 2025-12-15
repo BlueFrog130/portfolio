@@ -7,6 +7,7 @@ import { GitHubIcon, LinkedInIcon } from './icons';
 const navItems = [
 	{ href: '/#experience', label: 'Experience' },
 	{ href: '/#projects', label: 'Projects' },
+	{ href: '/blog', label: 'Blog' },
 	{ href: '/#skills', label: 'Skills' },
 	{ href: '/#education', label: 'Education' },
 	{ href: '/#contact', label: 'Contact' },

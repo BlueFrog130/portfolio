@@ -1,3 +1,4 @@
+import { blogPosts } from '@/content/blog';
 import { projects } from '@/content/projects';
 import type { RouteMeta } from '@/lib/router';
 import { type ReactNode, isValidElement } from 'react';
@@ -38,5 +39,23 @@ export function getProjectMeta(slug: string): RouteMeta {
 	return {
 		title: `${project.title} | Adam Grady`,
 		description: description,
+		ogImage: project.featuredImage,
+	};
+}
+
+export function getBlogPostMeta(slug: string): RouteMeta {
+	const post = blogPosts.find((p) => p.slug === slug);
+
+	if (!post) {
+		return {
+			title: 'Post Not Found | Adam Grady',
+			description: 'The requested blog post could not be found.',
+		};
+	}
+
+	return {
+		title: `${post.title} | Adam Grady`,
+		description: post.description,
+		ogImage: post.featuredImage,
 	};
 }

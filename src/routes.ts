@@ -1,6 +1,6 @@
 import { lazy } from 'react';
 import type { Route } from './lib/router';
-import { getProjectMeta } from './lib/content/meta';
+import { getBlogPostMeta, getProjectMeta } from './lib/content/meta';
 
 export const routes: Route[] = [
 	{
@@ -16,6 +16,20 @@ export const routes: Route[] = [
 		path: '/projects/:slug',
 		component: lazy(() => import('./pages/project/[slug]/+Page')),
 		meta: (params) => getProjectMeta(params.slug),
+	},
+	{
+		path: '/blog',
+		component: lazy(() => import('./pages/blog/+Page')),
+		meta: {
+			title: 'Blog | Adam Grady',
+			description:
+				'Thoughts on software engineering, web development, and technology.',
+		},
+	},
+	{
+		path: '/blog/:slug',
+		component: lazy(() => import('./pages/blog/[slug]/+Page')),
+		meta: (params) => getBlogPostMeta(params.slug),
 	},
 	{
 		path: '/terminal',
