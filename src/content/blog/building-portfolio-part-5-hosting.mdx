@@ -1,0 +1,256 @@
+import ogImage from 'virtual:og-image?title=Hosting&description=Edge-first architecture with Hono, D1 database, and Vite integration.&tags=Cloudflare,Hono,Edge&type=blog&seriesPart=5&seriesTotalParts=10';
+
+export const metadata = {
+	slug: 'building-portfolio-part-5-hosting',
+	title: 'Hosting',
+	description:
+		'Edge-first architecture with Hono, D1 database, and Vite integration.',
+	tags: ['Cloudflare', 'Hono', 'Edge'],
+	publishedAt: '2025-12-16T12:00:00.000Z',
+	featuredImage: ogImage,
+	draft: false,
+	series: {
+		id: 'building-portfolio',
+		title: 'Building a Modern Portfolio Without a Meta-Framework',
+		part: 5,
+		totalParts: 10,
+	},
+};
+
+_Part 5 of the "Building a Modern Portfolio Without a Meta-Framework" series_
+
+---
+
+Choosing where to host a web application used to be simple: pick a VPS, install Node, run your server. Now there are dozens of options—Vercel, Netlify, Railway, Render, Fly.io, AWS Lambda, and more. Each with different trade-offs around cost, complexity, and control.
+
+For this portfolio, I went with Cloudflare Workers. Not because it's the easiest option, but because it lets me run code at the edge with a generous free tier and tight integration with their other services.
+
+## Why Edge?
+
+Traditional hosting means your server runs in one region. A user in Tokyo hitting a server in Virginia adds 150ms+ of latency before your code even starts running.
+
+Edge computing flips this: your code runs in data centers around the world, close to wherever your users are. Cloudflare has over 300 locations globally. When someone visits my portfolio, the Worker handling the request runs in the nearest data center.
+
+For a portfolio site, this might be overkill. But the same architecture scales to applications serving millions of users, and I wanted to understand how it works.
+
+## The Stack
+
+The backend consists of three Cloudflare services:
+
+- **Workers**: The serverless runtime that handles API requests
+- **D1**: A SQLite database at the edge for analytics storage
+- **Workers AI**: LLM inference for the project chat feature
+
+All configured in `wrangler.jsonc`:
+
+```jsonc
+{
+	"name": "portfolio",
+	"main": "./worker/index.ts",
+	"compatibility_flags": ["nodejs_compat"],
+	"ai": {
+		"binding": "AI",
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "portfolio-analytics",
+			"database_id": "...",
+			"migrations_dir": "./migrations",
+		},
+	],
+	"assets": {
+		"directory": "./dist/static",
+		"not_found_handling": "404-page",
+	},
+}
+```
+
+The `assets` configuration is key—it tells Cloudflare to serve static files from `dist/static` (our SSG output from [Part 3](/blog/building-portfolio-part-3-ssg)) and use our custom 404 page for missing routes. The Worker only handles `/api/*` routes; everything else is static HTML.
+
+## Hono: A Better Express for the Edge
+
+[Hono](https://hono.dev/) is a minimal web framework built on Web Standards. It's like Express, but designed for edge runtimes instead of Node.js.
+
+```typescript
+import { Hono } from 'hono';
+
+export interface Env {
+	AI: Ai;
+	DB: D1Database;
+}
+
+const app = new Hono<{
+	Bindings: {
+		AI: Ai;
+		DB: D1Database;
+	};
+}>();
+
+app.post('/api/analytics', async (c) => {
+	const db = c.env.DB;
+	// Handle request...
+	return c.json({ success: true });
+});
+
+export default app;
+```
+
+A few things to notice:
+
+- **TypeScript-first**: Bindings are typed, so `c.env.DB` knows it's a D1Database.
+- **Web Standard APIs**: Uses `Request`/`Response`, not Node's `req`/`res`.
+- **Tiny bundle**: Hono adds about 14KB to your Worker, compared to hundreds of KB for Express.
+
+The `c.env` pattern is how Cloudflare injects bindings—database connections, AI models, KV stores, etc. No environment variables, no connection strings. Just typed objects ready to use.
+
+## D1: SQLite at the Edge
+
+D1 is Cloudflare's serverless SQLite database. It's not a traditional database server—each request gets a connection to a SQLite file replicated globally.
+
+We will dive more into D1 in [Part 7](/blog/building-portfolio-part-7-analytics).
+
+## Request Validation with Zod
+
+Type safety doesn't stop at TypeScript. Runtime validation ensures the data matches what we expect:
+
+```typescript
+import { validator } from 'hono/validator';
+import { z } from 'zod';
+
+const projectChatSchema = z.object({
+	sessionId: z.uuid(),
+	messages: z.array(
+		z.object({
+			role: z.enum(['user', 'assistant']),
+			content: z.string(),
+		}),
+	),
+});
+
+app.post(
+	'/api/chat/projects/:slug',
+	validator('json', (value, c) => {
+		const parsed = projectChatSchema.safeParse(value);
+		if (!parsed.success) {
+			return c.text('Invalid request', 400);
+		}
+		return parsed.data;
+	}),
+	async (c) => {
+		const { messages, sessionId } = c.req.valid('json');
+		// TypeScript knows messages is Message[] and sessionId is string
+	},
+);
+```
+
+Hono's `validator` middleware integrates with Zod. If validation fails, the request is rejected before hitting the handler. If it passes, the validated data is available via `c.req.valid('json')` with full type inference.
+
+## Cloudflare AI Integration
+
+The chat feature uses Cloudflare's Workers AI to run Llama models at the edge:
+
+```typescript
+const response = await c.env.AI.run('@cf/meta/llama-4-scout-17b-16e-instruct', {
+	messages: [systemMessage, ...messages],
+	stream: true,
+});
+```
+
+No API keys, no external requests—the AI binding connects directly to Cloudflare's inference infrastructure. The model runs in the same network as the Worker, so latency is minimal.
+
+Streaming is essential for chat. Instead of waiting for the full response, we return the stream directly:
+
+```typescript
+return c.body(response as ReadableStream, 200, {
+	'Content-Type': 'text/event-stream',
+});
+```
+
+The client receives tokens as they're generated, making the chat feel responsive even for longer answers.
+
+## The Vite Integration
+
+The magic that ties everything together is `@cloudflare/vite-plugin`. It lets you develop Workers with Vite's dev server:
+
+```typescript
+// vite.config.ts
+import { cloudflare } from '@cloudflare/vite-plugin';
+
+export default defineConfig({
+	plugins: [
+		// ... other plugins
+		cloudflare({
+			viteEnvironment: { name: 'ssr' },
+		}),
+	],
+});
+```
+
+During development, `pnpm dev` starts Vite with hot module replacement for the React app AND the Worker. Change a Worker route, and it reloads instantly. The D1 binding works against a local SQLite file, so you can test database queries without hitting production.
+
+For production, the build outputs:
+
+- `dist/client/` - Browser bundles
+- `dist/server/` - Worker bundle (via Cloudflare plugin)
+- `dist/static/` - Pre-rendered HTML (via SSG script)
+
+Cloudflare serves static files directly from their CDN. The Worker only runs for API routes.
+
+## Deployment
+
+Deploying is a single command:
+
+```bash
+wrangler deploy
+```
+
+Wrangler handles bundling the Worker, uploading static assets, and configuring bindings. The first deploy creates the Worker; subsequent deploys update it. Zero downtime, instant global rollout.
+
+For database migrations:
+
+```bash
+wrangler d1 migrations apply portfolio-analytics --remote
+```
+
+D1 runs migrations in order, tracking which have been applied. Simple, familiar workflow.
+
+## Cost
+
+For a portfolio site, Cloudflare Workers is effectively free:
+
+- **Workers**: 100,000 requests/day on the free tier
+- **D1**: 5M rows read, 100K rows written per day free
+- **Workers AI**: Usage-based, but minimal for chat
+
+I'm nowhere near these limits. The entire infrastructure costs $0/month.
+
+## What I'd Change for Production
+
+This setup works great for a portfolio. For a production application, I'd add:
+
+- **Rate limiting**: Hono has middleware for this, or use Cloudflare's built-in rate limiting
+- **Authentication**: Workers integrates with Cloudflare Access for auth
+- **Queues**: For background processing that exceeds `waitUntil` limits
+- **Durable Objects**: For real-time features needing WebSockets or coordination
+
+## Alternatives I Considered
+
+**Vercel/Netlify**: Great developer experience, but less control over the runtime. Edge functions exist but feel bolted on.
+
+**AWS Lambda**: More powerful, but more complex. Cold starts, VPC configuration, IAM policies—overkill for a portfolio.
+
+**Fly.io**: Actual containers at the edge. More flexibility, but more ops work. Great for when you need full Node.js compatibility.
+
+**Self-hosted**: A VPS running Node would work fine. But I'd lose global distribution, automatic scaling, and the integrated database/AI features.
+
+## The Full Picture
+
+The backend is about 400 lines of TypeScript:
+
+- `worker/index.ts` - Hono app with API routes
+- `migrations/*.sql` - D1 schema
+
+That's it. No Docker, no Kubernetes, no infrastructure-as-code. Just a TypeScript file and a config.
+
+---

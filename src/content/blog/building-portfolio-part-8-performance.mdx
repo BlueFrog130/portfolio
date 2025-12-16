@@ -1,0 +1,391 @@
+import ogImage from 'virtual:og-image?title=Performance Optimization&description=React Compiler, code splitting, module preloading, and achieving fast Core Web Vitals.&tags=Performance,React,Vite&type=blog&seriesPart=8&seriesTotalParts=10';
+
+export const metadata = {
+	slug: 'building-portfolio-part-8-performance',
+	title: 'Performance Optimization',
+	description:
+		'React Compiler, code splitting, module preloading, and achieving fast Core Web Vitals.',
+	tags: ['Performance', 'React', 'Vite'],
+	publishedAt: '2025-12-16T15:00:00.000Z',
+	featuredImage: ogImage,
+	draft: false,
+	series: {
+		id: 'building-portfolio',
+		title: 'Building a Modern Portfolio Without a Meta-Framework',
+		part: 8,
+		totalParts: 10,
+	},
+};
+
+_Part 8 of the "Building a Modern Portfolio Without a Meta-Framework" series_
+
+---
+
+Performance optimization is where frameworks usually earn their keep. Next.js handles code splitting, image optimization, and preloading automatically. Without a framework, you do it yourself.
+
+The good news: the primitives aren't complicated. The bad news: nobody's going to remind you when you forget them.
+
+## The Goal
+
+Core Web Vitals are the metrics that matter:
+
+- **LCP** (Largest Contentful Paint): Main content visible in under 2.5 seconds
+- **INP** (Interaction to Next Paint): Interactions respond in under 200ms
+- **CLS** (Cumulative Layout Shift): Page doesn't jump around (score under 0.1)
+
+For a portfolio, these should be easy to hit. Static content, minimal JavaScript, fast hosting. But it's surprisingly easy to regress if you're not paying attention.
+
+## React Compiler
+
+React 19 ships with an experimental compiler that automatically optimizes your components. No more manual `useMemo`, `useCallback`, or `React.memo`—the compiler figures out what needs memoization.
+
+Enable it in Vite:
+
+```typescript
+// vite.config.ts
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+	plugins: [
+		react({
+			babel: {
+				plugins: ['babel-plugin-react-compiler'],
+			},
+		}),
+	],
+});
+```
+
+That's it. The compiler analyzes your components and inserts memoization where it helps.
+
+Before React Compiler, you'd write:
+
+```tsx
+const ExpensiveList = React.memo(function ExpensiveList({ items }) {
+	const sortedItems = useMemo(
+		() => items.sort((a, b) => a.name.localeCompare(b.name)),
+		[items],
+	);
+
+	const handleClick = useCallback((id) => {
+		console.log('clicked', id);
+	}, []);
+
+	return sortedItems.map((item) => (
+		<Item key={item.id} item={item} onClick={handleClick} />
+	));
+});
+```
+
+Now you write:
+
+```tsx
+function ExpensiveList({ items }) {
+	const sortedItems = items.sort((a, b) => a.name.localeCompare(b.name));
+
+	const handleClick = (id) => {
+		console.log('clicked', id);
+	};
+
+	return sortedItems.map((item) => (
+		<Item key={item.id} item={item} onClick={handleClick} />
+	));
+}
+```
+
+The compiler adds the memoization. You write cleaner code.
+
+This isn't magic—the compiler follows strict rules about what it can optimize. But for most components, it does the right thing. I removed every `useMemo` and `useCallback` from the codebase after enabling it.
+
+## Code Splitting with Lazy Loading
+
+Every route loads its own JavaScript bundle. The home page doesn't download code for the terminal. The blog doesn't download project page code.
+
+React's `lazy` function handles this:
+
+```typescript
+import { lazy } from 'react';
+
+const HomePage = lazy(() => import('./pages/+Page'));
+const BlogPage = lazy(() => import('./pages/blog/+Page'));
+const ProjectPage = lazy(() => import('./pages/project/[slug]/+Page'));
+```
+
+When someone navigates to `/blog`, only then does the browser fetch the blog bundle.
+
+### Preloading for Instant Navigation
+
+Lazy loading has a downside: there's a delay on first navigation while the bundle downloads. We fix this with preloading on hover.
+
+The trick is wrapping `lazy` to expose the import function:
+
+```typescript
+export type PreloadableComponent<T extends ComponentType<any>> =
+	LazyExoticComponent<T> & { preload: () => Promise<{ default: T }> };
+
+export function lazyWithPreload<T extends ComponentType<any>>(
+	importFn: () => Promise<{ default: T }>,
+): PreloadableComponent<T> {
+	const LazyComponent = lazy(importFn) as PreloadableComponent<T>;
+	LazyComponent.preload = importFn;
+	return LazyComponent;
+}
+```
+
+Now routes can be preloaded:
+
+```typescript
+export const routes: Route[] = [
+	{
+		path: '/',
+		component: lazyWithPreload(() => import('./pages/+Page')),
+	},
+	{
+		path: '/blog',
+		component: lazyWithPreload(() => import('./pages/blog/+Page')),
+	},
+	// ...
+];
+```
+
+When a user hovers over a link, we call `component.preload()`:
+
+```typescript
+const handleMouseEnter = () => {
+	const route = routes.find((r) => matchPath(r.path, to));
+	if (route?.component?.preload) {
+		route.component.preload();
+	}
+};
+```
+
+By the time they click, the bundle is already cached. Navigation feels instant.
+
+## Module Preloading at Build Time
+
+Hover-based preloading works for navigation. But what about the initial page load?
+
+The browser needs to download the main bundle, parse it, discover its imports, download those, parse those, discover more imports... This waterfall kills performance.
+
+The fix: `<link rel="modulepreload">` tags tell the browser to fetch modules before they're needed. Instead of discovering imports at runtime, we declare them upfront.
+
+The SSG script generates these automatically:
+
+```typescript
+function getModulePreloads(
+	path: string,
+	manifest: Manifest,
+	routeMappings: RouteMapping[],
+): string[] {
+	const preloads = new Set<string>();
+
+	const route = findRouteSource(path, routeMappings);
+	if (!route) return [];
+
+	// Recursively collect all imports
+	function collectImports(key: string, visited = new Set<string>()) {
+		if (visited.has(key)) return;
+		visited.add(key);
+
+		const entry = manifest[key];
+		if (!entry) return;
+
+		if (!entry.isEntry) {
+			preloads.add(entry.file);
+		}
+
+		if (entry.imports) {
+			for (const imp of entry.imports) {
+				collectImports(imp, visited);
+			}
+		}
+	}
+
+	collectImports(route.source);
+
+	// Also preload content (MDX files for project/blog pages)
+	if (route.contentSource) {
+		collectImports(route.contentSource);
+	}
+
+	return [...preloads];
+}
+```
+
+Vite's manifest tells us the dependency graph. For each page, we walk the graph and collect every module that page needs. Then inject them as preload tags:
+
+```typescript
+function generateHeadTags(modules: string[], stylesheets: string[]): string {
+	const cssLinks = stylesheets
+		.map((file) => `<link rel="stylesheet" href="/${file}">`)
+		.join('\n\t');
+	const modulePreloads = modules
+		.map((file) => `<link rel="modulepreload" href="/${file}">`)
+		.join('\n\t');
+
+	return [cssLinks, modulePreloads].filter(Boolean).join('\n\t');
+}
+```
+
+The result: every pre-rendered page has `<link rel="modulepreload">` tags for its dependencies. The browser fetches everything in parallel instead of waterfalling.
+
+## Vite's Build Optimization
+
+Vite 7 handles the heavy lifting at build time:
+
+```typescript
+export default defineConfig({
+	build: {
+		minify: true, // Terser by default
+	},
+	environments: {
+		client: {
+			build: {
+				outDir: 'dist/client',
+				manifest: true,
+			},
+		},
+		ssr: {
+			build: {
+				outDir: 'dist/server',
+				ssr: true,
+			},
+		},
+		ssg: {
+			build: {
+				outDir: 'dist/ssg',
+				ssr: true,
+			},
+		},
+	},
+});
+```
+
+What Vite does automatically:
+
+- **Tree shaking**: Dead code elimination. Unused exports get stripped.
+- **Minification**: Variable renaming, whitespace removal, constant folding.
+- **Chunk splitting**: Shared dependencies get extracted into common chunks.
+- **Asset hashing**: Content-based filenames for cache invalidation.
+- **CSS extraction**: Styles pulled into separate files for parallel loading.
+
+The manifest generated by `manifest: true` powers the module preloading. It maps source files to their built outputs and dependencies.
+
+## No Custom Fonts
+
+The fastest font is the one you don't load.
+
+System fonts are already on the user's device. No network request, no flash of invisible text, no layout shift when fonts swap.
+
+```css
+font-family:
+	-apple-system,
+	BlinkMacSystemFont,
+	'Segoe UI',
+	Roboto,
+	'Helvetica Neue',
+	Arial,
+	sans-serif;
+```
+
+Tailwind's default font stack handles this. Every user sees their system's native font—clean, fast, and familiar.
+
+If you need custom fonts, at minimum:
+
+- Use `font-display: swap` to show text immediately
+- Preload the font file with `<link rel="preload" as="font">`
+- Subset the font to only include characters you use
+- Self-host instead of Google Fonts to avoid the extra DNS lookup
+
+For a portfolio, system fonts are fine. Save the font loading complexity for when branding demands it.
+
+## Cloudflare's Edge Caching
+
+Static assets live on Cloudflare's CDN. The configuration in `wrangler.jsonc`:
+
+```jsonc
+{
+	"assets": {
+		"directory": "./dist/static",
+		"not_found_handling": "404-page"
+	}
+}
+```
+
+Cloudflare serves these files from 300+ edge locations. A visitor in Tokyo gets assets from Tokyo, not Virginia.
+
+Asset filenames include content hashes (`main-abc123.js`), so they can be cached forever:
+
+```
+Cache-Control: public, max-age=31536000, immutable
+```
+
+HTML files get shorter caches since they change on deploy:
+
+```
+Cache-Control: public, max-age=3600
+```
+
+The Worker only runs for `/api/*` routes. Everything else is served directly from the CDN—no cold starts, no compute, just cached bytes.
+
+## Measuring What Matters
+
+We built analytics in [Part 7](/blog/building-portfolio-part-7-analytics) that track real user Web Vitals. This is crucial—Lighthouse scores are synthetic. Real users on real devices on real networks tell the actual story.
+
+Key metrics to watch:
+
+- **LCP distribution**: What percentage of page loads are "good" (under 2.5s)?
+- **LCP by page**: Are some pages slower than others?
+- **LCP by device**: Mobile often has worse LCP than desktop.
+- **INP after interactions**: Does clicking things feel responsive?
+
+The Grafana dashboards from Part 7 visualize this. When you deploy a change, you can see if Web Vitals regress.
+
+## What Actually Moved the Needle
+
+In order of impact:
+
+1. **Static Site Generation**: Pre-rendered HTML means no waiting for JavaScript to render content. LCP happens as soon as HTML loads.
+
+2. **Module preloading**: Eliminated the import waterfall. Time-to-interactive dropped significantly.
+
+3. **Code splitting**: Initial bundle went from ~200KB to ~60KB. Less JavaScript means faster parsing.
+
+4. **Edge hosting**: TTFB under 50ms for most users. CDN placement matters.
+
+5. **React Compiler**: Probably minimal impact for this site, but it let me write cleaner code without worrying about unnecessary re-renders.
+
+## What I'd Add for Larger Sites
+
+This portfolio is simple. For production applications:
+
+- **Image optimization**: Use `<picture>` with WebP/AVIF, responsive `srcset`, lazy loading. Consider Cloudflare Images for on-the-fly resizing.
+
+- **Critical CSS inlining**: Extract above-the-fold CSS and inline it in the HTML. Avoid the render-blocking stylesheet request.
+
+- **Service worker**: Cache static assets for offline access and instant repeat visits.
+
+- **Bundle analysis**: Regularly audit bundle size. `npx vite-bundle-visualizer` shows what's taking space.
+
+- **Performance budgets**: CI checks that fail if bundle size exceeds a threshold.
+
+## The Results
+
+Current Lighthouse scores (mobile):
+
+- **Performance**: 100
+- **Accessibility**: 100
+- **Best Practices**: 100
+- **SEO**: 100
+
+Real user metrics (p75):
+
+- **LCP**: ~800ms
+- **INP**: ~50ms
+- **CLS**: 0
+
+These numbers are achievable because the site is fundamentally simple: pre-rendered HTML, minimal JavaScript, fast hosting. No amount of optimization saves a poorly architected site.
+
+---
+
+_Next up: [Part 9 - SEO and Meta Tags](/blog/building-portfolio-part-9-seo) - Dynamic meta tags, Open Graph images, and search engine optimization_

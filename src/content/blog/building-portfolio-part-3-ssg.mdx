@@ -6,7 +6,7 @@ export const metadata = {
 	description:
 		'Auto-crawling SSG, route discovery from Vite manifests, and module preloading.',
 	tags: ['SSG', 'Vite', 'Performance'],
-	publishedAt: '2025-02-03',
+	publishedAt: '2025-12-16T10:00:00.000Z',
 	featuredImage: ogImage,
 	draft: true,
 	series: {
@@ -17,60 +17,411 @@ export const metadata = {
 	},
 };
 
-# Static Site Generation Without the Framework
-
-*Part 3 of the "Building a Modern Portfolio Without a Meta-Framework" series*
+_Part 3 of the "Building a Modern Portfolio Without a Meta-Framework" series_
 
 ---
 
-## The SSG Mental Model
+The first time I saw someone explain SSG, they made it sound trivial: "just render your React app to HTML at build time." Three weeks later, I understood why Next.js exists.
 
-Static Site Generation is conceptually simple:
+Static Site Generation is conceptually simple. The implementation details are where it gets interesting.
 
-1. Render pages at build time
-2. Serve static HTML files
-3. Hydrate on the client
+## What SSG Actually Means
 
-The complexity comes from discovering what to render and optimizing the output.
+At its core, SSG is three steps:
 
-## Auto-Crawling vs Explicit Routes
+1. **Build time**: Render each page to HTML
+2. **Serve time**: Send static HTML files (fast, cacheable, cheap)
+3. **Client time**: React "hydrates" the HTML, attaching event handlers
 
-Most SSG frameworks require you to define your routes explicitly. We take a different approach: **auto-crawling**.
-
-```typescript
-// TODO: Show the crawling algorithm
-```
-
-## Dynamic Routes with Content Discovery
-
-*TODO: Explain how MDX files map to routes*
-
-## Manifest Parsing
-
-*TODO: Show how we parse Vite's manifest for preloads*
-
-## Module Preloading
-
-*TODO: Discuss per-route modulepreload tags*
+The user gets instant content (the HTML is already there), then the page becomes interactive once JavaScript loads. Best of both worlds—if you can make it work.
 
 ## The Build Pipeline
 
+Before diving into the SSG script itself, here's how Vite builds everything:
+
+```typescript
+// vite.config.ts
+environments: {
+  client: {
+    build: { outDir: 'dist/client', manifest: true }
+  },
+  ssr: {
+    build: { outDir: 'dist/server', ssr: true }
+  },
+  ssg: {
+    build: {
+      outDir: 'dist/ssg',
+      ssr: true,
+      rollupOptions: {
+        input: resolve(__dirname, 'src/entry-server.tsx')
+      }
+    }
+  }
+},
+builder: {
+  async buildApp(builder) {
+    await Promise.all([
+      builder.build(builder.environments.client),
+      builder.build(builder.environments.ssr),
+      builder.build(builder.environments.ssg),
+    ]);
+    await ssg(); // Our custom SSG script
+  }
+}
 ```
-client build -> SSG render -> static output
+
+Three parallel builds:
+
+- **client**: The browser bundle with code splitting
+- **ssr**: The Cloudflare Worker for API routes
+- **ssg**: A Node-compatible build of the React app for pre-rendering
+
+The `manifest: true` on the client build is important—it generates a JSON file mapping source files to output chunks. We'll use that for module preloading.
+
+Vite is doing a lot of the heavy lifting here: bundling, code splitting, tree shaking, and compiling JSX/TypeScript. The SSG script just needs to render routes and write HTML files. Thanks to Vite's new [environment api](https://vite.dev/guide/api-environment), we can orchestrate everything cleanly.
+
+## The Server Entry
+
+The SSG script needs a way to render React to HTML. That's the server entry:
+
+```tsx
+// src/entry-server.tsx
+import { renderToReadableStream } from 'react-dom/server';
+
+export async function render(path: string): Promise<RenderResult> {
+	const stream = await renderToReadableStream(
+		<StrictMode>
+			<RouterProvider initialPath={path} routes={routes}>
+				<Router />
+			</RouterProvider>
+		</StrictMode>,
+	);
+
+	// Wait for all Suspense boundaries to resolve
+	await stream.allReady;
+
+	const html = await streamToString(stream);
+
+	// Generate head tags based on route metadata
+	const meta = getMetaForPath(path, routes);
+	const head = meta ? generateHead({ ...meta, url: path }) : defaultHead;
+
+	return { html, head };
+}
 ```
 
-*TODO: Walk through each step*
+A few things happening here:
 
-## Hydration Strategy
+- **`renderToReadableStream`**: React 18+ streaming API. Returns a stream we can convert to a string.
+- **`stream.allReady`**: Waits for all Suspense boundaries to resolve. Since we're pre-rendering, we want the complete HTML.
+- **`initialPath`**: Tells the router which route to render (see [Part 2](/blog/building-portfolio-part-2-router)).
+- **`generateHead`**: Creates meta tags, OpenGraph data, and canonical URLs.
 
-*TODO: Discuss how React hydrates the SSG output*
+## Auto-Crawling
 
-## Alternatives Considered
+Most SSG frameworks require you to explicitly list every page. Next.js has `getStaticPaths`, Astro uses file-based routing with explicit content collections. I wanted something lazier.
 
-- **Next.js getStaticProps** - Great DX, but framework lock-in
-- **Astro** - Static-first, but different component model
-- **Vite-SSG plugin** - Close to what we wanted
+The idea: start at `/`, render it, find all internal links, add them to a queue, repeat until there's nothing left to render.
+
+```typescript
+async function ssg() {
+	const visited = new Set<string>();
+	const queue: string[] = ['/'];
+	const pages: { path: string; html: string }[] = [];
+
+	while (queue.length > 0) {
+		const path = queue.shift()!;
+
+		if (visited.has(path)) continue;
+		visited.add(path);
+
+		console.log(`  -> Rendering ${path}`);
+
+		const { html, head } = await render(path);
+
+		// Inject into template, add preloads, etc.
+		const pageHtml = buildFullPage(html, head, path);
+
+		// Find all internal links
+		const links = extractLinks(pageHtml);
+
+		for (const link of links) {
+			if (!visited.has(link)) {
+				queue.push(link);
+			}
+		}
+
+		pages.push({ path, html: pageHtml });
+	}
+
+	// Don't forget 404—it's not discoverable via links
+	pages.push({ path: '/404', html: await render404() });
+
+	// Write everything to disk
+	for (const { path, html } of pages) {
+		writeHtmlFile(path, html);
+	}
+}
+```
+
+The link extraction is simple regex:
+
+```typescript
+function extractLinks(html: string): string[] {
+	const linkRegex = /href="(\/[^"#]*)"/g;
+	const links: string[] = [];
+
+	const ignoredExtensions = ['.css', '.js', '.svg', '.png' /* ... */];
+
+	while ((match = linkRegex.exec(html)) !== null) {
+		let path = match[1];
+
+		// Skip assets
+		if (ignoredExtensions.some((ext) => path.endsWith(ext))) continue;
+		if (path.startsWith('/assets/')) continue;
+
+		links.push(path);
+	}
+
+	return [...new Set(links)];
+}
+```
+
+This approach has a nice property: if a page isn't linked from anywhere, it won't be generated. That's usually what you want—orphan pages shouldn't exist. The 404 page is the exception, so we render it explicitly.
+
+## Module Preloading
+
+This is where SSG pays dividends. Remember how every route is lazy-loaded ([Part 2](/blog/building-portfolio-part-2-router))? Without preloading, navigating to `/blog/some-post` would:
+
+1. Load the page
+2. Discover it needs the blog post chunk
+3. Fetch the chunk
+4. Render
+
+With preloading, we tell the browser "you're going to need these files" before it asks:
+
+```html
+<link rel="modulepreload" href="/assets/+Page-ghi789.js" />
+<link rel="modulepreload" href="/assets/some-post-xyz.js" />
+```
+
+The SSG script calculates preloads by walking the manifest's import graph:
+
+```typescript
+function getModulePreloads(
+	path: string,
+	manifest: Manifest,
+	routeMappings: RouteMapping[],
+): string[] {
+	const preloads = new Set<string>();
+	const route = findRouteSource(path, routeMappings);
+	if (!route) return [];
+
+	function collectImports(key: string, visited = new Set<string>()) {
+		if (visited.has(key)) return;
+		visited.add(key);
+
+		const entry = manifest[key];
+		if (!entry) return;
+
+		// Add the file itself (except main entry)
+		if (!entry.isEntry) {
+			preloads.add(entry.file);
+		}
+
+		// Recursively collect imports
+		if (entry.imports) {
+			for (const imp of entry.imports) {
+				collectImports(imp, visited);
+			}
+		}
+	}
+
+	collectImports(route.source);
+
+	// Also preload content (MDX files)
+	if (route.contentSource) {
+		collectImports(route.contentSource);
+	}
+
+	return [...preloads];
+}
+```
+
+Each page gets exactly the preloads it needs—no more, no less. The home page preloads its chunk. The blog post page preloads the post layout chunk plus the specific MDX content chunk.
+
+## The HTML Template
+
+The source `index.html` is a simple template that Vite uses by default:
+
+```html
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<!--app-head-->
+	</head>
+	<body>
+		<div id="root"><!--app-html--></div>
+		<script type="module" src="/src/main.tsx"></script>
+	</body>
+</html>
+```
+
+The SSG script replaces the placeholders:
+
+```typescript
+const pageHtml = template
+	.replace('<!--app-html-->', html)
+	.replace('<!--app-head-->', `${head}\n\t${headTags}`)
+	.replace(
+		'<script type="module" src="/src/main.tsx"></script>',
+		`<script type="module" src="/${entryScript}"></script>`,
+	);
+```
+
+The dev script (`/src/main.tsx`) becomes the production entry from the manifest. Head tags include meta, OpenGraph, stylesheets, and module preloads.
+
+## Output Structure
+
+After SSG runs, the output looks like:
+
+```
+dist/static/
+├── index.html              # /
+├── 404.html                # Fallback for unknown routes
+├── blog/
+│   ├── index.html          # /blog
+│   └── some-post/
+│       └── index.html      # /blog/some-post
+├── projects/
+│   └── portfolio/
+│       └── index.html      # /projects/portfolio
+├── terminal/
+│   └── index.html          # /terminal
+└── assets/
+    ├── index-[hash].js     # Main bundle
+    ├── +Page-[hash].js     # Route chunks
+    └── style-[hash].css    # Styles
+```
+
+Each route gets its own `index.html`. Cloudflare (and most hosts) serve `index.html` automatically for directory requests, so `/blog` serves `/blog/index.html`.
+
+## Hydration
+
+When the browser loads a pre-rendered page, React needs to "hydrate" it—attach event handlers to the existing HTML instead of re-rendering from scratch.
+
+The client entry does this:
+
+```tsx
+// src/main.tsx
+import { hydrateRoot } from 'react-dom/client';
+
+hydrateRoot(
+	document.getElementById('root')!,
+	<StrictMode>
+		<RouterProvider routes={routes}>
+			<Router />
+		</RouterProvider>
+	</StrictMode>,
+);
+```
+
+`hydrateRoot` instead of `createRoot`. React walks the existing DOM, verifies it matches what it would render, and attaches handlers. If there's a mismatch, you get a hydration error—usually caused by the server and client rendering different content.
+
+Common causes:
+
+- Using `Date.now()` or `Math.random()` during render
+- Reading browser-only APIs during SSR
+- Router path mismatch between SSG and client
+
+The router handles this by accepting `initialPath` during SSG and reading `window.location` during hydration—they should always match.
+
+## Head Generation
+
+Each page needs proper meta tags for SEO and social sharing:
+
+```typescript
+export function generateHead(meta: HeadMeta): string {
+	const fullUrl = `${BASE_URL}${meta.url}`;
+	const fullImageUrl = meta.ogImage?.startsWith('http')
+		? meta.ogImage
+		: `${BASE_URL}${meta.ogImage}`;
+
+	return `<title>${escapeHtml(meta.title)}</title>
+  <meta name="description" content="${escapeHtml(meta.description)}" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="${fullUrl}" />
+  <meta property="og:title" content="${escapeHtml(meta.title)}" />
+  <meta property="og:description" content="${escapeHtml(meta.description)}" />
+  <meta property="og:image" content="${fullImageUrl}" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="canonical" href="${fullUrl}" />`;
+}
+```
+
+The route's `meta` property (defined in `routes.ts`) provides the data. For dynamic routes like `/blog/:slug`, meta is a function that computes values from params.
+
+## The Build Output
+
+Running `pnpm build` produces:
+
+```
+Starting SSG build with auto-crawling...
+
+  Scripts: assets/index-Dq3kM2xN.js
+  Styles: assets/index-BYq1zK9P.css
+  Routes discovered: 5
+    - ^\/$ -> src/pages/+Page.tsx
+    - ^\/blog$ -> src/pages/blog/+Page.tsx
+    - ^\/blog\/([^/]+)$ -> src/pages/blog/[slug]/+Page.tsx (with content)
+    - ^\/projects\/([^/]+)$ -> src/pages/project/[slug]/+Page.tsx (with content)
+    - ^\/terminal$ -> src/pages/terminal/+Page.tsx
+
+Crawling pages...
+
+  -> Rendering /
+  -> Rendering /blog
+  -> Rendering /projects/portfolio
+  -> Rendering /blog/building-portfolio-part-1-why
+  -> Rendering /terminal
+  -> Rendering /404
+
+Generated 6 pages.
+
+SSG build complete!
+```
+
+The crawler found everything by following links. No manual route configuration needed.
+
+## What I'd Change for a Larger Site
+
+This SSG implementation is tailored for a portfolio. For a larger site, I'd consider:
+
+- **Incremental builds**: Only re-render pages whose content changed
+- **Parallel rendering**: Render multiple pages concurrently (currently sequential)
+- **Build caching**: Cache rendered HTML between builds
+- **Sitemap generation**: Auto-generate sitemap.xml from crawled routes
+
+None of these are hard—they're just not worth the complexity for a handful of pages.
+
+## Alternatives I Considered
+
+**Next.js**: The obvious choice. `getStaticProps` and `getStaticPaths` are well-designed. But I wanted to understand SSG at a lower level, and I didn't want to accept Next.js's opinions about everything else.
+
+**Astro**: Great for content-heavy sites. The island architecture is clever. But I wanted a fully interactive React app, not islands of interactivity in a sea of static HTML.
+
+**vite-plugin-ssr** (now Vike): Closest to what I built. If I were starting over, I might use it. But rolling my own taught me more about how SSG actually works.
+
+## The Full Picture
+
+The complete SSG system is about 300 lines across two files:
+
+- `scripts/ssg.ts` - Crawling, manifest parsing, preload calculation, HTML generation
+- `src/entry-server.tsx` - React rendering and head generation
+
+No special webpack loaders, no framework-specific data fetching conventions, no magic. Just Node.js reading a manifest, rendering React, and writing HTML files.
 
 ---
-
-*Next up: [Part 4 - MDX Content & the Metadata Plugin](/blog/building-portfolio-part-4-mdx)*

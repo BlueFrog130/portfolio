@@ -1,12 +1,12 @@
-import ogImage from 'virtual:og-image?title=MDX Content and the Metadata Plugin&description=Virtual modules in Vite for extracting MDX metadata without full parsing.&tags=MDX,Vite,Plugins&type=blog&seriesPart=4&seriesTotalParts=10';
+import ogImage from 'virtual:og-image?title=MDX Content&description=Virtual modules in Vite for extracting MDX metadata without full parsing.&tags=MDX,Vite,Plugins&type=blog&seriesPart=4&seriesTotalParts=10';
 
 export const metadata = {
 	slug: 'building-portfolio-part-4-mdx',
-	title: 'MDX Content and the Metadata Plugin',
+	title: 'MDX Content',
 	description:
 		'Virtual modules in Vite for extracting MDX metadata without full parsing.',
 	tags: ['MDX', 'Vite', 'Plugins'],
-	publishedAt: '2025-02-10',
+	publishedAt: '2025-12-16T11:00:00.000Z',
 	featuredImage: ogImage,
 	draft: true,
 	series: {
@@ -17,62 +17,302 @@ export const metadata = {
 	},
 };
 
-# MDX Content and the Metadata Plugin
-
-*Part 4 of the "Building a Modern Portfolio Without a Meta-Framework" series*
+_Part 4 of the "Building a Modern Portfolio Without a Meta-Framework" series_
 
 ---
 
+Why use MDX for content? Well it let really just let me be lazy. I wanted to write blog posts and project pages in Markdown, but have the full power of React when I needed it. MDX is perfect for that. Not only can I write standard Markdown, but it is completely rendered to React at build time and can be rendered to plain HTML.
+
 ## The Problem
 
-MDX files contain both metadata (title, description, tags) and content. For list pages, we need the metadata without parsing the full MDX.
+I wanted MDX files to contain both content and metadata (title, description, tags, etc). The content would be rendered as React components, but I also needed to extract the metadata for use in lists, SEO, and Open Graph images.
 
-```typescript
-// We want this to be fast
-const posts = getAllPosts(); // Just metadata
+To get the list of all blog posts or projects I leveraged Vite's `import.meta.glob` to import all MDX files in a directory. But I didn't want to fully parse and compile every MDX file just to get the metadata. That would be slow, wasteful and just bloat the assets. So you would think the solution is simple, just do two glob imports, one for the metadata and one for the full content:
+
+```ts
+// ❌ Does not work!
+
+// Import only metadata eagerly
+const metadataModules = import.meta.glob('@/content/blog/*.mdx', {
+	eager: true,
+	import: 'metadata',
+});
+
+// Import full content lazily
+const contentModules = import.meta.glob('@/content/blog/*.mdx');
 ```
+
+But this doesn't work because Vite notices that we are importing the same files twice and optimizes them into a single module. So both imports end up being full MDX modules. To get around this, I created a custom Vite plugin that extracts the metadata from MDX files, forcing module separation. Is it a hack? Yes. Does it work? Also yes.
 
 ## Why Not Frontmatter?
 
-Traditional frontmatter with `gray-matter` works, but:
-
-- Requires parsing YAML
-- Can't use JavaScript expressions in metadata
-- No type safety
+Frontmatter could work, but I wanted more flexibility using JS exports. Also, [MDX](https://mdxjs.com/guides/frontmatter/#frontmatter) even recommends using JS exports.
 
 ## Virtual Modules in Vite
 
 Vite's plugin API lets us create "virtual" modules that don't exist on disk:
 
 ```typescript
-// TODO: Show the resolveId and load hooks
+import { Plugin, transformWithEsbuild } from 'vite';
+import { readFileSync } from 'fs';
+
+const METADATA_QUERY = '?metadata';
+const VIRTUAL_PREFIX = '\0';
+
+export function mdxMetadataPlugin(): Plugin {
+	return {
+		name: 'mdx-metadata',
+		enforce: 'pre',
+
+		resolveId(id, importer) {
+			// Intercept MDX imports with ?metadata query
+		},
+
+		async load(id) {
+			// Load and transform the MDX file to extract metadata
+		},
+	};
+}
 ```
 
 ## The `?metadata` Query Pattern
 
-*TODO: Explain how we intercept metadata imports*
+To differentiate between full MDX imports and metadata-only imports, we use a special query parameter `?metadata`. When we want just the metadata, we append this query to the import path:
+
+```ts
+import metadata from '@/content/blog/my-post.mdx?metadata';
+
+// Or using glob
+const metadataModules = import.meta.glob('@/content/blog/*.mdx?metadata', {
+	eager: true,
+});
+```
+
+## Extracting Metadata
+
+Inside the `load` hook of our plugin, we read the MDX file, parse it to extract the exports, and return a module that only exports the metadata:
+
+```typescript
+async load(id) {
+	if (id.startsWith(VIRTUAL_PREFIX) && id.endsWith(METADATA_QUERY)) {
+		const actualPath = id.slice(
+			VIRTUAL_PREFIX.length,
+			-METADATA_QUERY.length,
+		);
+		const content = readFileSync(actualPath, 'utf-8');
+
+		// Extract import statements (to support imports used in metadata)
+		const importMatches = content.match(
+			/^import\s+.+\s+from\s+['"][^'"]+['"];?\s*$/gm,
+		);
+		const imports = importMatches ? importMatches.join('\n') : '';
+
+		// Extract the metadata export block
+		const match = content.match(
+			/export\s+const\s+metadata\s*=\s*(\{[\s\S]*?\n\});/,
+		);
+
+		if (!match) {
+			throw new Error(`No metadata export found in ${actualPath}`);
+		}
+
+		const jsxCode = `
+import React from 'react';
+${imports}
+
+const metadata = ${match[1]};
+export default metadata;
+`;
+
+		// Transform JSX to JS using esbuild
+		const result = await transformWithEsbuild(jsxCode, 'metadata.tsx', {
+			jsx: 'automatic',
+			loader: 'tsx',
+		});
+
+		return result.code;
+	}
+}
+```
+
+The plugin is actually reading and transforming raw MDX files, but then requires esbuild to handle the JSX transformation. This way, we can support any imports used in the metadata (like images or other modules), or even define metadata using JS logic.
 
 ## Read Time Calculation
 
-*TODO: Show the word counting and read time logic*
+Using a vite plugin and static analysis, I can even compute derived metadata like estimated read time:
+
+````ts
+async load(id) {
+	if (id.startsWith(VIRTUAL_PREFIX) && id.endsWith(METADATA_QUERY)) {
+		const actualPath = id.slice(
+			VIRTUAL_PREFIX.length,
+			-METADATA_QUERY.length,
+		);
+		const content = readFileSync(actualPath, 'utf-8');
+
+		// Extract import statements (to support imports used in metadata)
+		const importMatches = content.match(
+			/^import\s+.+\s+from\s+['"][^'"]+['"];?\s*$/gm,
+		);
+		const imports = importMatches ? importMatches.join('\n') : '';
+
+		// Extract the metadata export block
+		const match = content.match(
+			/export\s+const\s+metadata\s*=\s*(\{[\s\S]*?\n\});/,
+		);
+
+		if (!match) {
+			throw new Error(`No metadata export found in ${actualPath}`);
+		}
+
+		// Perform read time calculation
+		const words = content
+			.replace(/<[^>]+>/g, '') // Remove HTML tags
+			.replace(/```[\s\S]*?```/g, '') // Remove code blocks
+			// Remove import/export statements
+			.replace(/^import\s+.+\s+from\s+['"][^'"]+['"];?\s*$/gm, '')
+			.replace(
+				/^export\s+const\s+([A-Za-z0-9_]+)\s*=\s*\{[\s\S]*?\n\};/m,
+				'',
+			)
+			.split(/\s+/).length;
+
+		const readTime = Math.ceil(words / 200); // Assuming 200 WPM
+
+		const jsxCode = `
+import React from 'react';
+${imports}
+
+const metadata = ${match[1]};
+metadata.readTime = ${readTime};
+export default metadata;
+`;
+
+		// Transform JSX to JS using esbuild
+		const result = await transformWithEsbuild(jsxCode, 'metadata.tsx', {
+			jsx: 'automatic',
+			loader: 'tsx',
+		});
+
+		return result.code;
+	}
+}
+````
 
 ## HMR Support
 
-*TODO: Explain handleHotUpdate for metadata changes*
+When an MDX file changes, Vite's HMR system will automatically invalidate the virtual module, ensuring that the metadata is always up to date during development.
+
+```ts
+handleHotUpdate({ file, server, modules }) {
+	// When an MDX file changes, also invalidate its metadata module
+	if (file.endsWith('.mdx')) {
+		const metadataModuleId = VIRTUAL_PREFIX + file + METADATA_QUERY;
+		const metadataModule =
+			server.moduleGraph.getModuleById(metadataModuleId);
+		if (metadataModule) {
+			return [...modules, metadataModule];
+		}
+	}
+}
+```
 
 ## The Full Plugin
 
-```typescript
-// TODO: Walk through vite-plugin-mdx-metadata.ts
-```
+````typescript
+import { Plugin, transformWithEsbuild } from 'vite';
+import { readFileSync } from 'fs';
 
-## Alternatives Considered
+const METADATA_QUERY = '?metadata';
+const VIRTUAL_PREFIX = '\0';
 
-- **gray-matter** - Standard but limited
-- **Content Collections** - Astro's approach, framework-specific
-- **Contentlayer** - Was great, now abandoned
-- **MDX compiler plugins** - Too complex for this use case
+export function mdxMetadataPlugin(): Plugin {
+	return {
+		name: 'mdx-metadata',
+		enforce: 'pre',
+
+		resolveId(id, importer) {
+			if (id.endsWith(METADATA_QUERY)) {
+				// Remove the query and resolve the actual file
+				const actualId = id.slice(0, -METADATA_QUERY.length);
+				return this.resolve(actualId, importer).then((resolved) => {
+					if (resolved) {
+						// Add virtual prefix so MDX plugin skips this
+						return VIRTUAL_PREFIX + resolved.id + METADATA_QUERY;
+					}
+				});
+			}
+		},
+
+		async load(id) {
+			if (id.startsWith(VIRTUAL_PREFIX) && id.endsWith(METADATA_QUERY)) {
+				const actualPath = id.slice(
+					VIRTUAL_PREFIX.length,
+					-METADATA_QUERY.length,
+				);
+				const content = readFileSync(actualPath, 'utf-8');
+
+				// Extract import statements (to support imports used in metadata)
+				const importMatches = content.match(
+					/^import\s+.+\s+from\s+['"][^'"]+['"];?\s*$/gm,
+				);
+				const imports = importMatches ? importMatches.join('\n') : '';
+
+				// Extract the metadata export block
+				const match = content.match(
+					/export\s+const\s+metadata\s*=\s*(\{[\s\S]*?\n\});/,
+				);
+
+				if (!match) {
+					throw new Error(`No metadata export found in ${actualPath}`);
+				}
+
+				// Perform read time calculation
+				const words = content
+					.replace(/<[^>]+>/g, '') // Remove HTML tags
+					.replace(/```[\s\S]*?```/g, '') // Remove code blocks
+					// Remove import/export statements
+					.replace(/^import\s+.+\s+from\s+['"][^'"]+['"];?\s*$/gm, '')
+					.replace(
+						/^export\s+const\s+([A-Za-z0-9_]+)\s*=\s*\{[\s\S]*?\n\};/m,
+						'',
+					)
+					.split(/\s+/).length;
+
+				const readTime = Math.ceil(words / 200); // Assuming 200 WPM
+
+				const jsxCode = `
+import React from 'react';
+${imports}
+
+const metadata = ${match[1]};
+metadata.readTime = ${readTime};
+export default metadata;
+`;
+
+				// Transform JSX to JS using esbuild
+				const result = await transformWithEsbuild(jsxCode, 'metadata.tsx', {
+					jsx: 'automatic',
+					loader: 'tsx',
+				});
+
+				return result.code;
+			}
+		},
+
+		handleHotUpdate({ file, server, modules }) {
+			// When an MDX file changes, also invalidate its metadata module
+			if (file.endsWith('.mdx')) {
+				const metadataModuleId = VIRTUAL_PREFIX + file + METADATA_QUERY;
+				const metadataModule =
+					server.moduleGraph.getModuleById(metadataModuleId);
+				if (metadataModule) {
+					return [...modules, metadataModule];
+				}
+			}
+		},
+	};
+}
+````
 
 ---
-
-*Next up: [Part 5 - Cloudflare Workers & Hono Backend](/blog/building-portfolio-part-5-workers)*

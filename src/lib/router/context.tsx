@@ -5,6 +5,8 @@ import {
 	useCallback,
 	startTransition,
 	useEffect,
+	useRef,
+	useMemo,
 	type ReactNode,
 	useLayoutEffect,
 } from 'react';
@@ -13,6 +15,8 @@ import type {
 	RouteParams,
 	MatchResult,
 	Route,
+	SearchParams,
+	SetSearchParamsOptions,
 } from './types';
 import { getAnalyticsClient } from '@/lib/analytics/client';
 
@@ -25,14 +29,33 @@ function scrollToHash(hash: string) {
 	}
 }
 
-function parseUrl(url: string): { path: string; hash: string } {
+function parseUrl(url: string): {
+	path: string;
+	search: string;
+	hash: string;
+} {
+	// Extract hash first
 	const hashIndex = url.indexOf('#');
-	if (hashIndex === -1) {
-		return { path: url, hash: '' };
+	let hash = '';
+	let urlWithoutHash = url;
+	if (hashIndex !== -1) {
+		hash = url.slice(hashIndex);
+		urlWithoutHash = url.slice(0, hashIndex);
 	}
+
+	// Extract search/query string
+	const searchIndex = urlWithoutHash.indexOf('?');
+	let search = '';
+	let path = urlWithoutHash;
+	if (searchIndex !== -1) {
+		search = urlWithoutHash.slice(searchIndex);
+		path = urlWithoutHash.slice(0, searchIndex);
+	}
+
 	return {
-		path: url.slice(0, hashIndex) || '/',
-		hash: url.slice(hashIndex),
+		path: path || '/',
+		search,
+		hash,
 	};
 }
 
@@ -82,6 +105,14 @@ export function useHash(): string {
 	return useRouter().hash;
 }
 
+export function useSearchParams(): [
+	URLSearchParams,
+	RouterContextValue['setSearchParams'],
+] {
+	const { searchParams, setSearchParams } = useRouter();
+	return [searchParams, setSearchParams];
+}
+
 interface RouterProviderProps {
 	children: ReactNode;
 	initialPath?: string;
@@ -102,6 +133,13 @@ export function RouterProvider({
 		}
 		return '/';
 	});
+	const [searchParams, setSearchParamsState] = useState<SearchParams>(() => {
+		if (initialPath) return new URLSearchParams(parseUrl(initialPath).search);
+		if (typeof window !== 'undefined') {
+			return new URLSearchParams(window.location.search);
+		}
+		return new URLSearchParams();
+	});
 	const [hash, setHash] = useState(() => {
 		if (initialPath) return parseUrl(initialPath).hash;
 		if (typeof window !== 'undefined') {
@@ -121,9 +159,40 @@ export function RouterProvider({
 		return null;
 	});
 
+	const setSearchParams = useCallback(
+		(
+			params:
+				| URLSearchParams
+				| Record<string, string>
+				| ((prev: URLSearchParams) => URLSearchParams | Record<string, string>),
+			options?: SetSearchParamsOptions,
+		) => {
+			setSearchParamsState((currentSearchParams) => {
+				const newParams =
+					typeof params === 'function' ? params(currentSearchParams) : params;
+				const newSearchParams =
+					newParams instanceof URLSearchParams
+						? newParams
+						: new URLSearchParams(newParams);
+
+				const searchString = newSearchParams.toString();
+				const newUrl = `${path}${searchString ? `?${searchString}` : ''}${hash}`;
+
+				if (options?.replace) {
+					window.history.replaceState({}, '', newUrl);
+				} else {
+					window.history.pushState({}, '', newUrl);
+				}
+
+				return newSearchParams;
+			});
+		},
+		[path, hash],
+	);
+
 	const navigate = useCallback(
 		(to: string) => {
-			const { path: newPath, hash: newHash } = parseUrl(to);
+			const { path: newPath, search: newSearch, hash: newHash } = parseUrl(to);
 			const isSamePage = newPath === path || newPath === '';
 			const isHashOnly = to.startsWith('#');
 
@@ -131,6 +200,9 @@ export function RouterProvider({
 				// Hash-only or same-page navigation - just update hash and scroll
 				window.history.pushState({}, '', to);
 				setHash(newHash);
+				if (newSearch) {
+					setSearchParamsState(new URLSearchParams(newSearch));
+				}
 				scrollToHash(newHash);
 			} else {
 				// Full navigation
@@ -140,6 +212,7 @@ export function RouterProvider({
 				window.history.pushState({}, '', to);
 				startTransition(() => {
 					setPath(newPath);
+					setSearchParamsState(new URLSearchParams(newSearch));
 					setHash(newHash);
 					for (const route of routes) {
 						const result = matchPath(route.path, newPath);
@@ -161,9 +234,47 @@ export function RouterProvider({
 		[routes, path],
 	);
 
+	const prefetchedPaths = useRef(new Set<string>());
+	const loaderCache = useRef(new Map<string, Promise<any>>());
+
+	const prefetch = useCallback(
+		(to: string) => {
+			// Skip external URLs
+			if (to.startsWith('http://') || to.startsWith('https://')) return;
+			// Skip hash-only
+			if (to.startsWith('#')) return;
+
+			const { path: targetPath } = parseUrl(to);
+			if (prefetchedPaths.current.has(targetPath)) return;
+
+			for (const route of routes) {
+				const result = matchPath(route.path, targetPath);
+				if (result.matched) {
+					prefetchedPaths.current.add(targetPath);
+
+					// Prefetch page component
+					const component = route.component as any;
+					if (typeof component.preload === 'function') {
+						component.preload();
+					}
+
+					// Call loader and cache the promise
+					if (typeof route.loader === 'function') {
+						const loaderPromise = route.loader({ params: result.params });
+						loaderCache.current.set(targetPath, loaderPromise);
+					}
+
+					break;
+				}
+			}
+		},
+		[routes],
+	);
+
 	useLayoutEffect(() => {
 		const handlePopState = () => {
 			const newPath = window.location.pathname;
+			const newSearch = window.location.search;
 			const newHash = window.location.hash;
 
 			const analytics = getAnalyticsClient();
@@ -171,6 +282,7 @@ export function RouterProvider({
 
 			startTransition(() => {
 				setPath(newPath);
+				setSearchParamsState(new URLSearchParams(newSearch));
 				setHash(newHash);
 				for (const route of routes) {
 					const result = matchPath(route.path, newPath);
@@ -199,17 +311,35 @@ export function RouterProvider({
 	}, [hash]);
 
 	// Internal method to update params from Router
-	const contextValue: RouterContextValue & {
-		setParams: (p: RouteParams) => void;
-	} = {
-		path,
-		hash,
-		params,
-		navigate,
-		setParams,
-		routes,
-		matchedRoute,
-	};
+	const contextValue = useMemo<
+		RouterContextValue & { setParams: (p: RouteParams) => void }
+	>(
+		() => ({
+			path,
+			hash,
+			params,
+			searchParams,
+			setSearchParams,
+			navigate,
+			prefetch,
+			setParams,
+			routes,
+			matchedRoute,
+			loaderCache: loaderCache.current,
+		}),
+		[
+			path,
+			hash,
+			params,
+			searchParams,
+			setSearchParams,
+			navigate,
+			prefetch,
+			setParams,
+			routes,
+			matchedRoute,
+		],
+	);
 
 	return (
 		<RouterContext.Provider value={contextValue}>

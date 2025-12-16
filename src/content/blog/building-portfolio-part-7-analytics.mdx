@@ -1,14 +1,14 @@
-import ogImage from 'virtual:og-image?title=Building Privacy-Respecting Analytics&description=Session tracking, Web Vitals collection, and client-side batching without cookies.&tags=Analytics,Privacy,Performance&type=blog&seriesPart=7&seriesTotalParts=10';
+import ogImage from 'virtual:og-image?title=Analytics from Scratch&description=Privacy-respecting analytics with session tracking, Web Vitals, and Grafana dashboards.&tags=Analytics,Privacy,Grafana&type=blog&seriesPart=7&seriesTotalParts=10';
 
 export const metadata = {
 	slug: 'building-portfolio-part-7-analytics',
-	title: 'Building Privacy-Respecting Analytics',
+	title: 'Analytics from Scratch',
 	description:
-		'Session tracking, Web Vitals collection, and client-side batching without cookies.',
-	tags: ['Analytics', 'Privacy', 'Performance'],
-	publishedAt: '2025-03-03',
+		'Privacy-respecting analytics with session tracking, Web Vitals, and Grafana dashboards.',
+	tags: ['Analytics', 'Privacy', 'Grafana'],
+	publishedAt: '2025-12-16T14:00:00.000Z',
 	featuredImage: ogImage,
-	draft: true,
+	draft: false,
 	series: {
 		id: 'building-portfolio',
 		title: 'Building a Modern Portfolio Without a Meta-Framework',
@@ -17,67 +17,506 @@ export const metadata = {
 	},
 };
 
-# Building Privacy-Respecting Analytics
-
-*Part 7 of the "Building a Modern Portfolio Without a Meta-Framework" series*
+_Part 7 of the "Building a Modern Portfolio Without a Meta-Framework" series_
 
 ---
 
-## Privacy-First Approach
+Every developer has a Google Analytics horror story. Mine was realizing GA4 had been silently blocked by ad blockers for 40% of my users while simultaneously sending their data to Google's advertising infrastructure.
 
-No cookies. No personal data. Just useful metrics.
+I wanted analytics that tell me what I actually need to know—which pages people visit, how fast they load, whether the chat feature gets used—without the privacy baggage. So I built my own.
 
-- Session-based tracking (not user-based)
-- No cross-site tracking
-- Data stays in your own database
+## Why Custom Analytics?
 
-## What to Track
+The alternatives exist. Good ones, even. But each has trade-offs:
+
+**Google Analytics**: Free, powerful, and sends every visitor's behavior to Google's advertising network. Blocked by ~40% of users with ad blockers. The GA4 interface is bewildering, and simple questions require complex event configurations.
+
+**Plausible/Fathom**: Privacy-focused, clean dashboards, reasonable pricing. But $9-19/month for a portfolio that might get 1,000 visitors feels wrong. And I still don't own the data.
+
+**Umami**: Self-hosted, open source, privacy-first. The best alternative. But I'd need to run a server somewhere, manage a database, handle backups. More infrastructure than my actual portfolio.
+
+**PostHog**: Feature flags, session replay, product analytics. Impressive. Also massive overkill for "how many people read my blog posts?"
+
+Building custom analytics took about 300 lines of TypeScript. It runs on infrastructure I already have (Cloudflare Workers + D1). Zero additional cost. Complete control over what gets tracked. And I learned how analytics actually work.
+
+## The Privacy Model
+
+Traditional analytics track users across sessions, sites, and devices. They use cookies, fingerprinting, and cross-site identifiers to build persistent profiles.
+
+I don't need any of that. I need to know:
+
+- How many people visited today?
+- Which pages are popular?
+- How fast do pages load?
+- Does the AI chat get used?
+
+All answerable with session-based tracking. No cookies. No personal data. No cross-site anything.
+
+```typescript
+private getOrCreateSessionId(): string {
+	const stored = sessionStorage.getItem('analytics_session_id');
+	if (stored) return stored;
+
+	const newId = crypto.randomUUID();
+	sessionStorage.setItem('analytics_session_id', newId);
+	return newId;
+}
+```
+
+`sessionStorage` persists only for the browser tab's lifetime. Close the tab, the session dies. Open a new tab to the same site, new session. This means I can't track "returning visitors" in the traditional sense—but I don't need to. I care about page views and performance, not building user profiles.
+
+## What Gets Tracked
+
+Four event types cover everything:
 
 ### Sessions
 
-*TODO: Show session fingerprinting (device, browser, screen)*
+When someone arrives, capture contextual information:
+
+```typescript
+const ua = parseUserAgent();
+const utm = parseUtmParams();
+
+this.enqueue({
+	type: 'session',
+	id: this.sessionId,
+	deviceType: ua.deviceType, // mobile, tablet, desktop
+	browser: ua.browser,
+	browserVersion: ua.browserVersion,
+	os: ua.os,
+	screenWidth: window.screen.width,
+	screenHeight: window.screen.height,
+	referrer: getExternalReferrer(),
+	utmSource: utm.utmSource,
+	utmMedium: utm.utmMedium,
+	utmCampaign: utm.utmCampaign,
+});
+```
+
+The user agent parsing is intentionally simple—I don't need exact browser versions, just broad categories:
+
+```typescript
+export function parseUserAgent() {
+	const ua = navigator.userAgent;
+
+	let deviceType = 'desktop';
+	if (/Mobi|Android/i.test(ua)) {
+		deviceType = /Tablet|iPad/i.test(ua) ? 'tablet' : 'mobile';
+	}
+
+	let browser = 'Unknown';
+	if (ua.includes('Firefox/')) browser = 'Firefox';
+	else if (ua.includes('Chrome/') && !ua.includes('Edg/')) browser = 'Chrome';
+	else if (ua.includes('Safari/') && !ua.includes('Chrome/'))
+		browser = 'Safari';
+	else if (ua.includes('Edg/')) browser = 'Edge';
+
+	// ... os detection
+
+	return { deviceType, browser, browserVersion, os };
+}
+```
+
+External referrers only—internal navigation doesn't count:
+
+```typescript
+export function getExternalReferrer(): string | null {
+	const referrer = document.referrer;
+	if (!referrer) return null;
+
+	const referrerUrl = new URL(referrer);
+	if (referrerUrl.hostname === window.location.hostname) {
+		return null;
+	}
+	return referrer;
+}
+```
 
 ### Page Views
 
-*TODO: Show pageview tracking with duration*
+Track which pages get visited and how long people spend:
+
+```typescript
+trackNavigation(newPath: string): void {
+	const previousPath = this.currentPath;
+	const duration = Date.now() - this.pageEnteredAt;
+
+	if (previousPath !== newPath) {
+		// Send duration for the page they're leaving
+		this.enqueue({
+			type: 'pageview',
+			sessionId: this.sessionId,
+			path: previousPath,
+			timestamp: this.pageEnteredAt,
+			duration,
+		});
+	}
+
+	this.currentPath = newPath;
+	this.pageEnteredAt = Date.now();
+
+	// Track the new page view
+	this.trackPageView(newPath, previousPath);
+}
+```
+
+Duration tracking is tricky in SPAs. You can't rely on page unload events—they're unreliable. Instead, track navigation: when someone navigates away, calculate how long they spent on the previous page.
 
 ### Web Vitals
 
-*TODO: Explain LCP, FID, CLS, etc.*
+Google's Core Web Vitals measure real-world performance. The `web-vitals` library makes collection trivial:
+
+```typescript
+import { onCLS, onINP, onLCP, onFCP, onTTFB } from 'web-vitals';
+
+private setupWebVitals(): void {
+	const reportMetric = (metric: Metric) => {
+		this.enqueue({
+			type: 'webvital',
+			sessionId: this.sessionId,
+			path: this.currentPath,
+			timestamp: Date.now(),
+			name: metric.name,
+			value: metric.value,
+			rating: metric.rating, // 'good', 'needs-improvement', 'poor'
+			id: metric.id,
+			navigationType: metric.navigationType,
+		});
+	};
+
+	onCLS(reportMetric);  // Cumulative Layout Shift
+	onINP(reportMetric);  // Interaction to Next Paint
+	onLCP(reportMetric);  // Largest Contentful Paint
+	onFCP(reportMetric);  // First Contentful Paint
+	onTTFB(reportMetric); // Time to First Byte
+}
+```
+
+The metrics that matter most:
+
+- **LCP** (Largest Contentful Paint): When did the main content appear? Under 2.5s is good.
+- **INP** (Interaction to Next Paint): How responsive is the page to clicks? Under 200ms is good.
+- **CLS** (Cumulative Layout Shift): Does the page jump around while loading? Under 0.1 is good.
+
+These run automatically. The `web-vitals` library handles the complex timing APIs and reports when values are final.
 
 ### Custom Events
 
-*TODO: Show custom event tracking*
+For anything else—chat interactions, button clicks, feature usage:
+
+```typescript
+trackEvent(
+	eventType: string,
+	eventCategory: string,
+	eventData?: Record<string, unknown>,
+): void {
+	this.enqueue({
+		type: 'event',
+		sessionId: this.sessionId,
+		timestamp: Date.now(),
+		eventType,
+		eventCategory,
+		eventData,
+	});
+}
+```
+
+Used like:
+
+```typescript
+client.trackEvent('chat_opened', 'chat', { projectSlug: 'portfolio' });
+client.trackEvent('stream_completed', 'chat', {
+	responseLength: 450,
+	streamDurationMs: 2100,
+});
+```
+
+Flexible enough to track anything without schema changes.
 
 ## Client-Side Batching
 
-Sending every event immediately is wasteful. We batch events:
+Sending an HTTP request for every event is wasteful. Network requests have overhead—DNS lookup, TCP handshake, TLS negotiation. Batching amortizes this cost.
 
 ```typescript
-// TODO: Show batching implementation
+class AnalyticsClient {
+	private queue: AnalyticsEvent[] = [];
+	private flushTimer: number | null = null;
+
+	private enqueue(event: AnalyticsEvent): void {
+		this.queue.push(event);
+
+		// Flush when batch is full
+		if (this.queue.length >= this.config.batchSize) {
+			this.flush();
+		}
+	}
+
+	private startFlushTimer(): void {
+		this.flushTimer = window.setInterval(() => {
+			this.flush();
+		}, this.config.flushInterval); // Default: 5 seconds
+	}
+}
 ```
 
-## D1 Schema Design
+Two triggers for sending data:
+
+1. **Batch size reached**: Default 10 events. Ensures high-traffic pages don't queue indefinitely.
+2. **Timer interval**: Default 5 seconds. Ensures low-traffic pages still report.
+
+### Reliable Delivery
+
+The tricky part: what if the user closes the tab? Regular `fetch` requests get cancelled. Enter `sendBeacon`:
+
+```typescript
+private flush(): void {
+	if (this.queue.length === 0) return;
+
+	const batch = [...this.queue];
+	this.queue = [];
+
+	const blob = new Blob([JSON.stringify(batch)], {
+		type: 'application/json',
+	});
+	const sent = navigator.sendBeacon(this.config.endpoint, blob);
+
+	// Fallback if sendBeacon fails
+	if (!sent) {
+		fetch(this.config.endpoint, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(batch),
+			keepalive: true,
+		}).catch(() => {
+			// Re-queue on failure (with limit to prevent memory issues)
+			if (this.queue.length < 100) {
+				this.queue.unshift(...batch);
+			}
+		});
+	}
+}
+```
+
+`sendBeacon` is designed for this exact use case—sending data reliably even during page unload. The browser queues the request and sends it after the page is gone.
+
+Flush on visibility change and page hide:
+
+```typescript
+document.addEventListener('visibilitychange', () => {
+	if (document.visibilityState === 'hidden') {
+		this.flush();
+	}
+});
+
+window.addEventListener('pagehide', () => {
+	this.flush();
+});
+```
+
+When the user switches tabs or closes the page, any queued events get sent immediately.
+
+## The Database Schema
+
+All events go into a single unified table:
 
 ```sql
--- TODO: Show database schema
+CREATE TABLE IF NOT EXISTS events (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	session_id TEXT,
+	timestamp INTEGER NOT NULL,
+	event_type TEXT NOT NULL,
+	event_category TEXT NOT NULL,
+	event_data TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_events_timestamp ON events(timestamp);
+CREATE INDEX IF NOT EXISTS idx_events_session ON events(session_id);
+CREATE INDEX IF NOT EXISTS idx_events_type ON events(event_type);
+CREATE INDEX IF NOT EXISTS idx_events_category ON events(event_category);
 ```
 
-## Web Vitals Integration
+Sessions get their own table for the metadata:
 
-*TODO: Show integration with web-vitals library*
+```sql
+CREATE TABLE IF NOT EXISTS sessions (
+	id TEXT PRIMARY KEY,
+	started_at INTEGER NOT NULL,
+	ended_at INTEGER,
+	country TEXT,
+	region TEXT,
+	device_type TEXT,
+	browser TEXT,
+	browser_version TEXT,
+	os TEXT,
+	screen_width INTEGER,
+	screen_height INTEGER,
+	referrer TEXT,
+	utm_source TEXT,
+	utm_medium TEXT,
+	utm_campaign TEXT
+);
+```
 
-## The Analytics Client
+Geographic data (country, region) comes from Cloudflare headers—they add `cf-ipcountry` to every request automatically.
 
-*TODO: Walk through the client-side analytics code*
+The `event_data` column stores JSON. This means I don't need schema migrations when adding new event properties. Query with SQLite's JSON functions:
 
-## Alternatives Considered
+```sql
+SELECT
+	json_extract(event_data, '$.path') as path,
+	COUNT(*) as views
+FROM events
+WHERE event_type = 'pageview'
+GROUP BY path
+ORDER BY views DESC;
+```
 
-- **Google Analytics** - Powerful but privacy concerns
-- **Plausible/Fathom** - Great, but paid
-- **Umami** - Self-hosted, good option
-- **PostHog** - Feature-rich, might be overkill
+## The Server Endpoint
+
+The Worker receives batched events and writes to D1:
+
+```typescript
+app.post('/api/analytics', async (c) => {
+	const db = c.env.DB;
+	const batch: AnalyticsPayload[] = await c.req.json();
+
+	// Cloudflare provides geo data
+	const country = c.req.header('cf-ipcountry') || null;
+	const region = c.req.raw.cf?.region || null;
+
+	const statements: D1PreparedStatement[] = [];
+
+	for (const event of batch) {
+		switch (event.type) {
+			case 'session':
+				statements.push(
+					db
+						.prepare(
+							`INSERT INTO sessions (...) VALUES (?, ?, ...)
+						ON CONFLICT(id) DO NOTHING`,
+						)
+						.bind(event.id, Date.now(), country, region /* ... */),
+				);
+				break;
+
+			case 'pageview':
+				statements.push(
+					db.prepare(`INSERT INTO events (...) VALUES (?, ?, ?, ?, ?)`).bind(
+						event.sessionId,
+						event.timestamp,
+						'pageview',
+						'navigation',
+						JSON.stringify({
+							path: event.path,
+							duration: event.duration,
+						}),
+					),
+				);
+				break;
+
+			// ... webvital, event cases
+		}
+	}
+
+	if (statements.length > 0) {
+		await db.batch(statements);
+	}
+
+	return c.json({ success: true });
+});
+```
+
+D1's `batch()` method executes all statements in a single round-trip. Important for latency when a batch might contain 10+ events.
+
+## Querying the Data
+
+With everything in D1, querying is just SQL. Page views by day:
+
+```sql
+SELECT
+	date(timestamp / 1000, 'unixepoch') as day,
+	COUNT(*) as views
+FROM events
+WHERE event_type = 'pageview'
+GROUP BY day
+ORDER BY day DESC;
+```
+
+Average LCP by page:
+
+```sql
+SELECT
+	json_extract(event_data, '$.path') as path,
+	AVG(json_extract(event_data, '$.value')) as avg_lcp
+FROM events
+WHERE event_type = 'LCP'
+GROUP BY path;
+```
+
+Chat engagement:
+
+```sql
+SELECT
+	json_extract(event_data, '$.projectSlug') as project,
+	COUNT(*) as chats
+FROM events
+WHERE event_type = 'chat_opened'
+GROUP BY project
+ORDER BY chats DESC;
+```
+
+## Visualizing with Grafana
+
+Raw SQL queries work, but staring at tables gets old. Grafana turns the data into actual dashboards.
+
+Cloudflare D1 doesn't have a native Grafana datasource, but there's a workaround: the [Infinity datasource](https://grafana.com/grafana/plugins/yesoreyeram-infinity-datasource/) can query any JSON API. Cloudflare D1 already has a REST API, so we can use that.
+
+In Grafana, configure Infinity to POST to this endpoint with a SQL query in the body. Now I can build panels:
+
+**Page Views Over Time**: A time series showing daily traffic patterns. Helps spot if a blog post got traction or if something broke.
+
+**Web Vitals Distribution**: Gauge panels showing the percentage of "good" vs "needs improvement" vs "poor" ratings for LCP, CLS, and INP. At a glance, I know if performance is acceptable.
+
+**Top Pages**: A table ranking pages by view count. Shows what content resonates.
+
+**Geographic Distribution**: A world map colored by session count per country. Mostly vanity, but interesting to see where visitors come from.
+
+**AI Chat Metrics**: Token usage, response latency, and chat engagement per project. Tells me if the feature is worth the Cloudflare AI costs.
+
+The beauty of owning your data: any question becomes a SQL query away. Want to know the p95 LCP for mobile users on blog posts? Write the query, add a panel. No waiting for GA4 to add a feature or Plausible to support a new dimension.
+
+## What's Not Tracked
+
+Deliberately excluded:
+
+- **IP addresses**: Not stored. Country comes from Cloudflare headers without storing IPs.
+- **User IDs**: No accounts, no persistent identifiers.
+- **Exact timestamps**: Stored as Unix milliseconds, but I don't need sub-second precision.
+- **Scroll depth**: Could add it, but doesn't answer questions I have.
+- **Mouse movements**: Creepy and useless for a portfolio.
+
+The goal is minimal viable analytics. Track what informs decisions, ignore everything else.
+
+## What I'd Add for Production
+
+For a larger site:
+
+- **Sampling**: At high traffic, sample 10% of sessions instead of tracking everything.
+- **Rate limiting**: The endpoint is open. Could be abused.
+- **Data retention**: Auto-delete events older than 90 days.
+- **Dashboard**: A simple page showing key metrics instead of raw SQL.
+- **Anomaly detection**: Alert if traffic spikes or Web Vitals degrade.
+
+## Alternatives I'd Consider Now
+
+If I were starting over and didn't want to build custom:
+
+**Umami** remains the best self-hosted option. If you already have a server running, it's the obvious choice. Clean UI, good defaults, actively maintained.
+
+**Plausible Cloud** if you're willing to pay. At $9/month, you get a polished product, no maintenance, and real privacy compliance. Worth it for a business site.
+
+**Vercel Analytics** if you're on Vercel. Built-in Web Vitals, no setup, reasonable pricing. Vendor lock-in, but sometimes that's fine.
+
+**Nothing** is also valid. For a portfolio, you might not need analytics at all. Build it, ship it, move on.
 
 ---
-
-*Next up: [Part 8 - Dual Mode UI](/blog/building-portfolio-part-8-dual-mode)*

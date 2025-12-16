@@ -97,6 +97,10 @@ body {
 	font-family: var(--font-family-sans);
 }
 
+#root {
+	display: contents;
+}
+
 /* Focus styles for accessibility */
 :focus-visible {
 	@apply outline-2 outline-offset-2 outline-accent-500 rounded-sm;

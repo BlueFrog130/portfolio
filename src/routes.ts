@@ -1,11 +1,13 @@
-import { lazy } from 'react';
 import type { Route } from './lib/router';
+import { lazyWithPreload } from './lib/router';
 import { getBlogPostMeta, getProjectMeta } from './lib/content/meta';
+import { loadProjectContent } from './content/projects';
+import { loadBlogPostContent, getAdjacentSeriesPosts } from './content/blog';
 
 export const routes: Route[] = [
 	{
 		path: '/',
-		component: lazy(() => import('./pages/+Page')),
+		component: lazyWithPreload(() => import('./pages/+Page')),
 		meta: {
 			title: 'Adam Grady | Senior Software Engineer',
 			description:
@@ -14,12 +16,16 @@ export const routes: Route[] = [
 	},
 	{
 		path: '/projects/:slug',
-		component: lazy(() => import('./pages/project/[slug]/+Page')),
+		component: lazyWithPreload(() => import('./pages/project/[slug]/+Page')),
 		meta: (params) => getProjectMeta(params.slug),
+		loader: async ({ params }) => {
+			const project = await loadProjectContent(params.slug);
+			return { project };
+		},
 	},
 	{
 		path: '/blog',
-		component: lazy(() => import('./pages/blog/+Page')),
+		component: lazyWithPreload(() => import('./pages/blog/+Page')),
 		meta: {
 			title: 'Blog | Adam Grady',
 			description:
@@ -28,12 +34,20 @@ export const routes: Route[] = [
 	},
 	{
 		path: '/blog/:slug',
-		component: lazy(() => import('./pages/blog/[slug]/+Page')),
+		component: lazyWithPreload(() => import('./pages/blog/[slug]/+Page')),
 		meta: (params) => getBlogPostMeta(params.slug),
+		loader: async ({ params }) => {
+			const post = await loadBlogPostContent(params.slug);
+			if (post) {
+				const { prev, next } = getAdjacentSeriesPosts(post);
+				return { post, prev, next };
+			}
+			return { post: undefined, prev: null, next: null };
+		},
 	},
 	{
 		path: '/terminal',
-		component: lazy(() => import('./pages/terminal/+Page')),
+		component: lazyWithPreload(() => import('./pages/terminal/+Page')),
 		meta: {
 			title: 'Terminal | Adam Grady',
 			description:
@@ -42,7 +56,7 @@ export const routes: Route[] = [
 	},
 	{
 		path: '*',
-		component: lazy(() => import('./pages/404/+Page')),
+		component: lazyWithPreload(() => import('./pages/404/+Page')),
 		meta: {
 			title: '404 - Page Not Found | Adam Grady',
 			description: "The page you're looking for doesn't exist.",

@@ -1,0 +1,191 @@
+import ogImage from 'virtual:og-image?title=Lessons Learned&description=An honest retrospective on building a portfolio without a meta-framework.&tags=Retrospective,Learning,Architecture&type=blog&seriesPart=9&seriesTotalParts=10';
+
+export const metadata = {
+	slug: 'building-portfolio-part-9-lessons',
+	title: 'Lessons Learned',
+	description:
+		'An honest retrospective on building a portfolio without a meta-framework.',
+	tags: ['Retrospective', 'Learning', 'Architecture'],
+	publishedAt: '2025-12-16T16:00:00.000Z',
+	featuredImage: ogImage,
+	draft: false,
+	series: {
+		id: 'building-portfolio',
+		title: 'Building a Modern Portfolio Without a Meta-Framework',
+		part: 9,
+		totalParts: 10,
+	},
+};
+
+_Part 9 of the "Building a Modern Portfolio Without a Meta-Framework" series_
+
+---
+
+Nine articles later, here's the honest retrospective. What worked, what didn't, and whether I'd do it again.
+
+## Was It Worth It?
+
+The honest answer: **it depends on what you're optimizing for**.
+
+### For Learning: Absolutely
+
+I now understand how meta-frameworks actually work. Not in a "I read the docs" way—in a "I've debugged hydration mismatches at 2am" way.
+
+Before this project, routing was magic. SSG was a checkbox in `next.config.js`. Module preloading was something Vite did automatically. Now I know:
+
+- How pattern matching works for dynamic routes
+- Why `startTransition` matters for concurrent rendering
+- How the Vite manifest enables intelligent preloading
+- Why `useLayoutEffect` exists (and when `useEffect` fails)
+- How SSE streaming actually works under the hood
+- What `sendBeacon` is for and when `fetch` fails
+
+This knowledge transfers. When Next.js does something weird, I can reason about what's happening underneath. When a framework makes a trade-off I don't like, I know what the alternatives are.
+
+### For Productivity: No
+
+Let's be real: a Next.js portfolio takes a weekend. This took weeks.
+
+Every feature I built already exists in mature frameworks, tested by millions of users, documented exhaustively, with Stack Overflow answers for every edge case. My router works, but React Router handles nested layouts, scroll restoration, and data loaders. My SSG works, but Next.js handles incremental regeneration, image optimization, and internationalization.
+
+If the goal was "ship a portfolio," I wasted time.
+
+### For a Portfolio: Yes
+
+A portfolio is different from a product. Nobody's paying for it. There's no deadline. The audience is partially other developers who might look at the code.
+
+Building custom infrastructure for a portfolio is like a mechanic building their own car. Impractical for transportation, but it demonstrates understanding. When I claim expertise in React and web performance, this project backs it up.
+
+The portfolio itself is also simpler to maintain than you'd think. There's no framework to update, no breaking changes in major versions. Dependencies are minimal. When something breaks, I wrote the code—I know exactly where to look.
+
+## What Worked Well
+
+### Cloudflare's Stack
+
+The decision to go all-in on Cloudflare was the best architectural choice. Workers, D1, AI—they all integrate seamlessly. No API keys, no connection strings, no external services. The Vite plugin makes local development feel native.
+
+The free tier is absurdly generous for a portfolio. I haven't paid anything, and I won't unless this site gets millions of visitors.
+
+### Vite 7's Environment API
+
+Vite's new environment API made the multi-build setup clean. Three environments (client, SSR, SSG) sharing config but outputting different bundles. The manifest gives you everything needed for intelligent preloading.
+
+If I'd done this two years ago with Webpack, it would have been painful. Vite made it almost pleasant.
+
+### React Compiler
+
+Enabling the compiler and deleting all manual memoization was satisfying. The code is cleaner, and I don't have to think about dependency arrays or stale closures. For new projects, there's no reason not to use it.
+
+### TypeScript Everywhere
+
+Full type safety from the router to the database. Route params are typed. API payloads are validated with Zod. The Worker bindings are typed. When something breaks, the compiler usually catches it before runtime.
+
+### The SSG Approach
+
+Pre-rendering everything and serving static HTML was the right call. LCP is instant because there's no JavaScript needed for initial render. The site works without JavaScript entirely (minus the chat feature). Search engines see real content.
+
+## What I'd Change
+
+### Start with File-Based Routing
+
+I built route definitions manually:
+
+```typescript
+export const routes: Route[] = [
+	{ path: '/', component: lazyWithPreload(() => import('./pages/+Page')) },
+	{
+		path: '/blog',
+		component: lazyWithPreload(() => import('./pages/blog/+Page')),
+	},
+	// ...
+];
+```
+
+File-based routing would've been better. The pages already follow a convention (`pages/blog/+Page.tsx`). A Vite plugin could generate the routes array automatically. Less boilerplate, impossible to have mismatches.
+
+### Add a Build-Time Content Layer
+
+MDX metadata extraction works, but it's awkward. I have to import files, parse metadata, filter by criteria. A proper content layer (like Contentlayer or Astro's content collections) would provide:
+
+- Type-safe frontmatter validation
+- Automatic slug generation
+- Relationship handling between content
+- Build-time queries instead of runtime imports
+
+For more content-heavy sites, this would be essential.
+
+### Consider Partial Hydration
+
+The site ships full React hydration even for pages that are 90% static content. Blog posts don't need interactivity—they're just text with syntax highlighting.
+
+Astro's islands architecture or Qwik's resumability would reduce JavaScript significantly. For a portfolio, it doesn't matter much (the bundles are small anyway), but for a larger content site, it would.
+
+### Better Error Handling
+
+Error boundaries exist, but error reporting doesn't. If something breaks in production, I won't know unless someone tells me. A proper setup would include:
+
+- Error boundary that reports to an endpoint
+- Source maps for readable stack traces
+- Alerting when error rates spike
+
+## When to Build Custom
+
+Roll your own when:
+
+- **Learning is the goal**: You want to understand how things work, not just use them
+- **Requirements are unusual**: Your constraints don't fit framework assumptions
+- **Simplicity matters**: You need less than 20% of what frameworks provide
+- **You'll maintain it**: Nobody else needs to understand the codebase
+
+Use a meta-framework when:
+
+- **Shipping fast matters**: You have deadlines and users waiting
+- **Team size > 1**: Other developers need to be productive immediately
+- **Features will grow**: You'll eventually need what frameworks provide
+- **SEO is critical**: Frameworks have battle-tested SEO defaults
+- **You want support**: Stack Overflow answers, Discord communities, paid support
+
+For a production application with a team, I'd use Next.js or Remix without hesitation. For a personal project where learning is valuable, building custom made sense.
+
+## The Stack in Retrospect
+
+What I ended up with:
+
+| Layer     | Choice                | Verdict                             |
+| --------- | --------------------- | ----------------------------------- |
+| Framework | None (custom)         | Right for learning, wrong for speed |
+| Build     | Vite 7                | Excellent, no regrets               |
+| UI        | React 19              | Familiar, React Compiler is great   |
+| Styling   | Tailwind v4           | Fast, maintainable                  |
+| Content   | MDX                   | Good for code-heavy content         |
+| Hosting   | Cloudflare Workers    | Perfect for edge + AI               |
+| Database  | D1                    | Simple, effective for analytics     |
+| AI        | Cloudflare Workers AI | Zero-config, good enough quality    |
+
+I'd make the same choices again, except I'd add file-based routing and a content layer.
+
+## What's Next
+
+Features I might add:
+
+- **Search**: Full-text search over blog posts and projects, probably using Cloudflare's vector database
+- **Comments**: Maybe. Probably not. They add moderation burden.
+- **RSS feed**: Should already exist, honestly
+- **Dark mode**: The one feature request I keep ignoring
+- **More blog posts**: The infrastructure is done, now it's about content
+
+But also: maybe nothing. The portfolio works. It's fast, it looks decent, it shows what I can do. There's value in calling something done.
+
+## Final Thoughts
+
+Building without a framework taught me more about web development than years of using frameworks. The abstractions that felt like magic became code I wrote and debugged.
+
+Was it the most efficient use of time? No. But efficiency isn't everything. Sometimes you learn by taking the long way.
+
+If you're considering building something custom: do it once. Understand how the pieces fit together. Then make an informed choice about when frameworks are worth it.
+
+For me, the answer is clear: frameworks for products, custom for learning.
+
+---
+
+_Thanks for reading the series. The code is on [GitHub](https://github.com/BlueFrog130/portfolio) if you want to see how it all fits together._

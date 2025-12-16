@@ -1,15 +1,15 @@
-import { useParams, Link } from '@/lib/router';
-import { getProject } from '@/content/projects';
+import { Link } from '@/lib/router';
+import { type Project } from '@/content/projects';
 import { Layout } from '@/lib/components/Layout';
-import { Suspense } from 'react';
 import { ViewTransition } from 'react';
 import { ArrowLeft, FolderOpen, ExternalLink, Clock } from 'lucide-react';
 import { GitHubIcon } from '@/lib/components/icons';
 
-export default function ProjectDetail() {
-	const { slug } = useParams();
-	const project = slug ? getProject(slug) : undefined;
+interface ProjectPageProps {
+	project?: Project;
+}
 
+export default function ProjectDetail({ project }: ProjectPageProps) {
 	if (!project) {
 		return (
 			<Layout>
@@ -123,15 +123,9 @@ export default function ProjectDetail() {
 							)}
 
 							<section className="prose prose-surface mt-12 max-w-none">
-								<Suspense
-									fallback={
-										<div className="animate-pulse h-64 bg-surface-100 rounded-lg" />
-									}
-								>
-									<ViewTransition name="project-content">
-										<project.Content />
-									</ViewTransition>
-								</Suspense>
+								<ViewTransition name="project-content">
+									<project.Content />
+								</ViewTransition>
 							</section>
 						</article>
 					</ViewTransition>

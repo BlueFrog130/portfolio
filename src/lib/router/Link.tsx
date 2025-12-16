@@ -9,7 +9,7 @@ interface LinkProps extends Omit<
 }
 
 export function Link({ to, children, onClick, ...props }: LinkProps) {
-	const { navigate } = useRouter();
+	const { navigate, prefetch } = useRouter();
 
 	const handleClick = (e: MouseEvent<HTMLAnchorElement>) => {
 		// Allow default behavior for modifier keys, external links, etc.
@@ -22,8 +22,12 @@ export function Link({ to, children, onClick, ...props }: LinkProps) {
 		navigate(to);
 	};
 
+	const handleMouseEnter = () => {
+		prefetch(to);
+	};
+
 	return (
-		<a href={to} onClick={handleClick} {...props}>
+		<a href={to} onClick={handleClick} onMouseEnter={handleMouseEnter} {...props}>
 			{children}
 		</a>
 	);

@@ -10,19 +10,40 @@ export interface RouteMeta {
 	ogImage?: string;
 }
 
-export interface Route {
+export interface LoaderContext {
+	params: RouteParams;
+}
+
+export interface Route<T = any> {
 	path: string;
-	component: ComponentType | LazyExoticComponent<ComponentType>;
+	component: ComponentType<T> | LazyExoticComponent<ComponentType<T>>;
 	meta?: RouteMeta | ((params: RouteParams) => RouteMeta);
+	loader?: (context: LoaderContext) => Promise<T>;
+}
+
+export type SearchParams = URLSearchParams;
+
+export interface SetSearchParamsOptions {
+	replace?: boolean;
 }
 
 export interface RouterContextValue {
 	path: string;
 	hash: string;
 	params: RouteParams;
+	searchParams: SearchParams;
+	setSearchParams: (
+		params:
+			| URLSearchParams
+			| Record<string, string>
+			| ((prev: URLSearchParams) => URLSearchParams | Record<string, string>),
+		options?: SetSearchParamsOptions,
+	) => void;
 	navigate: (to: string) => void;
+	prefetch: (to: string) => void;
 	routes: Route[];
 	matchedRoute: Route | null;
+	loaderCache: Map<string, Promise<any>>;
 }
 
 export interface MatchResult {

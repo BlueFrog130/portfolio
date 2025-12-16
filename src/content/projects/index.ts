@@ -1,4 +1,8 @@
-import { lazy, type ComponentType, type ReactNode } from 'react';
+import { type ComponentType, type ReactNode } from 'react';
+import {
+	lazyWithPreload,
+	type PreloadableComponent,
+} from '@/lib/router';
 
 export interface ProjectMetadata {
 	slug: string;
@@ -13,7 +17,7 @@ export interface ProjectMetadata {
 }
 
 export interface Project extends ProjectMetadata {
-	Content: ComponentType;
+	Content: PreloadableComponent<ComponentType>;
 }
 
 // Eager load metadata using ?metadata query
@@ -33,9 +37,22 @@ const contentModules = import.meta.glob<ComponentType>('./*.mdx', {
 export const projects: Project[] = Object.entries(metadataModules).map(
 	([path, mod]) => ({
 		...mod.default,
-		Content: lazy(async () => ({ default: await contentModules[path]() })),
+		Content: lazyWithPreload(async () => ({
+			default: await contentModules[path](),
+		})),
 	}),
 );
+
+// Load and preload project content (for route loader pattern)
+export async function loadProjectContent(
+	slug: string,
+): Promise<Project | undefined> {
+	const project = projects.find((p) => p.slug === slug);
+	if (project) {
+		await project.Content.preload();
+	}
+	return project;
+}
 
 export function getProject(slug: string): Project | undefined {
 	return projects.find((p) => p.slug === slug);

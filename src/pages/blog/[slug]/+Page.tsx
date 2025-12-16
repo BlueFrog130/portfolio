@@ -1,15 +1,17 @@
-import { useParams, Link } from '@/lib/router';
-import { getBlogPost, getAdjacentSeriesPosts } from '@/content/blog';
+import { Link } from '@/lib/router';
+import { type BlogPost } from '@/content/blog';
 import { Layout } from '@/lib/components/Layout';
-import { Suspense } from 'react';
 import { ViewTransition } from 'react';
 import { ArrowLeft, Calendar, Clock, Tag, BookOpen } from 'lucide-react';
 import { SeriesNav } from '@/lib/components/SeriesNav';
 
-export default function BlogPostPage() {
-	const { slug } = useParams();
-	const post = slug ? getBlogPost(slug) : undefined;
+interface BlogPostPageProps {
+	post?: BlogPost;
+	prev: BlogPost | null;
+	next: BlogPost | null;
+}
 
+export default function BlogPostPage({ post, prev, next }: BlogPostPageProps) {
 	if (!post) {
 		return (
 			<Layout>
@@ -39,8 +41,6 @@ export default function BlogPostPage() {
 		month: 'long',
 		day: 'numeric',
 	});
-
-	const { prev, next } = getAdjacentSeriesPosts(post);
 
 	return (
 		<Layout>
@@ -99,15 +99,9 @@ export default function BlogPostPage() {
 							</header>
 
 							<section className="prose prose-surface mt-12 max-w-none prose-headings:scroll-mt-24">
-								<Suspense
-									fallback={
-										<div className="h-64 animate-pulse rounded-lg bg-surface-100" />
-									}
-								>
-									<ViewTransition name="blog-content">
-										<post.Content />
-									</ViewTransition>
-								</Suspense>
+								<ViewTransition name="blog-content">
+									<post.Content />
+								</ViewTransition>
 
 								<SeriesNav post={post} prev={prev} next={next} />
 							</section>

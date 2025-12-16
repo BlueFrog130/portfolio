@@ -1,4 +1,5 @@
-import { lazy, type ComponentType } from 'react';
+import { type ComponentType } from 'react';
+import { lazyWithPreload, type PreloadableComponent } from '@/lib/router';
 
 export interface SeriesInfo {
 	id: string;
@@ -21,7 +22,7 @@ export interface BlogPostMetadata {
 }
 
 export interface BlogPost extends BlogPostMetadata {
-	Content: ComponentType;
+	Content: PreloadableComponent<ComponentType>;
 }
 
 // Eager load metadata using ?metadata query
@@ -45,7 +46,9 @@ export const blogPosts: BlogPost[] = Object.entries(metadataModules)
 	.map(([path, mod]) => {
 		return {
 			...mod.default,
-			Content: lazy(async () => ({ default: await contentModules[path]() })),
+			Content: lazyWithPreload(async () => ({
+				default: await contentModules[path](),
+			})),
 		};
 	})
 	.filter((post) => isDev || !post.draft)
@@ -53,6 +56,17 @@ export const blogPosts: BlogPost[] = Object.entries(metadataModules)
 		(a, b) =>
 			new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
 	);
+
+// Load and preload blog post content (for route loader pattern)
+export async function loadBlogPostContent(
+	slug: string,
+): Promise<BlogPost | undefined> {
+	const post = blogPosts.find((p) => p.slug === slug);
+	if (post) {
+		await post.Content.preload();
+	}
+	return post;
+}
 
 export function getBlogPost(slug: string): BlogPost | undefined {
 	return blogPosts.find((p) => p.slug === slug);
@@ -63,8 +77,7 @@ export function getFeaturedBlogPosts(): BlogPost[] {
 }
 
 export function getAllTags(): string[] {
-	const tags = new Set<string>();
-	blogPosts.forEach((post) => post.tags.forEach((tag) => tags.add(tag)));
+	const tags = new Set<string>(blogPosts.flatMap((post) => post.tags));
 	return [...tags].sort();
 }
 

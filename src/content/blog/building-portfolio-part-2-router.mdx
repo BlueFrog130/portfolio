@@ -6,9 +6,9 @@ export const metadata = {
 	description:
 		'Pattern matching, ViewTransition API, and navigation with React 19 startTransition.',
 	tags: ['React', 'Router', 'ViewTransitions'],
-	publishedAt: '2025-01-27',
+	publishedAt: '2025-12-16T09:00:00.000Z',
 	featuredImage: ogImage,
-	draft: true,
+	draft: false,
 	series: {
 		id: 'building-portfolio',
 		title: 'Building a Modern Portfolio Without a Meta-Framework',
@@ -17,58 +17,444 @@ export const metadata = {
 	},
 };
 
-# Building a Custom React Router
-
-*Part 2 of the "Building a Modern Portfolio Without a Meta-Framework" series*
+_Part 2 of the "Building a Modern Portfolio Without a Meta-Framework" series_
 
 ---
 
-## Why Build a Router?
+Routing is one of those things that seems simple until you actually build it.
 
-When you hear "build your own router," you might think it's unnecessary complexity. But there are compelling reasons:
+In [Part 1](/blog/building-portfolio-part-1-why), I mentioned that using `useRouter` for years without understanding what happens underneath left gaps in my knowledge. Building a router from scratch filled those gaps—and taught me that most of what React Router does, I don't need.
 
-- **Control over transitions** - The ViewTransition API changes everything
-- **Simpler mental model** - No framework magic to understand
-- **Tight integration** - Analytics, preloading, exactly how you want it
+## Why Not Just Use React Router?
+
+React Router is battle-tested and handles edge cases I'll never encounter. So why reinvent the wheel?
+
+1. **Bundle size**: React Router v7 is ~15KB minified. My router is under 2KB. For a portfolio with five routes, that delta matters.
+2. **ViewTransition API**: I wanted first-class support for the new ViewTransition API, not a plugin or workaround.
+3. **Lazy loading control**: I wanted to see exactly how code splitting works with routes, not trust a framework to handle it.
+
+The real answer? I wanted to understand how routing actually works. The bundle savings are a bonus.
+
+## The Route Definition
+
+Before diving into the router itself, here's how routes are defined:
+
+```typescript
+// src/routes.ts
+import { lazy } from 'react';
+import type { Route } from './lib/router';
+
+export const routes: Route[] = [
+	{
+		path: '/',
+		component: lazy(() => import('./pages/+Page')),
+		meta: {
+			title: 'Adam Grady | Senior Software Engineer',
+			description: 'Experienced Software Engineer...',
+		},
+	},
+	{
+		path: '/projects/:slug',
+		component: lazy(() => import('./pages/project/[slug]/+Page')),
+		meta: (params) => getProjectMeta(params.slug),
+	},
+	{
+		path: '/blog/:slug',
+		component: lazy(() => import('./pages/blog/[slug]/+Page')),
+		meta: (params) => getBlogPostMeta(params.slug),
+	},
+	{
+		path: '*',
+		component: lazy(() => import('./pages/404/+Page')),
+		meta: { title: '404 - Page Not Found' },
+	},
+];
+```
+
+A few things to notice:
+
+- **Every component is lazy**: More on this later, but this is the key to bundle splitting.
+- **Dynamic routes use `:param` syntax**: Standard stuff, borrowed from Express.
+- **Meta can be a function**: For dynamic routes, meta is computed from the params.
+- **Catch-all with `*`**: The 404 page matches anything that doesn't match above.
 
 ## Pattern Matching
 
-The foundation of any router is pattern matching. Here's how we handle dynamic routes like `/projects/:slug`:
+The heart of any router is matching a URL to a route. Here's the implementation:
 
 ```typescript
-// TODO: Add matchPath implementation
+function matchPath(pattern: string, path: string): MatchResult {
+	// Handle catch-all
+	if (pattern === '*') return { matched: true, params: {} };
+
+	const patternParts = pattern.split('/').filter(Boolean);
+	const pathParts = path.split('/').filter(Boolean);
+
+	// Different lengths can't match
+	if (patternParts.length !== pathParts.length) {
+		return { matched: false, params: {} };
+	}
+
+	const params: RouteParams = {};
+
+	for (let i = 0; i < patternParts.length; i++) {
+		const patternPart = patternParts[i];
+		const pathPart = pathParts[i];
+
+		if (patternPart.startsWith(':')) {
+			// Dynamic segment - extract param
+			params[patternPart.slice(1)] = pathPart;
+		} else if (patternPart !== pathPart) {
+			// Static segment doesn't match
+			return { matched: false, params: {} };
+		}
+	}
+
+	return { matched: true, params };
+}
 ```
 
-## React 19's startTransition
+This handles:
 
-*TODO: Explain how startTransition enables smoother navigations*
+- Static routes: `/blog` matches `/blog`
+- Dynamic routes: `/projects/:slug` matches `/projects/portfolio` with `{ slug: 'portfolio' }`
+- Catch-all: `*` matches anything
 
-## ViewTransition API Integration
+What it doesn't handle (and I don't need): optional segments, wildcards in the middle of routes, or query string parsing. Those would be easy to add, but why add code I won't use?
 
-*TODO: Show how ViewTransitions create smooth page transitions*
+## Lazy Loading and Bundle Splitting
+
+This is where things get interesting. Every route component is wrapped in `lazy()`:
+
+```typescript
+component: lazy(() => import('./pages/project/[slug]/+Page'));
+```
+
+When Vite builds the app, it sees these dynamic imports and creates separate chunks. The result:
+
+```
+dist/
+├── assets/
+│   ├── index-[hash].js        # Core app (~50KB)
+│   ├── +Page-[hash].js        # Home page
+│   ├── +Page-[hash].js        # Blog list
+│   ├── +Page-[hash].js        # Blog post
+│   ├── +Page-[hash].js        # Project page
+│   └── +Page-[hash].js        # Terminal
+```
+
+When a user lands on the home page, they download the core bundle plus the home page chunk. Navigate to a project? That chunk loads on demand. The user never downloads code for pages they don't visit.
+
+The `Router` component wraps lazy components in `Suspense`:
+
+```tsx
+export function Router({ fallback }: RouterProps) {
+	const { matchedRoute } = useRouter();
+	const Component = matchedRoute.component;
+
+	return (
+		<ViewTransition>
+			<Suspense fallback={fallback ?? <LoadingFallback />}>
+				<Component />
+			</Suspense>
+		</ViewTransition>
+	);
+}
+```
+
+`Suspense` catches the promise thrown by the lazy component and shows a fallback while the chunk loads. On fast connections, users rarely see the fallback. On slow connections, they see a loading indicator instead of a blank screen.
+
+## Navigation with startTransition
+
+React 19's `startTransition` is the secret sauce for smooth navigation. Here's the navigate function:
+
+```typescript
+const navigate = useCallback(
+	(to: string) => {
+		const { path: newPath, hash: newHash } = parseUrl(to);
+
+		if (to.startsWith('#') || newPath === path) {
+			// Hash-only navigation - just scroll
+			window.history.pushState({}, '', to);
+			scrollToHash(newHash);
+			return;
+		}
+
+		// Update browser history
+		window.history.pushState({}, '', to);
+
+		// Wrap state updates in startTransition
+		startTransition(() => {
+			setPath(newPath);
+			setHash(newHash);
+			// Find and set the matched route...
+		});
+
+		// Scroll to top or hash
+		if (newHash) {
+			requestAnimationFrame(() => scrollToHash(newHash));
+		} else {
+			window.scrollTo(0, 0);
+		}
+	},
+	[routes, path],
+);
+```
+
+Why `startTransition`? Without it, clicking a link would immediately update state, potentially causing a flash of loading state before the new route's component loads. With `startTransition`, React keeps showing the current page until the new content is ready—or until the transition takes too long, at which point it shows the Suspense fallback.
+
+The user experience: click a link, see a brief transition animation (thanks to ViewTransition), and the new page appears. No loading spinners for fast navigations.
+
+## ViewTransition API
+
+The ViewTransition API is relatively new, but it's a game-changer for SPA navigation. React 19.3 includes a `<ViewTransition>` component that hooks into this API:
+
+```tsx
+return (
+	<ViewTransition>
+		<Suspense fallback={fallback}>
+			<Component />
+		</Suspense>
+	</ViewTransition>
+);
+```
+
+When the route changes, the browser:
+
+1. Screenshots the current state
+2. Renders the new state
+3. Crossfades between them
+
+The default transition is a simple fade, but you can customize it with CSS:
+
+```css
+::view-transition-old(root) {
+	animation: fade-out 150ms ease-out;
+}
+
+::view-transition-new(root) {
+	animation: fade-in 150ms ease-in;
+}
+```
+
+For browsers that don't support ViewTransition yet, it degrades gracefully—navigation still works, just without the animation.
 
 ## Hash Navigation
 
-*TODO: Discuss hash links and smooth scrolling*
+Hash links (`#section`) need special handling. They shouldn't trigger a full navigation—just scroll to the element:
 
-## Suspense and Lazy Loading
+```typescript
+function scrollToHash(hash: string) {
+	if (!hash) return;
+	const id = hash.replace('#', '');
+	const element = document.getElementById(id);
+	if (element) {
+		element.scrollIntoView({ behavior: 'smooth' });
+	}
+}
+```
 
-*TODO: Cover lazy-loaded routes with Suspense boundaries*
+The navigate function checks if the destination is hash-only or same-page:
 
-## SSR/SSG Considerations
+```typescript
+const isHashOnly = to.startsWith('#');
+const isSamePage = newPath === path || newPath === '';
 
-*TODO: Discuss initial path hydration*
+if (isHashOnly || isSamePage) {
+	window.history.pushState({}, '', to);
+	setHash(newHash);
+	scrollToHash(newHash);
+	return; // Don't trigger route change
+}
+```
 
-## The Full Implementation
+This means `/blog/some-post#conclusion` navigates to the blog post, then scrolls to the conclusion. And clicking `#conclusion` from that page just scrolls—no re-render.
 
-*TODO: Walk through the complete Router and RouterProvider*
+## The Link Component
 
-## Alternatives Considered
+A router isn't complete without a `Link` component that intercepts clicks:
 
-- **React Router v6/v7** - Full-featured but more than needed
-- **TanStack Router** - Type-safe but adds complexity
-- **Wouter** - Minimal, was a close second
+```tsx
+export function Link({ to, children, onClick, ...props }: LinkProps) {
+	const { navigate, prefetch } = useRouter();
+
+	const handleClick = (e: MouseEvent<HTMLAnchorElement>) => {
+		// Allow default for modifier keys (open in new tab, etc.)
+		if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) {
+			return;
+		}
+
+		e.preventDefault();
+		onClick?.(e);
+		navigate(to);
+	};
+
+	const handleMouseEnter = () => {
+		prefetch(to);
+	};
+
+	return (
+		<a
+			href={to}
+			onClick={handleClick}
+			onMouseEnter={handleMouseEnter}
+			{...props}
+		>
+			{children}
+		</a>
+	);
+}
+```
+
+The important detail: we still render an `<a>` tag with a real `href`. This means:
+
+- Right-click → "Open in new tab" works
+- Cmd/Ctrl+click opens a new tab
+- The link is crawlable by search engines
+- If JavaScript fails to load, the link still works
+
+Progressive enhancement for free.
+
+## Prefetching on Hover
+
+Notice the `onMouseEnter` handler above? That's route prefetching. When a user hovers over a link, we start loading the target route's code before they click.
+
+```typescript
+const prefetchedPaths = useRef(new Set<string>());
+
+const prefetch = useCallback(
+	(to: string) => {
+		// Skip external URLs and hash-only links
+		if (to.startsWith('http://') || to.startsWith('https://')) return;
+		if (to.startsWith('#')) return;
+
+		const { path: targetPath } = parseUrl(to);
+		if (prefetchedPaths.current.has(targetPath)) return;
+
+		for (const route of routes) {
+			const result = matchPath(route.path, targetPath);
+			if (result.matched) {
+				prefetchedPaths.current.add(targetPath);
+
+				// Prefetch the lazy component
+				const component = route.component as any;
+				if (typeof component.preload === 'function') {
+					component.preload();
+				}
+				break;
+			}
+		}
+	},
+	[routes],
+);
+```
+
+The magic is in `component.preload()`. When you wrap a component with `React.lazy()`, the resulting object has a `preload` method that triggers the dynamic import without rendering the component. The browser fetches the chunk, and by the time the user clicks, it's already cached.
+
+Routes can also define a `loader` function for data fetching. If present, prefetch calls the loader and caches the promise:
+
+```typescript
+// In the route definition
+{
+  path: '/blog/:slug',
+  component: lazy(() => import('./pages/blog/[slug]/+Page')),
+  loader: async ({ params }) => {
+    return fetchBlogPost(params.slug);
+  },
+}
+
+// In the prefetch function
+if (typeof route.loader === 'function') {
+  const loaderPromise = route.loader({ params: result.params });
+  loaderCache.current.set(targetPath, loaderPromise);
+}
+```
+
+The component can then read from the cache when it renders. Data and code load in parallel during hover, so navigation feels instant.
+
+This is the kind of optimization that frameworks like Next.js do automatically. Building it yourself takes about 30 lines of code and gives you complete control over when and what to prefetch.
+
+## SSG Hydration
+
+When the page is pre-rendered (covered in [Part 3](/blog/building-portfolio-part-3-ssg)), the router needs to know the initial path. The `RouterProvider` accepts an `initialPath` prop:
+
+```typescript
+export function RouterProvider({
+	children,
+	initialPath,
+	initialParams = {},
+	routes,
+}: RouterProviderProps) {
+	const [path, setPath] = useState(() => {
+		if (initialPath) return parseUrl(initialPath).path;
+		if (typeof window !== 'undefined') {
+			return window.location.pathname;
+		}
+		return '/';
+	});
+	// ...
+}
+```
+
+During SSG, we pass the path being rendered. During hydration, the client picks up `window.location.pathname`. The two should match—if they don't, you've got a hydration mismatch bug.
+
+## Browser History
+
+The router also handles the back/forward buttons:
+
+```typescript
+useLayoutEffect(() => {
+	const handlePopState = () => {
+		const newPath = window.location.pathname;
+		const newHash = window.location.hash;
+
+		startTransition(() => {
+			setPath(newPath);
+			setHash(newHash);
+			// Match route and update state...
+		});
+
+		if (newHash) {
+			scrollToHash(newHash);
+		}
+	};
+
+	window.addEventListener('popstate', handlePopState);
+	return () => window.removeEventListener('popstate', handlePopState);
+}, [routes]);
+```
+
+`popstate` fires when the user clicks back/forward. We read the new path from `window.location` and update state accordingly. Same `startTransition` treatment for smooth transitions.
+
+Why `useLayoutEffect` instead of `useEffect`? When the browser fires `popstate`, it updates `window.location` synchronously. With `useEffect`, there's a gap between the URL changing and React processing the route—the user might see the old page with the new URL for a frame. `useLayoutEffect` runs before the browser paints, ensuring the event listener is attached immediately and state updates happen before any visual inconsistency can appear.
+
+## What I'd Add for a Larger App
+
+This router is purpose-built for a portfolio. For a larger application, I'd consider:
+
+- **Scroll restoration**: Remember scroll position when navigating back
+- **Nested routes**: Child routes that render within parent layouts
+- **Route guards**: Redirect unauthenticated users, etc.
+
+None of these are hard to add. But I don't need them, so they don't exist. That's the point.
+
+## Alternatives I Considered
+
+**React Router v7**: The obvious choice. Excellent documentation, huge community, handles every edge case. But it's 8x the size of what I built, and I'd use maybe 10% of its features.
+
+**TanStack Router**: Type-safe routing with great DevTools. Impressive engineering. Also more than I need, and the learning curve felt steep for such a simple use case.
+
+**Wouter**: A minimal React router at ~1.5KB. Honestly, this would have been a reasonable choice. I went custom because I wanted the learning experience and tight ViewTransition integration.
+
+## The Full Picture
+
+The complete router is about 250 lines of TypeScript across four files:
+
+- `types.ts` - Type definitions
+- `context.tsx` - RouterProvider and hooks
+- `Router.tsx` - The Router component with Suspense/ViewTransition
+- `Link.tsx` - The Link component
+
+That's it. No build plugins, no babel transforms, no special file naming conventions. Just React components and the History API.
 
 ---
-
-*Next up: [Part 3 - Static Site Generation](/blog/building-portfolio-part-3-ssg)*

@@ -11,12 +11,14 @@ import gfm from 'remark-gfm';
 import { cloudflare } from '@cloudflare/vite-plugin';
 import { ssg } from './scripts/ssg';
 import rehypeStarryNight from 'rehype-starry-night';
+import { common } from '@wooorm/starry-night';
+import tsx from '@wooorm/starry-night/source.tsx';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
 	build: {
-		minify: false,
+		minify: 'esbuild',
 	},
 	plugins: [
 		ssrDevPlugin(),
@@ -27,7 +29,7 @@ export default defineConfig({
 			enforce: 'pre',
 			...mdx({
 				remarkPlugins: [gfm],
-				rehypePlugins: [rehypeStarryNight],
+				rehypePlugins: [[rehypeStarryNight, { grammars: [...common, tsx] }]],
 			}),
 		},
 		react({

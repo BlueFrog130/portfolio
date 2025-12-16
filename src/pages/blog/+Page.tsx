@@ -1,25 +1,83 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useMemo, useCallback, startTransition } from 'react';
 import { Layout } from '@/lib/components/Layout';
 import { blogPosts, getAllTags, searchBlogPosts } from '@/content/blog';
 import { BlogSearch } from './BlogSearch';
 import { BlogCard } from './BlogCard';
+import { useSearchParams } from '@/lib/router';
 
 export default function BlogPage() {
-	const [query, setQuery] = useState('');
-	const [selectedTags, setSelectedTags] = useState<string[]>([]);
+	const [searchParams, _setSearchParams] = useSearchParams();
+
+	const selectedTags = useMemo(() => {
+		const tagsParam = searchParams.get('tags');
+		return tagsParam ? tagsParam.split(',') : [];
+	}, [searchParams]);
+
+	const setSearchParams = useCallback(
+		(
+			params: Parameters<typeof _setSearchParams>[0],
+			options?: Parameters<typeof _setSearchParams>[1],
+		) => {
+			startTransition(() => {
+				_setSearchParams(params, options);
+			});
+		},
+		[_setSearchParams],
+	);
+
+	const setQuerySearchParam = useCallback(
+		(query: string) => {
+			setSearchParams(
+				(p) => {
+					const newParams = new URLSearchParams(p);
+					if (query === '') {
+						newParams.delete('query');
+						return newParams;
+					}
+					newParams.set('query', query);
+					return newParams;
+				},
+				{ replace: true },
+			);
+		},
+		[setSearchParams],
+	);
+
+	const setSelectedTags = useCallback(
+		(tags: string[]) => {
+			setSearchParams(
+				(p) => {
+					const newParams = new URLSearchParams(p);
+					if (tags.length === 0) {
+						newParams.delete('tags');
+						return newParams;
+					}
+					newParams.set('tags', tags.join(','));
+					return newParams;
+				},
+				{ replace: true },
+			);
+		},
+		[setSearchParams],
+	);
 
 	const allTags = useMemo(() => getAllTags(), []);
 
 	const filteredPosts = useMemo(
-		() => searchBlogPosts(query, selectedTags),
-		[query, selectedTags],
+		() => searchBlogPosts(searchParams.get('query') || '', selectedTags),
+		[searchParams, selectedTags],
 	);
 
-	const handleTagToggle = useCallback((tag: string) => {
-		setSelectedTags((prev) =>
-			prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
-		);
-	}, []);
+	const handleTagToggle = useCallback(
+		(tag: string) => {
+			setSelectedTags(
+				selectedTags.includes(tag)
+					? selectedTags.filter((t) => t !== tag)
+					: [...selectedTags, tag],
+			);
+		},
+		[selectedTags, setSelectedTags],
+	);
 
 	return (
 		<Layout>
@@ -35,8 +93,8 @@ export default function BlogPage() {
 					</header>
 
 					<BlogSearch
-						query={query}
-						onQueryChange={setQuery}
+						query={searchParams.get('query') || ''}
+						onQueryChange={setQuerySearchParam}
 						tags={allTags}
 						selectedTags={selectedTags}
 						onTagToggle={handleTagToggle}
@@ -61,10 +119,10 @@ export default function BlogPage() {
 								<p className="mt-4 text-surface-500">
 									No posts found matching your criteria.
 								</p>
-								{(query || selectedTags.length > 0) && (
+								{(searchParams.get('query') || selectedTags.length > 0) && (
 									<button
 										onClick={() => {
-											setQuery('');
+											setQuerySearchParam('');
 											setSelectedTags([]);
 										}}
 										className="mt-4 text-sm font-medium text-accent-600 hover:text-accent-700"
@@ -82,7 +140,9 @@ export default function BlogPage() {
 
 					{blogPosts.length === 0 && (
 						<div className="py-12 text-center">
-							<p className="text-surface-500">No blog posts yet. Check back soon!</p>
+							<p className="text-surface-500">
+								No blog posts yet. Check back soon!
+							</p>
 						</div>
 					)}
 				</div>

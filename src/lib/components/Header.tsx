@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 import clsx from 'clsx';
 import { Link } from '@/lib/router';
@@ -7,6 +7,15 @@ import { ModeSwitcher } from './ModeSwitcher';
 import { Tooltip } from './Tooltip';
 import { GitHubIcon, LinkedInIcon } from './icons';
 import { Menu, X } from 'lucide-react';
+
+const emptySubscribe = () => () => {};
+function useIsClient() {
+	return useSyncExternalStore(
+		emptySubscribe,
+		() => true,
+		() => false,
+	);
+}
 
 const navItems = [
 	{ href: '/#experience', label: 'Experience' },
@@ -19,6 +28,7 @@ const navItems = [
 
 export function Header() {
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+	const isClient = useIsClient();
 
 	const closeMenu = useCallback(() => {
 		setMobileMenuOpen(false);
@@ -119,7 +129,7 @@ export function Header() {
 			</nav>
 
 			{/* Mobile Menu Portal */}
-			{typeof document !== 'undefined' &&
+			{isClient &&
 				createPortal(
 					<div
 						className={clsx(

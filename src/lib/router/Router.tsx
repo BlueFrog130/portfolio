@@ -1,4 +1,4 @@
-import { Suspense, useContext, ViewTransition } from 'react';
+import { Suspense, useContext, ViewTransition, use } from 'react';
 import type { MatchResult, RouteParams } from './types';
 import { RouterContext } from './context';
 
@@ -45,7 +45,17 @@ export function Router({ fallback }: RouterProps) {
 		throw new Error('Router must be used within a RouterProvider');
 	}
 
-	const { matchedRoute } = context;
+	const { matchedRoute, path, params, loaderCache } = context;
+
+	// Get or create loader promise for current path
+	const loaderPromise = matchedRoute?.loader
+		? loaderCache.get(path) ??
+			(() => {
+				const promise = matchedRoute.loader!({ params });
+				loaderCache.set(path, promise);
+				return promise;
+			})()
+		: null;
 
 	if (!matchedRoute) {
 		// Look for 404 route
@@ -68,10 +78,29 @@ export function Router({ fallback }: RouterProps) {
 	return (
 		<ViewTransition>
 			<Suspense fallback={fallback ?? <LoadingFallback />}>
-				<Component />
+				{loaderPromise ? (
+					<RouteWithLoader
+						Component={Component}
+						loaderPromise={loaderPromise}
+					/>
+				) : (
+					<Component />
+				)}
 			</Suspense>
 		</ViewTransition>
 	);
+}
+
+// Component that uses React's `use` hook to await loader data
+function RouteWithLoader({
+	Component,
+	loaderPromise,
+}: {
+	Component: React.ComponentType<any>;
+	loaderPromise: Promise<any>;
+}) {
+	const loaderData = use(loaderPromise);
+	return <Component {...loaderData} />;
 }
 
 function LoadingFallback() {

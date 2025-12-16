@@ -1,14 +1,14 @@
-import ogImage from 'virtual:og-image?title=AI Chat with Streaming and Analytics&description=Building per-project AI chat with SSE streaming, prompt engineering, and usage tracking.&tags=AI,Streaming,Cloudflare&type=blog&seriesPart=6&seriesTotalParts=10';
+import ogImage from 'virtual:og-image?title=AI Chat with Streaming&description=Per-project AI chat with SSE streaming, prompt engineering, and analytics.&tags=AI,Streaming,SSE&type=blog&seriesPart=6&seriesTotalParts=10';
 
 export const metadata = {
 	slug: 'building-portfolio-part-6-ai-chat',
-	title: 'AI Chat with Streaming and Analytics',
+	title: 'AI Chat with Streaming',
 	description:
-		'Building per-project AI chat with SSE streaming, prompt engineering, and usage tracking.',
-	tags: ['AI', 'Streaming', 'Cloudflare'],
-	publishedAt: '2025-02-24',
+		'Per-project AI chat with SSE streaming, prompt engineering, and analytics.',
+	tags: ['AI', 'Streaming', 'SSE'],
+	publishedAt: '2025-12-16T13:00:00.000Z',
 	featuredImage: ogImage,
-	draft: true,
+	draft: false,
 	series: {
 		id: 'building-portfolio',
 		title: 'Building a Modern Portfolio Without a Meta-Framework',
@@ -17,55 +17,296 @@ export const metadata = {
 	},
 };
 
-# AI Chat with Streaming and Analytics
-
-*Part 6 of the "Building a Modern Portfolio Without a Meta-Framework" series*
+_Part 6 of the "Building a Modern Portfolio Without a Meta-Framework" series_
 
 ---
 
-## Per-Project AI Chat
+AI chat features are everywhere now. Most implementations involve calling OpenAI's API and hoping for the best. I wanted something tighter: a chat that knows about my specific projects, streams responses in real-time, and tracks usage without external services.
 
-Each project page has an AI chat feature that can answer questions about that specific project. The key insight: give the model rich context about the project.
+The result is a per-project chat where visitors can ask questions about any project. The AI responds as me, with full context about the project's architecture, technologies, and challenges.
+
+## The Architecture
+
+The chat flows through three layers:
+
+1. **Client**: React hook managing messages, SSE parsing, and UI state
+2. **Worker**: Hono endpoint handling validation, AI calls, and analytics
+3. **AI**: Cloudflare Workers AI running Llama 4 at the edge
+
+All running on Cloudflare's infrastructure, so the AI inference happens in the same network as the Worker. No external API calls, no API keys to manage.
 
 ## System Prompt Engineering
 
-The system prompt defines the AI's personality and boundaries:
+The system prompt is where LLM behavior lives or dies. Here's what I landed on:
 
 ```typescript
-// TODO: Show the system prompt
+const projectSystemPrompt = `You are Adam Grady, a Senior Software Engineer.
+You speak in first person about the provided project information.
+Be conversational and enthusiastic about your work.
+
+IMPORTANT RULES:
+- Be brief and direct. Give short, punchy answers (1-3 sentences when possible).
+- NEVER repeat or rephrase the user's question back to them.
+- NEVER start responses with phrases like "Great question!" or similar filler.
+- Jump straight into the answer.
+- Use markdown formatting.
+- NEVER use emojis in your responses.
+
+CRITICAL - TOPIC BOUNDARIES:
+- You ONLY answer questions about THIS SPECIFIC PROJECT and my work on it.
+- If asked about ANYTHING else, respond with: "I can only discuss this project."
+- Do NOT demonstrate general knowledge outside this project context.
+- When uncertain if something is related, err on the side of declining.`;
 ```
 
-## Server-Sent Events (SSE)
+A few deliberate choices here:
 
-*TODO: Explain why SSE over WebSockets for streaming*
+- **Brevity rules**: LLMs love to ramble. Explicit instructions to be brief cut response length by 60%.
+- **No question echoing**: "Great question! You asked about..." wastes tokens and feels robotic.
+- **Topic boundaries**: Without this, the model happily becomes a general-purpose assistant. I don't want visitors asking it to write code or explain quantum physics.
 
-## Stream Teeing for Analytics
-
-Here's the clever part: we need to both send the response to the client AND log it for analytics. Stream teeing lets us do both:
+The project context gets appended dynamically:
 
 ```typescript
-// TODO: Show createLoggingStream implementation
+const systemMessage = {
+	role: 'system',
+	content: `${projectSystemPrompt}
+
+Here is the project information:
+
+Title: ${project.title}
+Description: ${project.description}
+Technologies: ${project.technologies.join(', ')}
+Link: ${project.link ?? 'N/A'}
+Github: ${project.github ?? 'N/A'}
+Content: ${project.content}`,
+};
 ```
 
-## Token Tracking and Latency Metrics
+That `project.content` is the full MDX content converted to markdown. More on that later.
 
-*TODO: Show how we capture usage data*
+I could have leveraged tools or retrieval-augmented generation, but for this use case, a well-crafted prompt with project context suffices.
 
-## HTML to Markdown Conversion
+## Why SSE Over WebSockets
 
-*TODO: Explain converting MDX content for the AI context*
+For streaming LLM responses, you have two real options: WebSockets or Server-Sent Events.
 
-## The Full Implementation
+WebSockets give you bidirectional communication. SSE gives you server-to-client only. For chat, that's all you need—the client sends messages via POST, the server streams back.
 
-*TODO: Walk through the chat endpoint*
+SSE wins here because:
 
-## Alternatives Considered
+- **Simpler**: No connection handshake, just a long-lived HTTP response
+- **HTTP/2 native**: Multiplexes over existing connections
+- **Auto-reconnect**: Browsers handle reconnection automatically
+- **Firewall-friendly**: It's just HTTP
 
-- **OpenAI API** - Higher quality, higher cost
-- **Anthropic Claude** - Great, but more expensive
-- **Ollama** - Self-hosted option
-- **Non-streaming** - Simpler, but worse UX
+The format is dead simple:
+
+```
+data: {"response":"Hello"}
+
+data: {"response":" world"}
+
+data: [DONE]
+```
+
+Each chunk is a line starting with `data:`, followed by JSON. The client accumulates these chunks to build the full response.
+
+## Client-Side Stream Parsing
+
+The `useProjectChat` hook handles all the streaming complexity:
+
+```typescript
+export function useProjectChat({
+	slug,
+	onStreamCompleted,
+}: UseProjectChatOptions) {
+	const [messages, setMessages] = useState<ChatMessage[]>(() =>
+		loadMessages(slug),
+	);
+	const [isLoading, setIsLoading] = useState(false);
+	const abortControllerRef = useRef<AbortController | null>(null);
+
+	const sendMessage = useCallback(
+		async (content: string) => {
+			// Cancel any existing request
+			abortControllerRef.current?.abort();
+			abortControllerRef.current = new AbortController();
+
+			const streamStartTime = Date.now();
+			let assistantContent = '';
+
+			const response = await fetch(`/api/chat/projects/${slug}`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					sessionId: getSessionId(),
+					messages: newMessages,
+				}),
+				signal: abortControllerRef.current.signal,
+			});
+
+			// Add placeholder message
+			setMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
+
+			// Process SSE stream
+			const reader = response.body.getReader();
+			const decoder = new TextDecoder();
+			let buffer = '';
+
+			while (true) {
+				const { done, value } = await reader.read();
+				if (done) break;
+
+				buffer += decoder.decode(value, { stream: true });
+				const lines = buffer.split('\n');
+				buffer = lines.pop() || ''; // Keep incomplete line in buffer
+
+				for (const line of lines) {
+					if (line.startsWith('data: ')) {
+						const data = line.slice(6);
+						if (data === '[DONE]') continue;
+
+						const parsed = JSON.parse(data);
+						if (parsed.response) {
+							assistantContent += parsed.response;
+							// Update message in place
+							setMessages((prev) => {
+								const updated = [...prev];
+								updated[updated.length - 1] = {
+									role: 'assistant',
+									content: assistantContent,
+								};
+								return updated;
+							});
+						}
+					}
+				}
+			}
+
+			onStreamCompleted?.(
+				assistantContent.length,
+				Date.now() - streamStartTime,
+			);
+		},
+		[slug, messages],
+	);
+
+	return { messages, sendMessage, isLoading };
+}
+```
+
+The key insight: **buffer incomplete lines**. SSE chunks can arrive mid-line, so `lines.pop()` keeps the partial line for the next iteration.
+
+The `AbortController` handles request cancellation. If someone navigates away or starts a new request, we abort the previous one cleanly.
+
+## MDX to Markdown Conversion
+
+Projects are written in MDX, but the AI needs plain text. React components won't help an LLM understand your architecture.
+
+The solution: render the MDX to HTML, then convert to markdown:
+
+```typescript
+import { renderToString } from 'react-dom/server';
+import { NodeHtmlMarkdown } from 'node-html-markdown';
+
+const nhm = new NodeHtmlMarkdown();
+
+function getProject(slug: string) {
+	const project = projects[slug];
+	if (!project) return;
+
+	return {
+		...project.metadata,
+		content: nhm.translate(renderToString(project.default())),
+	};
+}
+```
+
+`renderToString` converts the React component tree to HTML. `NodeHtmlMarkdown` strips the tags and produces clean markdown the AI can understand.
+
+This runs on every request, but it's fast enough. The alternative—pre-computing markdown at build time—adds complexity for minimal gain.
+
+## The Chat Endpoint
+
+Putting it all together:
+
+```typescript
+const projectChatSchema = z.object({
+	sessionId: z.uuid(),
+	messages: z.array(
+		z.object({
+			role: z.enum(['user', 'assistant']),
+			content: z.string(),
+		}),
+	),
+});
+
+app.post(
+	'/api/chat/projects/:slug',
+	validator('json', (value, c) => {
+		const parsed = projectChatSchema.safeParse(value);
+		if (!parsed.success) return c.text('Invalid!', 401);
+		return parsed.data;
+	}),
+	async (c) => {
+		const { slug } = c.req.param();
+		const { messages, sessionId } = c.req.valid('json');
+
+		const project = getProject(slug);
+		if (!project) return c.text('Project not found', 404);
+
+		const systemMessage = {
+			role: 'system',
+			content: `${projectSystemPrompt}\n\n${projectContext}`,
+		};
+
+		const startTime = Date.now();
+
+		const response = await c.env.AI.run(
+			'@cf/meta/llama-4-scout-17b-16e-instruct',
+			{
+				messages: [systemMessage, ...messages],
+				stream: true,
+				max_tokens: 512,
+				temperature: 0.3,
+				top_p: 0.9,
+			},
+		);
+
+		return c.body(response as ReadableStream, 200, {
+			'Content-Type': 'text/event-stream',
+		});
+	},
+);
+```
+
+Zod validates the request. The project content gets loaded and converted. The AI runs with streaming enabled. The response gets teed for analytics. Clean.
+
+The model parameters matter:
+
+- **`max_tokens: 512`**: Keeps responses concise
+- **`temperature: 0.3`**: Lower = more deterministic, less creative rambling
+- **`top_p: 0.9`**: Nucleus sampling for natural-sounding text
+
+## What I'd Add for Production
+
+This works well for a portfolio. For a production chat:
+
+- **Rate limiting**: Cloudflare has built-in rate limiting by IP
+- **Content moderation**: Filter inappropriate requests before they hit the model
+- **Conversation history in D1**: Currently stored in `sessionStorage`, lost on browser close
+- **Model fallbacks**: If Llama fails, try a backup model
+- **Prompt injection detection**: The current boundaries help, but dedicated detection is better
+
+## Alternatives I Considered
+
+**OpenAI/Anthropic APIs**: Better models, but external calls add latency and require API key management. Cloudflare AI runs in the same network.
+
+**Non-streaming**: Simpler implementation, but users stare at a spinner for 2-5 seconds. Streaming shows progress immediately.
+
+**WebSockets**: Overkill for request-response chat. SSE is simpler and HTTP-native.
+
+**Vercel AI SDK**: Nice abstractions, but I wanted to understand the raw primitives first.
 
 ---
-
-*Next up: [Part 7 - Analytics from Scratch](/blog/building-portfolio-part-7-analytics)*

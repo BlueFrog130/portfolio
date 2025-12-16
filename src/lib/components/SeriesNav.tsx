@@ -23,7 +23,7 @@ export function SeriesNav({ post, prev, next }: SeriesNavProps) {
 				</span>
 			</div>
 
-			<div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
+			<div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
 				{prev ? (
 					<Link
 						to={`/blog/${prev.slug}`}

@@ -6,10 +6,10 @@ export const metadata = {
 	description:
 		'The philosophy behind building a custom React portfolio without Next.js, Remix, or TanStack Start.',
 	tags: ['React', 'Architecture', 'Meta-Frameworks'],
-	publishedAt: '2025-01-20',
+	publishedAt: '2025-12-16T08:00:00.000Z',
 	featuredImage: ogImage,
 	featured: true,
-	draft: true,
+	draft: false,
 	series: {
 		id: 'building-portfolio',
 		title: 'Building a Modern Portfolio Without a Meta-Framework',
@@ -18,60 +18,103 @@ export const metadata = {
 	},
 };
 
-# Why I Built My Own
-
 _Part 1 of the "Building a Modern Portfolio Without a Meta-Framework" series_
-
-```ts
-const example: string = 'This is a code example';
-console.log(example);
-```
 
 ---
 
-## The Meta-Framework Landscape
+I've mass-deleted more portfolio code than most people will ever write.
 
-The JavaScript ecosystem in 2024/2025 offers an embarrassment of riches when it comes to React frameworks:
+Early in 2025, I set out to build a new personal portfolio website. What started as a simple project turned into a months-long journey through the modern JavaScript ecosystem, and eventually led me to abandon meta-frameworks entirely. This series documents that journey, the decisions I made, and what I learned along the way.
 
-- **Next.js** with its App Router
-- **Remix** with its focus on web fundamentals
-- **TanStack Start** emerging as a promising alternative
-- **Astro** for content-heavy sites
+## The Framework Graveyard
 
-So why would anyone choose to build their own?
+The JavaScript ecosystem moves fast. New frameworks and meta-frameworks appear constantly, each promising to solve the problems of the last. For a portfolio site—something that should be simple—the options are overwhelming.
+
+For the last few years, I've primarily used SvelteKit, appreciating its simplicity and how close it feels to writing vanilla JavaScript. For this portfolio, though, I wanted to challenge myself with React and brush up on its modern features.
+
+But I didn't start with a custom solution. The portfolio you're reading this on went through four complete rewrites:
+
+1. [SvelteKit](https://kit.svelte.dev/) - My comfort zone, but I wanted to branch out and explore the React ecosystem that dominates the job market.
+2. [Next.js](https://nextjs.org/) - The obvious choice for React. I hit walls with Vercel-centric deployment assumptions and spent more time fighting the framework than building my site.
+3. [Astro](https://astro.build/) - Loved the content-first philosophy, but the island architecture felt like overkill for a fully interactive React app.
+4. [TanStack Start](https://tanstack.com/start/v1) - Promising, but still in beta. Too many rough edges and breaking changes for a project I wanted to ship.
+
+After four false starts, I asked myself: why am I fighting these tools? A portfolio doesn't need server-side rendering, complex data fetching, or most of what these frameworks provide. I considered just writing plain HTML, but I wanted to stay sharp with React. So I built exactly what I needed—nothing more.
 
 ## Why Custom?
 
-### Learning
-
-_TODO: Discuss the learning value of building from scratch_
-
 ### Control
 
-_TODO: Discuss having complete control over the architecture_
+Meta-frameworks are opinionated by design. That's usually a feature, not a bug—until your opinions diverge from theirs. I wanted to deploy to Cloudflare Workers, structure my routes a specific way, and avoid patterns I didn't need. Building custom meant every decision was mine to make.
 
-### Minimal Footprint
+### Understanding the Abstractions
 
-_TODO: Discuss keeping dependencies minimal_
+There's a difference between using a router and understanding how routing works. I'd been importing `useRouter` for years without thinking about what happens underneath. Building these primitives myself filled in gaps I didn't know I had.
+
+### Right-Sized for the Job
+
+My initial goal was minimal dependencies: just React and TypeScript. That lasted about a day before I missed hot module replacement. Vite came in, but I resisted adding more. The result is a stack with only what I actually use—no dead code from features I'll never touch.
 
 ## The Trade-offs
 
+I'm not going to pretend this approach is right for everyone. Here's an honest look at what you're signing up for:
+
 ### What You Gain
 
-_TODO: List benefits_
+- **No black boxes**: When something breaks, you wrote the code. No digging through framework internals or waiting for upstream fixes.
+- **Deployment freedom**: No vendor lock-in. The output is static HTML and a standard Worker—deploy it anywhere.
+- **Exactly what you need**: Every line of infrastructure code exists because I needed it, not because it might be useful someday.
 
 ### What You Lose
 
-_TODO: List drawbacks_
+- **Time**: I spent weeks building what Next.js gives you out of the box. For a client project with deadlines, this would be irresponsible.
+- **Battle-tested solutions**: My router handles my use cases. Next.js handles edge cases discovered by millions of users.
+- **Community resources**: When you hit a wall, Stack Overflow can't help. The documentation is whatever comments you left yourself.
 
 ## The Tech Stack
 
-_TODO: Overview of React 19, Vite 7, Cloudflare Workers, Hono_
+With the philosophy established, here's what I actually landed on:
+
+- [React](https://react.dev/) - The UI library. Using the latest features including the React Compiler.
+- [TypeScript](https://www.typescriptlang.org/) - Non-negotiable for any project I work on.
+- [Vite](https://vitejs.dev/) - Build tooling, dev server, and the foundation for the custom SSG pipeline.
+- [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS. Fast to write, easy to maintain.
+- [Hono](https://hono.dev/) - Lightweight routing for the Cloudflare Worker backend.
+- [Cloudflare Workers](https://workers.cloudflare.com/) - Edge deployment with D1 for analytics and Workers AI for the chat feature.
 
 ## Architecture Overview
 
-_TODO: Brief tour of the final architecture_
+At a high level, the portfolio follows a straightforward architecture:
 
----
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      Build Time (Vite)                      │
+├─────────────────────────────────────────────────────────────┤
+│  MDX Content → React Components → Static HTML + Client JS   │
+└─────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────┐
+│                   Cloudflare Workers                        │
+├─────────────────────────────────────────────────────────────┤
+│  Static Assets (HTML/JS/CSS)  │  API Routes (Hono)          │
+│  Pre-rendered pages           │  Analytics, AI Chat         │
+└─────────────────────────────────────────────────────────────┘
+```
 
-_Next up: [Part 2 - The Custom Router](/blog/building-portfolio-part-2-router)_
+**Static Site Generation (SSG)**: Pages are pre-rendered at build time using a custom auto-crawling script. The crawler starts at the root route and discovers all pages, generating static HTML for each.
+
+**Custom Router**: A lightweight client-side router handles navigation with support for dynamic routes (like `/project/:slug`), lazy loading, and view transitions.
+
+**Content as Code**: Projects and blog posts are MDX files that export their own metadata. A custom Vite plugin extracts this metadata at build time.
+
+**Edge Backend**: A Cloudflare Worker running Hono handles API routes for analytics tracking and AI-powered chat features, with D1 as the database.
+
+The beauty of this architecture is its simplicity—there's no magic. Every piece is visible, debuggable, and replaceable.
+
+In the upcoming parts of this series, we'll dive deep into each component:
+
+- **Part 2**: Building the custom router
+- **Part 3**: Static Site Generation
+- **Part 4**: MDX content system
+- **Part 5**: The Cloudflare Workers backend
+- And more...
