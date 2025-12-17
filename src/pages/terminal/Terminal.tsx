@@ -1,5 +1,3 @@
-'use client';
-
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { executeCommand, type CommandContext } from './commands';
 import { getSerializedContent } from '@/lib/content';

@@ -1,4 +1,5 @@
 import { RouterProvider, Router } from '@/lib/router';
+import { AnalyticsProvider } from '@/lib/analytics';
 import { routes } from './routes';
 
 interface AppProps {
@@ -7,8 +8,10 @@ interface AppProps {
 
 export function App({ initialPath }: AppProps) {
 	return (
-		<RouterProvider initialPath={initialPath} routes={routes}>
-			<Router />
-		</RouterProvider>
+		<AnalyticsProvider>
+			<RouterProvider initialPath={initialPath} routes={routes}>
+				<Router />
+			</RouterProvider>
+		</AnalyticsProvider>
 	);
 }

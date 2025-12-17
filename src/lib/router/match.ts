@@ -1,15 +1,50 @@
-import type { Route, RouteParams, RouteMeta } from './types';
+import type { Route, RouteParams, RouteMeta, MatchResult } from './types';
 
 export interface RouteMatch {
 	route: Route;
 	params: RouteParams;
 }
 
+/**
+ * Match a URL path against a route pattern.
+ * Supports dynamic segments (`:param`) and catch-all (`*`) patterns.
+ */
+export function matchPath(pattern: string, path: string): MatchResult {
+	// Handle catch-all
+	if (pattern === '*') {
+		return { matched: true, params: {} };
+	}
+
+	const patternParts = pattern.split('/').filter(Boolean);
+	const pathParts = path.split('/').filter(Boolean);
+
+	if (patternParts.length !== pathParts.length) {
+		return { matched: false, params: {} };
+	}
+
+	const params: RouteParams = {};
+
+	for (let i = 0; i < patternParts.length; i++) {
+		const patternPart = patternParts[i];
+		const pathPart = pathParts[i];
+
+		if (patternPart.startsWith(':')) {
+			// Dynamic segment - extract param
+			params[patternPart.slice(1)] = pathPart;
+		} else if (patternPart !== pathPart) {
+			// Static segment doesn't match
+			return { matched: false, params: {} };
+		}
+	}
+
+	return { matched: true, params };
+}
+
 export function matchRoute(path: string, routes: Route[]): RouteMatch | null {
 	for (const route of routes) {
-		const params = matchPath(route.path, path);
-		if (params !== null) {
-			return { route, params };
+		const result = matchPath(route.path, path);
+		if (result.matched) {
+			return { route, params: result.params };
 		}
 	}
 	return null;
@@ -29,24 +64,4 @@ export function getMetaForPath(
 		return route.meta(params);
 	}
 	return route.meta || null;
-}
-
-function matchPath(pattern: string, path: string): RouteParams | null {
-	// Handle catch-all
-	if (pattern === '*') return {};
-
-	const patternParts = pattern.split('/');
-	const pathParts = path.split('/');
-
-	if (patternParts.length !== pathParts.length) return null;
-
-	const params: RouteParams = {};
-	for (let i = 0; i < patternParts.length; i++) {
-		if (patternParts[i].startsWith(':')) {
-			params[patternParts[i].slice(1)] = pathParts[i];
-		} else if (patternParts[i] !== pathParts[i]) {
-			return null;
-		}
-	}
-	return params;
 }

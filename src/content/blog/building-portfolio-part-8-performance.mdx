@@ -279,13 +279,8 @@ System fonts are already on the user's device. No network request, no flash of i
 
 ```css
 font-family:
-	-apple-system,
-	BlinkMacSystemFont,
-	'Segoe UI',
-	Roboto,
-	'Helvetica Neue',
-	Arial,
-	sans-serif;
+	-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+	Arial, sans-serif;
 ```
 
 Tailwind's default font stack handles this. Every user sees their system's native font—clean, fast, and familiar.
@@ -307,8 +302,8 @@ Static assets live on Cloudflare's CDN. The configuration in `wrangler.jsonc`:
 {
 	"assets": {
 		"directory": "./dist/static",
-		"not_found_handling": "404-page"
-	}
+		"not_found_handling": "404-page",
+	},
 }
 ```
 
@@ -373,19 +368,17 @@ This portfolio is simple. For production applications:
 
 Current Lighthouse scores (mobile):
 
-- **Performance**: 100
+- **Performance**: 98
 - **Accessibility**: 100
 - **Best Practices**: 100
 - **SEO**: 100
 
 Real user metrics (p75):
 
-- **LCP**: ~800ms
-- **INP**: ~50ms
-- **CLS**: 0
+- **LCP**: ~881ms
+- **INP**: ~31.2ms
+- **CLS**: ~0.021
 
 These numbers are achievable because the site is fundamentally simple: pre-rendered HTML, minimal JavaScript, fast hosting. No amount of optimization saves a poorly architected site.
 
 ---
-
-_Next up: [Part 9 - Lessons Learned](/blog/building-portfolio-part-9-lessons) - An honest retrospective on building a portfolio without a meta-framework_

@@ -10,7 +10,7 @@ import {
 	type Research,
 } from '../data';
 import { projects } from '@/content/projects';
-import { type ReactNode, isValidElement } from 'react';
+import { extractTextFromReactNode } from '../util';
 
 export interface SerializedProject {
 	slug: string;
@@ -30,23 +30,6 @@ export interface SerializedContent {
 	skills: typeof skills;
 	links: typeof links;
 	projects: SerializedProject[];
-}
-
-/**
- * Extract plain text from React nodes (for terminal/AI display)
- */
-function extractTextFromReactNode(node: ReactNode): string {
-	if (typeof node === 'string') return node;
-	if (typeof node === 'number') return String(node);
-	if (!node) return '';
-	if (Array.isArray(node)) {
-		return node.map(extractTextFromReactNode).join('');
-	}
-	if (isValidElement(node)) {
-		// @ts-ignore: children exist
-		return extractTextFromReactNode(node.props.children);
-	}
-	return '';
 }
 
 /**

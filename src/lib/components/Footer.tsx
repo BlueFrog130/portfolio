@@ -45,13 +45,13 @@ export function Footer() {
 					</nav>
 				</div>
 
-				<p className="mt-4 text-center text-xs text-surface-400">
+				<p className="mt-4 text-center text-xs text-surface-600">
 					Built with React 19, custom router & SSG, and View Transitions API.{' '}
 					<a
 						href={`${links.github}/portfolio`}
 						target="_blank"
 						rel="noopener noreferrer"
-						className="text-accent-500 hover:text-accent-600 hover:-translate-y-0.5"
+						className="text-accent-600 hover:text-accent-800 hover:-translate-y-0.5 underline underline-offset-2"
 					>
 						View source
 					</a>

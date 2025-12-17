@@ -4,6 +4,7 @@ import { RouterProvider, Router } from './lib/router';
 import { routes } from './routes';
 import { getMetaForPath } from './lib/router/match';
 import { generateHead } from './lib/head';
+import { AnalyticsProvider } from './lib/analytics';
 
 export interface RenderResult {
 	html: string;
@@ -13,9 +14,11 @@ export interface RenderResult {
 export async function render(path: string): Promise<RenderResult> {
 	const stream = await renderToReadableStream(
 		<StrictMode>
-			<RouterProvider initialPath={path} routes={routes}>
-				<Router />
-			</RouterProvider>
+			<AnalyticsProvider>
+				<RouterProvider initialPath={path} routes={routes}>
+					<Router />
+				</RouterProvider>
+			</AnalyticsProvider>
 		</StrictMode>,
 	);
 

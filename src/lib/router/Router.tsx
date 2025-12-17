@@ -1,34 +1,6 @@
 import { Suspense, useContext, ViewTransition, use } from 'react';
-import type { MatchResult, RouteParams } from './types';
+import type { RouteParams } from './types';
 import { RouterContext } from './context';
-
-export function matchPath(pattern: string, path: string): MatchResult {
-	const patternParts = pattern.split('/').filter(Boolean);
-	const pathParts = path.split('/').filter(Boolean);
-
-	// Check if lengths could match (accounting for params)
-	if (patternParts.length !== pathParts.length) {
-		return { matched: false, params: {} };
-	}
-
-	const params: RouteParams = {};
-
-	for (let i = 0; i < patternParts.length; i++) {
-		const patternPart = patternParts[i];
-		const pathPart = pathParts[i];
-
-		if (patternPart.startsWith(':')) {
-			// Dynamic segment - extract param
-			const paramName = patternPart.slice(1);
-			params[paramName] = pathPart;
-		} else if (patternPart !== pathPart) {
-			// Static segment doesn't match
-			return { matched: false, params: {} };
-		}
-	}
-
-	return { matched: true, params };
-}
 
 interface RouterProps {
 	fallback?: React.ReactNode;

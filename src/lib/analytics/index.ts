@@ -1,2 +1,10 @@
-export { initAnalytics, getAnalyticsClient } from './client';
-export type { AnalyticsConfig } from './types';
+// React context and hooks (recommended)
+export {
+	AnalyticsProvider,
+	useAnalytics,
+	useTrackEvent,
+	useTrackChat,
+} from './context';
+
+// Types
+export type { AnalyticsConfig, ChatEventType } from './types';

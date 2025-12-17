@@ -39,6 +39,8 @@ The alternatives exist. Good ones, even. But each has trade-offs:
 
 Building custom analytics took about 300 lines of TypeScript. It runs on infrastructure I already have (Cloudflare Workers + D1). Zero additional cost. Complete control over what gets tracked. And I learned how analytics actually work.
 
+The implementation uses React context and hooks for clean integration—no global singletons or manual initialization. Just wrap your app in a provider and use hooks wherever you need tracking.
+
 ## The Privacy Model
 
 Traditional analytics track users across sessions, sites, and devices. They use cookies, fingerprinting, and cross-site identifiers to build persistent profiles.
@@ -53,14 +55,20 @@ I don't need any of that. I need to know:
 All answerable with session-based tracking. No cookies. No personal data. No cross-site anything.
 
 ```typescript
-private getOrCreateSessionId(): string {
+const getSessionId = useCallback(() => {
+	if (sessionIdRef.current) return sessionIdRef.current;
+
 	const stored = sessionStorage.getItem('analytics_session_id');
-	if (stored) return stored;
+	if (stored) {
+		sessionIdRef.current = stored;
+		return stored;
+	}
 
 	const newId = crypto.randomUUID();
 	sessionStorage.setItem('analytics_session_id', newId);
+	sessionIdRef.current = newId;
 	return newId;
-}
+}, []);
 ```
 
 `sessionStorage` persists only for the browser tab's lifetime. Close the tab, the session dies. Open a new tab to the same site, new session. This means I can't track "returning visitors" in the traditional sense—but I don't need to. I care about page views and performance, not building user profiles.
@@ -71,15 +79,17 @@ Four event types cover everything:
 
 ### Sessions
 
-When someone arrives, capture contextual information:
+When someone arrives, capture contextual information. This happens automatically in the `AnalyticsProvider`'s initialization effect:
 
 ```typescript
+// Inside AnalyticsProvider's useEffect
+const sessionId = getSessionId();
 const ua = parseUserAgent();
 const utm = parseUtmParams();
 
-this.enqueue({
+enqueue({
 	type: 'session',
-	id: this.sessionId,
+	id: sessionId,
 	deviceType: ua.deviceType, // mobile, tablet, desktop
 	browser: ua.browser,
 	browserVersion: ua.browserVersion,
@@ -134,62 +144,75 @@ export function getExternalReferrer(): string | null {
 
 ### Page Views
 
-Track which pages get visited and how long people spend:
+Track which pages get visited and how long people spend. The `trackNavigation` callback uses refs to track time spent on each page:
 
 ```typescript
-trackNavigation(newPath: string): void {
-	const previousPath = this.currentPath;
-	const duration = Date.now() - this.pageEnteredAt;
+const trackNavigation = useCallback(
+	(newPath: string) => {
+		const previousPath = currentPathRef.current;
+		const duration = Date.now() - pageEnteredAtRef.current;
 
-	if (previousPath !== newPath) {
-		// Send duration for the page they're leaving
-		this.enqueue({
-			type: 'pageview',
-			sessionId: this.sessionId,
-			path: previousPath,
-			timestamp: this.pageEnteredAt,
-			duration,
-		});
-	}
+		if (previousPath && previousPath !== newPath) {
+			// Send duration for the page they're leaving
+			enqueue({
+				type: 'pageview',
+				sessionId: getSessionId(),
+				path: previousPath,
+				timestamp: pageEnteredAtRef.current,
+				duration,
+			});
+		}
 
-	this.currentPath = newPath;
-	this.pageEnteredAt = Date.now();
-
-	// Track the new page view
-	this.trackPageView(newPath, previousPath);
-}
+		currentPathRef.current = newPath;
+		pageEnteredAtRef.current = Date.now();
+		trackPageView(newPath, previousPath || undefined);
+	},
+	[enqueue, getSessionId, trackPageView],
+);
 ```
 
 Duration tracking is tricky in SPAs. You can't rely on page unload events—they're unreliable. Instead, track navigation: when someone navigates away, calculate how long they spent on the previous page.
 
+The router integrates with analytics through context—no direct imports needed:
+
+```typescript
+// In RouterProvider
+const analytics = useAnalytics();
+
+const navigate = useCallback((to: string) => {
+	// ... parse URL
+	analytics.trackNavigation(newPath);
+	// ... update state
+}, [analytics]);
+```
+
 ### Web Vitals
 
-Google's Core Web Vitals measure real-world performance. The `web-vitals` library makes collection trivial:
+Google's Core Web Vitals measure real-world performance. The `web-vitals` library makes collection trivial. This is set up in the provider's initialization effect:
 
 ```typescript
 import { onCLS, onINP, onLCP, onFCP, onTTFB } from 'web-vitals';
 
-private setupWebVitals(): void {
-	const reportMetric = (metric: Metric) => {
-		this.enqueue({
-			type: 'webvital',
-			sessionId: this.sessionId,
-			path: this.currentPath,
-			timestamp: Date.now(),
-			name: metric.name,
-			value: metric.value,
-			rating: metric.rating, // 'good', 'needs-improvement', 'poor'
-			id: metric.id,
-			navigationType: metric.navigationType,
-		});
-	};
+// Inside AnalyticsProvider's useEffect
+const reportMetric = (metric: Metric) => {
+	enqueue({
+		type: 'webvital',
+		sessionId,
+		path: currentPathRef.current,
+		timestamp: Date.now(),
+		name: metric.name,
+		value: metric.value,
+		rating: metric.rating, // 'good', 'needs-improvement', 'poor'
+		id: metric.id,
+		navigationType: metric.navigationType,
+	});
+};
 
-	onCLS(reportMetric);  // Cumulative Layout Shift
-	onINP(reportMetric);  // Interaction to Next Paint
-	onLCP(reportMetric);  // Largest Contentful Paint
-	onFCP(reportMetric);  // First Contentful Paint
-	onTTFB(reportMetric); // Time to First Byte
-}
+onCLS(reportMetric);  // Cumulative Layout Shift
+onINP(reportMetric);  // Interaction to Next Paint
+onLCP(reportMetric);  // Largest Contentful Paint
+onFCP(reportMetric);  // First Contentful Paint
+onTTFB(reportMetric); // Time to First Byte
 ```
 
 The metrics that matter most:
@@ -202,60 +225,89 @@ These run automatically. The `web-vitals` library handles the complex timing API
 
 ### Custom Events
 
-For anything else—chat interactions, button clicks, feature usage:
+For anything else—chat interactions, button clicks, feature usage. The context exposes a `trackEvent` function:
 
 ```typescript
-trackEvent(
-	eventType: string,
-	eventCategory: string,
-	eventData?: Record<string, unknown>,
-): void {
-	this.enqueue({
-		type: 'event',
-		sessionId: this.sessionId,
-		timestamp: Date.now(),
-		eventType,
-		eventCategory,
-		eventData,
-	});
+const trackEvent = useCallback(
+	(
+		eventType: string,
+		eventCategory: string,
+		eventData?: Record<string, unknown>,
+	) => {
+		enqueue({
+			type: 'event',
+			sessionId: getSessionId(),
+			timestamp: Date.now(),
+			eventType,
+			eventCategory,
+			eventData,
+		});
+	},
+	[enqueue, getSessionId],
+);
+```
+
+Components use the `useTrackEvent` hook:
+
+```typescript
+import { useTrackEvent } from '@/lib/analytics';
+
+function ChatWidget({ projectSlug }: { projectSlug: string }) {
+	const trackEvent = useTrackEvent();
+
+	const handleOpen = () => {
+		trackEvent('chat_opened', 'chat', { projectSlug });
+	};
+
+	const handleComplete = (responseLength: number, duration: number) => {
+		trackEvent('stream_completed', 'chat', {
+			projectSlug,
+			responseLength,
+			streamDurationMs: duration,
+		});
+	};
+
+	// ...
 }
 ```
 
-Used like:
-
-```typescript
-client.trackEvent('chat_opened', 'chat', { projectSlug: 'portfolio' });
-client.trackEvent('stream_completed', 'chat', {
-	responseLength: 450,
-	streamDurationMs: 2100,
-});
-```
-
-Flexible enough to track anything without schema changes.
+Flexible enough to track anything without schema changes. For chat-specific tracking, there's also a `useTrackChat` hook that pre-fills the category.
 
 ## Client-Side Batching
 
 Sending an HTTP request for every event is wasteful. Network requests have overhead—DNS lookup, TCP handshake, TLS negotiation. Batching amortizes this cost.
 
-```typescript
-class AnalyticsClient {
-	private queue: AnalyticsEvent[] = [];
-	private flushTimer: number | null = null;
+The provider uses refs to maintain the queue across renders:
 
-	private enqueue(event: AnalyticsEvent): void {
-		this.queue.push(event);
+```typescript
+function AnalyticsProvider({ children, config, enabled = true }) {
+	const queueRef = useRef<AnalyticsEvent[]>([]);
+	const flushTimerRef = useRef<number | null>(null);
+
+	const enqueue = useCallback((event: AnalyticsEvent) => {
+		if (!enabled) return;
+
+		queueRef.current.push(event);
 
 		// Flush when batch is full
-		if (this.queue.length >= this.config.batchSize) {
-			this.flush();
+		if (queueRef.current.length >= mergedConfig.batchSize) {
+			flush();
 		}
-	}
+	}, [enabled, mergedConfig.batchSize]);
 
-	private startFlushTimer(): void {
-		this.flushTimer = window.setInterval(() => {
-			this.flush();
-		}, this.config.flushInterval); // Default: 5 seconds
-	}
+	// Start timer in initialization effect
+	useEffect(() => {
+		flushTimerRef.current = window.setInterval(
+			flush,
+			mergedConfig.flushInterval, // Default: 5 seconds
+		);
+
+		return () => {
+			if (flushTimerRef.current) {
+				clearInterval(flushTimerRef.current);
+			}
+		};
+	}, [flush, mergedConfig.flushInterval]);
 }
 ```
 
@@ -269,51 +321,63 @@ Two triggers for sending data:
 The tricky part: what if the user closes the tab? Regular `fetch` requests get cancelled. Enter `sendBeacon`:
 
 ```typescript
-private flush(): void {
-	if (this.queue.length === 0) return;
+const flush = useCallback(() => {
+	if (queueRef.current.length === 0) return;
 
-	const batch = [...this.queue];
-	this.queue = [];
+	const batch = [...queueRef.current];
+	queueRef.current = [];
 
 	const blob = new Blob([JSON.stringify(batch)], {
 		type: 'application/json',
 	});
-	const sent = navigator.sendBeacon(this.config.endpoint, blob);
+	const sent = navigator.sendBeacon(mergedConfig.endpoint, blob);
 
 	// Fallback if sendBeacon fails
 	if (!sent) {
-		fetch(this.config.endpoint, {
+		fetch(mergedConfig.endpoint, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify(batch),
 			keepalive: true,
 		}).catch(() => {
 			// Re-queue on failure (with limit to prevent memory issues)
-			if (this.queue.length < 100) {
-				this.queue.unshift(...batch);
+			if (queueRef.current.length < 100) {
+				queueRef.current.unshift(...batch);
 			}
 		});
 	}
-}
+}, [mergedConfig.endpoint]);
 ```
 
 `sendBeacon` is designed for this exact use case—sending data reliably even during page unload. The browser queues the request and sends it after the page is gone.
 
-Flush on visibility change and page hide:
+Flush on visibility change and page hide—handled in the provider's cleanup effect:
 
 ```typescript
-document.addEventListener('visibilitychange', () => {
-	if (document.visibilityState === 'hidden') {
-		this.flush();
-	}
-});
+useEffect(() => {
+	// ... initialization code
 
-window.addEventListener('pagehide', () => {
-	this.flush();
-});
+	const handleVisibilityChange = () => {
+		if (document.visibilityState === 'hidden') {
+			flush();
+		}
+	};
+
+	document.addEventListener('visibilitychange', handleVisibilityChange);
+	window.addEventListener('pagehide', flush);
+
+	return () => {
+		if (flushTimerRef.current) {
+			clearInterval(flushTimerRef.current);
+		}
+		document.removeEventListener('visibilitychange', handleVisibilityChange);
+		window.removeEventListener('pagehide', flush);
+		flush(); // Final flush on unmount
+	};
+}, [/* dependencies */]);
 ```
 
-When the user switches tabs or closes the page, any queued events get sent immediately.
+When the user switches tabs or closes the page, any queued events get sent immediately. The cleanup function ensures we don't leak event listeners and sends any remaining events when the provider unmounts.
 
 ## The Database Schema
 
@@ -484,6 +548,63 @@ In Grafana, configure Infinity to POST to this endpoint with a SQL query in the 
 **AI Chat Metrics**: Token usage, response latency, and chat engagement per project. Tells me if the feature is worth the Cloudflare AI costs.
 
 The beauty of owning your data: any question becomes a SQL query away. Want to know the p95 LCP for mobile users on blog posts? Write the query, add a panel. No waiting for GA4 to add a feature or Plausible to support a new dimension.
+
+## React Integration
+
+The whole system comes together with a simple provider pattern. Wrap your app once:
+
+```typescript
+// App.tsx
+import { AnalyticsProvider } from '@/lib/analytics';
+
+export function App({ initialPath }: AppProps) {
+	return (
+		<AnalyticsProvider>
+			<RouterProvider initialPath={initialPath} routes={routes}>
+				<Router />
+			</RouterProvider>
+		</AnalyticsProvider>
+	);
+}
+```
+
+No manual initialization. No global singletons. The provider handles everything—session creation, web vitals, batching, cleanup.
+
+The analytics context exports everything you need:
+
+```typescript
+// What the provider exposes
+interface AnalyticsContextValue {
+	trackPageView: (path: string, referrerPath?: string) => void;
+	trackNavigation: (newPath: string) => void;
+	trackEvent: (
+		eventType: string,
+		eventCategory: string,
+		eventData?: Record<string, unknown>,
+	) => void;
+	trackChat: (eventType: ChatEventType, eventData?: Record<string, unknown>) => void;
+	sessionId: string;
+}
+```
+
+Use the hooks in any component:
+
+```typescript
+// Full access
+const { trackEvent, sessionId } = useAnalytics();
+
+// Just event tracking
+const trackEvent = useTrackEvent();
+
+// Chat-specific (pre-fills category)
+const trackChat = useTrackChat();
+```
+
+The `enabled` prop lets you disable analytics in development or for users who opt out:
+
+```typescript
+<AnalyticsProvider enabled={process.env.NODE_ENV === 'production'}>
+```
 
 ## What's Not Tracked
 

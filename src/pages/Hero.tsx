@@ -7,13 +7,13 @@ export function Hero() {
 			{/* Animated gradient blobs */}
 			<div className="absolute inset-0 -z-10">
 				{/* Primary indigo blob */}
-				<div className="blob blob-1 absolute h-[600px] w-[600px] rounded-full bg-linear-to-br from-accent-400/20 to-accent-600/15 blur-3xl" />
+				<div className="blob blob-1 absolute h-150 w-150 rounded-full bg-linear-to-br from-accent-400/20 to-accent-600/15 blur-3xl" />
 				{/* Purple accent blob */}
-				<div className="blob blob-2 absolute h-[500px] w-[500px] rounded-full bg-linear-to-br from-purple-400/15 to-fuchsia-500/10 blur-3xl" />
+				<div className="blob blob-2 absolute h-125 w-125 rounded-full bg-linear-to-br from-purple-400/15 to-fuchsia-500/10 blur-3xl" />
 				{/* Cyan accent blob */}
-				<div className="blob blob-3 absolute h-[400px] w-[400px] rounded-full bg-linear-to-br from-cyan-400/12 to-blue-500/10 blur-3xl" />
+				<div className="blob blob-3 absolute h-100 w-100 rounded-full bg-linear-to-br from-cyan-400/12 to-blue-500/10 blur-3xl" />
 				{/* Subtle pink blob */}
-				<div className="blob blob-4 absolute h-[350px] w-[350px] rounded-full bg-linear-to-br from-pink-300/10 to-rose-400/8 blur-3xl" />
+				<div className="blob blob-4 absolute h-87.5 w-87.5 rounded-full bg-linear-to-br from-pink-300/10 to-rose-400/8 blur-3xl" />
 			</div>
 
 			<div className="mx-auto max-w-5xl px-4 sm:px-6">

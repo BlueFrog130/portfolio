@@ -373,7 +373,7 @@ function ProjectChat({ project, onMessageCountChange }: ProjectChatProps) {
 	const starterQuestions = getStarterQuestions(project);
 
 	return (
-		<div className="flex flex-col min-h-[400px]">
+		<div className="flex flex-col min-h-100">
 			<div className="flex items-center justify-between mb-4">
 				<div className="flex items-center gap-2">
 					<MessageCircle className="h-5 w-5 text-accent-600" />

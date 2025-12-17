@@ -1,6 +1,5 @@
-'use client';
-
 import { useState, useCallback, useEffect, useRef } from 'react';
+import { useAnalytics } from '@/lib/analytics';
 
 export interface ChatMessage {
 	role: 'user' | 'assistant';
@@ -29,15 +28,6 @@ interface UseProjectChatReturn {
 }
 
 const STORAGE_KEY_PREFIX = 'chat_messages_';
-
-function getSessionId(): string {
-	let sessionId = sessionStorage.getItem('analytics_session_id');
-	if (!sessionId) {
-		sessionId = crypto.randomUUID();
-		sessionStorage.setItem('analytics_session_id', sessionId);
-	}
-	return sessionId;
-}
 
 function getStorageKey(slug: string): string {
 	return `${STORAGE_KEY_PREFIX}${slug}`;
@@ -71,6 +61,7 @@ export function useProjectChat({
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const abortControllerRef = useRef<AbortController | null>(null);
+	const { sessionId } = useAnalytics();
 
 	// Sync messages to sessionStorage whenever they change
 	useEffect(() => {
@@ -104,8 +95,6 @@ export function useProjectChat({
 			let assistantContent = '';
 
 			try {
-				const sessionId = getSessionId();
-
 				const response = await fetch(`/api/chat/projects/${slug}`, {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
@@ -199,7 +188,7 @@ export function useProjectChat({
 				setIsLoading(false);
 			}
 		},
-		[slug, messages, isLoading, onStreamCompleted, onStreamErrored],
+		[slug, messages, isLoading, sessionId, onStreamCompleted, onStreamErrored],
 	);
 
 	const clearMessages = useCallback(() => {

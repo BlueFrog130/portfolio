@@ -13,12 +13,12 @@ import {
 import type {
 	RouterContextValue,
 	RouteParams,
-	MatchResult,
 	Route,
 	SearchParams,
 	SetSearchParamsOptions,
 } from './types';
-import { getAnalyticsClient } from '@/lib/analytics/client';
+import { matchPath } from './match';
+import { useAnalytics } from '@/lib/analytics/context';
 
 function scrollToHash(hash: string) {
 	if (!hash) return;
@@ -57,34 +57,6 @@ function parseUrl(url: string): {
 		search,
 		hash,
 	};
-}
-
-function matchPath(pattern: string, path: string): MatchResult {
-	const patternParts = pattern.split('/').filter(Boolean);
-	const pathParts = path.split('/').filter(Boolean);
-
-	// Check if lengths could match (accounting for params)
-	if (patternParts.length !== pathParts.length) {
-		return { matched: false, params: {} };
-	}
-
-	const params: RouteParams = {};
-
-	for (let i = 0; i < patternParts.length; i++) {
-		const patternPart = patternParts[i];
-		const pathPart = pathParts[i];
-
-		if (patternPart.startsWith(':')) {
-			// Dynamic segment - extract param
-			const paramName = patternPart.slice(1);
-			params[paramName] = pathPart;
-		} else if (patternPart !== pathPart) {
-			// Static segment doesn't match
-			return { matched: false, params: {} };
-		}
-	}
-
-	return { matched: true, params };
 }
 
 const RouterContext = createContext<RouterContextValue | null>(null);
@@ -126,6 +98,8 @@ export function RouterProvider({
 	initialParams = {},
 	routes,
 }: RouterProviderProps) {
+	const analytics = useAnalytics();
+
 	const [path, setPath] = useState(() => {
 		if (initialPath) return parseUrl(initialPath).path;
 		if (typeof window !== 'undefined') {
@@ -206,8 +180,7 @@ export function RouterProvider({
 				scrollToHash(newHash);
 			} else {
 				// Full navigation
-				const analytics = getAnalyticsClient();
-				analytics?.trackNavigation(newPath);
+				analytics.trackNavigation(newPath);
 
 				window.history.pushState({}, '', to);
 				startTransition(() => {
@@ -231,7 +204,7 @@ export function RouterProvider({
 				}
 			}
 		},
-		[routes, path],
+		[routes, path, analytics],
 	);
 
 	const prefetchedPaths = useRef(new Set<string>());
@@ -277,7 +250,6 @@ export function RouterProvider({
 			const newSearch = window.location.search;
 			const newHash = window.location.hash;
 
-			const analytics = getAnalyticsClient();
 			analytics?.trackNavigation(newPath);
 
 			startTransition(() => {
@@ -301,7 +273,7 @@ export function RouterProvider({
 
 		window.addEventListener('popstate', handlePopState);
 		return () => window.removeEventListener('popstate', handlePopState);
-	}, [routes]);
+	}, [routes, analytics]);
 
 	// Handle initial hash scroll on page load
 	useEffect(() => {

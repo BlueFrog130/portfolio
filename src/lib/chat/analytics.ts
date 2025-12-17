@@ -1,7 +1,5 @@
-'use client';
-
 import { useCallback, useRef } from 'react';
-import { getAnalyticsClient } from '@/lib/analytics';
+import { useAnalytics } from '@/lib/analytics';
 import type { ChatEventType } from '@/lib/analytics/types';
 
 interface UseChatAnalyticsOptions {
@@ -34,22 +32,20 @@ interface UseChatAnalyticsReturn {
 export function useChatAnalytics({
 	projectSlug,
 }: UseChatAnalyticsOptions): UseChatAnalyticsReturn {
+	const { trackEvent } = useAnalytics();
 	const openedAtRef = useRef<number | null>(null);
 
-	const trackEvent = useCallback(
+	const track = useCallback(
 		(eventType: ChatEventType, eventData: Record<string, unknown>) => {
-			const client = getAnalyticsClient();
-			if (!client) return;
-
-			client.trackEvent(eventType, 'chat', eventData);
+			trackEvent(eventType, 'chat', eventData);
 		},
-		[],
+		[trackEvent],
 	);
 
 	const trackChatOpened = useCallback(() => {
 		openedAtRef.current = Date.now();
-		trackEvent('chat_opened', { projectSlug });
-	}, [projectSlug, trackEvent]);
+		track('chat_opened', { projectSlug });
+	}, [projectSlug, track]);
 
 	const trackChatClosed = useCallback(
 		(messageCount: number) => {
@@ -58,13 +54,13 @@ export function useChatAnalytics({
 				: 0;
 			openedAtRef.current = null;
 
-			trackEvent('chat_closed', {
+			track('chat_closed', {
 				projectSlug,
 				durationMs,
 				messageCount,
 			});
 		},
-		[projectSlug, trackEvent],
+		[projectSlug, track],
 	);
 
 	const trackMessageSent = useCallback(
@@ -73,57 +69,57 @@ export function useChatAnalytics({
 			isStarterQuestion: boolean,
 			messageIndex: number,
 		) => {
-			trackEvent('message_sent', {
+			track('message_sent', {
 				projectSlug,
 				messageLength,
 				isStarterQuestion,
 				messageIndex,
 			});
 		},
-		[projectSlug, trackEvent],
+		[projectSlug, track],
 	);
 
 	const trackStarterQuestionClicked = useCallback(
 		(questionIndex: number, questionText: string) => {
-			trackEvent('starter_question_clicked', {
+			track('starter_question_clicked', {
 				projectSlug,
 				questionIndex,
 				questionText,
 			});
 		},
-		[projectSlug, trackEvent],
+		[projectSlug, track],
 	);
 
 	const trackChatCleared = useCallback(
 		(messageCount: number) => {
-			trackEvent('chat_cleared', {
+			track('chat_cleared', {
 				projectSlug,
 				messageCount,
 			});
 		},
-		[projectSlug, trackEvent],
+		[projectSlug, track],
 	);
 
 	const trackStreamCompleted = useCallback(
 		(responseLength: number, streamDurationMs: number) => {
-			trackEvent('stream_completed', {
+			track('stream_completed', {
 				projectSlug,
 				responseLength,
 				streamDurationMs,
 			});
 		},
-		[projectSlug, trackEvent],
+		[projectSlug, track],
 	);
 
 	const trackStreamErrored = useCallback(
 		(errorMessage: string, partialResponseLength?: number) => {
-			trackEvent('stream_errored', {
+			track('stream_errored', {
 				projectSlug,
 				errorMessage,
 				partialResponseLength,
 			});
 		},
-		[projectSlug, trackEvent],
+		[projectSlug, track],
 	);
 
 	return {

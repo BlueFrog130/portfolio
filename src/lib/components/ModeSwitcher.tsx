@@ -1,5 +1,3 @@
-'use client';
-
 import { useMode, MODE_CONFIGS, type PortfolioMode } from '@/lib/mode';
 import { Link } from '@/lib/router';
 import { Tooltip } from './Tooltip';
