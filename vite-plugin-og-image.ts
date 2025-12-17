@@ -6,7 +6,7 @@ import { resolve } from 'path';
 const VIRTUAL_PREFIX = 'virtual:og-image';
 
 // Font file path for Inter
-const INTER_FONT_DIR = resolve(process.cwd(), 'fonts/static');
+const INTER_FONT_DIR = resolve(process.cwd(), 'fonts');
 
 interface OgImageParams {
 	title: string;
