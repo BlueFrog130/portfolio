@@ -149,5 +149,10 @@ export function getBlogPostMeta(slug: string): RouteMeta {
 		description: post.description,
 		ogImage: post.featuredImage,
 		keywords: post.tags,
+		type: 'article',
+		publishedTime: new Date(post.publishedAt).toISOString(),
+		schema: 'Article',
+		sitemapPriority: 0.7,
+		sitemapChangefreq: 'monthly',
 	};
 }

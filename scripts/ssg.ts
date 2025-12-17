@@ -10,6 +10,7 @@ import {
 } from 'fs';
 import { dirname, join, resolve } from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
+import 'dotenv/config';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -17,6 +18,7 @@ const CLIENT_DIR = join(ROOT, 'dist', 'client');
 const SERVER_DIR = join(ROOT, 'dist', 'ssg');
 const WORKER_DIR = join(ROOT, 'dist', 'server');
 const OUTPUT_DIR = join(ROOT, 'dist', 'static');
+const BASE_URL = process.env.VITE_BASE_URL;
 
 interface RenderResult {
 	html: string;
@@ -52,7 +54,9 @@ function buildRouteMappings(manifest: Manifest): RouteMapping[] {
 
 	// First pass: discover all content files
 	for (const src of Object.keys(manifest)) {
-		const contentMatch = src.match(/^src\/content\/([^/]+)\/([^/]+)\.(mdx|md)$/);
+		const contentMatch = src.match(
+			/^src\/content\/([^/]+)\/([^/]+)\.(mdx|md)$/,
+		);
 		if (contentMatch) {
 			const dirName = contentMatch[1];
 			const slug = contentMatch[2];
@@ -85,7 +89,11 @@ function buildRouteMappings(manifest: Manifest): RouteMapping[] {
 
 					// Find matching content directory (try both singular and plural forms)
 					let contentDir: string | null = null;
-					const possibleDirs = [basePath, basePath + 's', basePath.replace(/s$/, '')];
+					const possibleDirs = [
+						basePath,
+						basePath + 's',
+						basePath.replace(/s$/, ''),
+					];
 					for (const dir of possibleDirs) {
 						if (contentDirs.has(dir)) {
 							contentDir = dir;
@@ -102,7 +110,10 @@ function buildRouteMappings(manifest: Manifest): RouteMapping[] {
 						source: src,
 						contentSource: contentDir
 							? (path: string) => {
-									const slug = path.replace(new RegExp(`^\\/${urlBasePath}\\/`), '');
+									const slug = path.replace(
+										new RegExp(`^\\/${urlBasePath}\\/`),
+										'',
+									);
 									return `src/content/${contentDir}/${slug}.mdx`;
 								}
 							: undefined,
@@ -132,7 +143,9 @@ function findRouteSource(
 		if (mapping.pattern.test(path)) {
 			return {
 				source: mapping.source,
-				contentSource: mapping.contentSource ? mapping.contentSource(path) : null,
+				contentSource: mapping.contentSource
+					? mapping.contentSource(path)
+					: null,
 			};
 		}
 	}
@@ -188,10 +201,7 @@ function getModulePreloads(
 /**
  * Generate head tags for stylesheets and module preloads
  */
-function generateHeadTags(
-	modules: string[],
-	stylesheets: string[],
-): string {
+function generateHeadTags(modules: string[], stylesheets: string[]): string {
 	const cssLinks = stylesheets
 		.map((file) => `<link rel="stylesheet" href="/${file}">`)
 		.join('\n\t');
@@ -268,6 +278,64 @@ function writeHtmlFile(path: string, fullHtml: string): void {
 }
 
 /**
+ * Extract sitemap metadata from rendered HTML
+ */
+function extractSitemapMeta(html: string): {
+	priority: string;
+	changefreq: string;
+} {
+	const priorityMatch = html.match(
+		/<meta\s+name="sitemap:priority"\s+content="([^"]+)"/,
+	);
+	const changefreqMatch = html.match(
+		/<meta\s+name="sitemap:changefreq"\s+content="([^"]+)"/,
+	);
+
+	return {
+		priority: priorityMatch?.[1] ?? '0.5',
+		changefreq: changefreqMatch?.[1] ?? 'monthly',
+	};
+}
+
+/**
+ * Generate sitemap.xml content
+ */
+function generateSitemap(
+	pages: { path: string; html: string }[],
+	baseUrl: string,
+): string {
+	const today = new Date().toISOString().split('T')[0];
+
+	// Filter out 404 page and sort pages
+	const sitemapPages = pages
+		.filter((p) => p.path !== '/404')
+		.sort((a, b) => {
+			// Root page first
+			if (a.path === '/') return -1;
+			if (b.path === '/') return 1;
+			return a.path.localeCompare(b.path);
+		});
+
+	const urls = sitemapPages.map((page) => {
+		// Extract priority and changefreq from page meta tags
+		const { priority, changefreq } = extractSitemapMeta(page.html);
+		const fullUrl = `${baseUrl}${page.path === '/' ? '' : page.path}`;
+
+		return `  <url>
+    <loc>${fullUrl}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>${changefreq}</changefreq>
+    <priority>${priority}</priority>
+  </url>`;
+	});
+
+	return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls.join('\n')}
+</urlset>`;
+}
+
+/**
  * Copy directory recursively
  */
 function copyDir(src: string, dest: string): void {
@@ -293,6 +361,10 @@ function copyDir(src: string, dest: string): void {
 }
 
 export async function ssg() {
+	if (!BASE_URL) {
+		throw new Error('VITE_BASE_URL is not defined in environment variables.');
+	}
+
 	console.log('Starting SSG build with auto-crawling...\n');
 
 	// Clear output directory
@@ -349,7 +421,9 @@ export async function ssg() {
 	console.log(`  Styles: ${styles.join(', ') || '(none)'}`);
 	console.log(`  Routes discovered: ${routeMappings.length}`);
 	for (const mapping of routeMappings) {
-		console.log(`    - ${mapping.pattern.source} -> ${mapping.source}${mapping.contentSource ? ' (with content)' : ''}`);
+		console.log(
+			`    - ${mapping.pattern.source} -> ${mapping.source}${mapping.contentSource ? ' (with content)' : ''}`,
+		);
 	}
 	console.log('');
 
@@ -414,6 +488,21 @@ export async function ssg() {
 			console.log(`  - ${path === '/' ? '/index.html' : path + '/index.html'}`);
 		}
 	}
+
+	// Generate sitemap.xml
+	console.log('\nGenerating sitemap.xml...');
+	const sitemapContent = generateSitemap(pages, BASE_URL);
+	writeFileSync(join(OUTPUT_DIR, 'sitemap.xml'), sitemapContent, 'utf-8');
+	console.log(`  - /sitemap.xml (${pages.length - 1} URLs)`);
+
+	// Generate robots.txt
+	const robotsContent = `User-agent: *
+Allow: /
+
+Sitemap: ${BASE_URL}/sitemap.xml
+`;
+	writeFileSync(join(OUTPUT_DIR, 'robots.txt'), robotsContent, 'utf-8');
+	console.log(`  - /robots.txt`);
 
 	// Copy static assets from client build
 	console.log('\nCopying static assets...');

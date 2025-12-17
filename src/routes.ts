@@ -15,6 +15,16 @@ export const routes: Route[] = [
 			title: 'Adam Grady | Senior Software Engineer',
 			description:
 				'Experienced Software Engineer specializing in full-stack web development with React, TypeScript, and modern web technologies.',
+			schema: 'Person',
+			keywords: [
+				'Software Engineer',
+				'React',
+				'TypeScript',
+				'Full-Stack Developer',
+				'Web Development',
+			],
+			sitemapPriority: 1.0,
+			sitemapChangefreq: 'weekly',
 		},
 	},
 	{
@@ -33,6 +43,8 @@ export const routes: Route[] = [
 			title: 'Blog | Adam Grady',
 			description:
 				'Thoughts on software engineering, web development, and technology.',
+			sitemapPriority: 0.9,
+			sitemapChangefreq: 'weekly',
 		},
 	},
 	{
@@ -55,6 +67,8 @@ export const routes: Route[] = [
 			title: 'Terminal | Adam Grady',
 			description:
 				"Interactive terminal interface for exploring Adam Grady's portfolio.",
+			sitemapPriority: 0.6,
+			sitemapChangefreq: 'monthly',
 		},
 	},
 	{

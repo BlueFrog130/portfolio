@@ -84,5 +84,9 @@ export function getProjectMeta(slug: string): RouteMeta {
 		description: description,
 		ogImage: project.featuredImage,
 		keywords: project.technologies,
+		type: 'article',
+		schema: 'SoftwareApplication',
+		sitemapPriority: 0.8,
+		sitemapChangefreq: 'monthly',
 	};
 }

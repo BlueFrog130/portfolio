@@ -9,6 +9,22 @@ export interface RouteMeta {
 	description: string;
 	ogImage?: string;
 	keywords?: string[];
+	// Article-specific metadata
+	type?: 'website' | 'article';
+	publishedTime?: string;
+	modifiedTime?: string;
+	// JSON-LD schema type
+	schema?: 'Person' | 'Article' | 'SoftwareApplication';
+	// Sitemap configuration
+	sitemapPriority?: number;
+	sitemapChangefreq?:
+		| 'always'
+		| 'hourly'
+		| 'daily'
+		| 'weekly'
+		| 'monthly'
+		| 'yearly'
+		| 'never';
 }
 
 export interface LoaderContext {
