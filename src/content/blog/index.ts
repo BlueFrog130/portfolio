@@ -1,5 +1,9 @@
 import { type ComponentType } from 'react';
-import { lazyWithPreload, type PreloadableComponent } from '@/lib/router';
+import {
+	lazyWithPreload,
+	type PreloadableComponent,
+	type RouteMeta,
+} from '@/lib/router';
 
 export interface SeriesInfo {
 	id: string;
@@ -127,5 +131,23 @@ export function getAdjacentSeriesPosts(post: BlogPost): {
 			currentIndex < seriesPosts.length - 1
 				? seriesPosts[currentIndex + 1]
 				: null,
+	};
+}
+
+export function getBlogPostMeta(slug: string): RouteMeta {
+	const post = blogPosts.find((p) => p.slug === slug);
+
+	if (!post) {
+		return {
+			title: 'Post Not Found | Adam Grady',
+			description: 'The requested blog post could not be found.',
+		};
+	}
+
+	return {
+		title: `${post.title} | Adam Grady`,
+		description: post.description,
+		ogImage: post.featuredImage,
+		keywords: post.tags,
 	};
 }

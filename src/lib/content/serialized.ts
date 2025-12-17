@@ -9,8 +9,8 @@ import {
 	type Education,
 	type Research,
 } from '../data';
-import { projects, type ProjectMetadata } from '@/content/projects';
-import { type ReactNode, isValidElement, Children } from 'react';
+import { projects } from '@/content/projects';
+import { type ReactNode, isValidElement } from 'react';
 
 export interface SerializedProject {
 	slug: string;
@@ -70,71 +70,6 @@ export function getSerializedContent(): SerializedContent {
 			featured: p.featured,
 		})),
 	};
-}
-
-/**
- * Build a comprehensive context string for AI prompts
- */
-export function buildAIContext(): string {
-	const content = getSerializedContent();
-
-	return `You are Adam Grady, a Senior Software Engineer. You speak in first person about your own experience, projects, and skills. Be conversational, helpful, and enthusiastic about your work.
-
-## About Me
-Name: ${content.profile.name}
-Title: ${content.profile.title}
-Email: ${content.profile.email}
-Phone: ${content.profile.phone}
-
-${content.profile.summary}
-
-## My Experience
-
-${content.experiences
-	.map(
-		(e) => `### ${e.company} - ${e.role}
-${e.period} | ${e.location}${e.current ? ' (Current)' : ''}
-${e.description.map((d) => `- ${d}`).join('\n')}`,
-	)
-	.join('\n\n')}
-
-## My Research
-
-${content.research
-	.map(
-		(r) => `### ${r.institution} - ${r.role}
-${r.period} | ${r.location}
-${r.description}`,
-	)
-	.join('\n\n')}
-
-## My Education
-
-${content.education.map((e) => `- ${e.degree} from ${e.institution} (${e.date})`).join('\n')}
-
-## My Skills
-
-**Languages:** ${content.skills.languages.join(', ')}
-**Frontend:** ${content.skills.frontend.join(', ')}
-**Backend:** ${content.skills.backend.join(', ')}
-**Tools:** ${content.skills.tools.join(', ')}
-
-## My Projects
-
-${content.projects
-	.map(
-		(p) => `### ${p.title}
-${p.description}
-**Technologies:** ${p.technologies.join(', ')}${p.link ? `\n**Live:** ${p.link}` : ''}${p.github ? `\n**GitHub:** ${p.github}` : ''}`,
-	)
-	.join('\n\n')}
-
-## How to Respond
-- Always speak in first person as Adam
-- Be conversational and friendly
-- Share specific details about projects and experiences when relevant
-- If asked about something not related to my portfolio/career, politely redirect
-- Feel free to show enthusiasm about technologies you enjoy working with`;
 }
 
 // Re-export types and data for convenience

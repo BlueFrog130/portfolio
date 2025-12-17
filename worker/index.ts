@@ -1,10 +1,8 @@
-import { renderToString } from 'react-dom/server';
 import { Hono } from 'hono';
 import { validator } from 'hono/validator';
-
-import type { ProjectMetadata } from '../src/content/projects';
+import type { ProjectMetadata } from '@/content/projects';
+import { reactNodeToMarkdown } from '@/lib/util';
 import { ReactNode } from 'react';
-import { NodeHtmlMarkdown } from 'node-html-markdown';
 import { z } from 'zod';
 
 interface AIAnalyticsData {
@@ -147,6 +145,7 @@ const projects: Record<
 	{
 		metadata: ProjectMetadata;
 		default: () => ReactNode;
+		markdown: () => string;
 	}
 > = Object.values(
 	import.meta.glob<{
@@ -157,21 +156,31 @@ const projects: Record<
 	}),
 ).reduce(
 	(acc, mod) => {
-		acc[mod.metadata.slug!] = mod;
+		acc[mod.metadata.slug!] = {
+			...mod,
+			markdown: () => reactNodeToMarkdown(mod.default()),
+		};
 		return acc;
 	},
-	{} as Record<string, { metadata: ProjectMetadata; default: () => ReactNode }>,
+	{} as Record<
+		string,
+		{
+			metadata: ProjectMetadata;
+			default: () => ReactNode;
+			markdown: () => string;
+		}
+	>,
 );
-
-const nhm = new NodeHtmlMarkdown();
 
 function getProject(slug: string) {
 	const project = projects[slug];
 	if (!project) return;
 
+	const content = project.markdown();
+
 	return {
 		...project.metadata,
-		content: nhm.translate(renderToString(project.default())),
+		content,
 	};
 }
 

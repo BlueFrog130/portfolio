@@ -1,6 +1,5 @@
 export {
 	getSerializedContent,
-	buildAIContext,
 	profile,
 	experiences,
 	education,

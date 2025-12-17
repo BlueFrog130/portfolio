@@ -3,6 +3,7 @@ export interface HeadMeta {
 	description: string;
 	ogImage?: string;
 	url: string;
+	keywords?: string[];
 }
 
 const BASE_URL = 'https://adamgrady.dev';
@@ -15,13 +16,30 @@ export function generateHead(meta: HeadMeta): string {
 		? ogImage
 		: `${BASE_URL}${ogImage}`;
 
+	// Generate keywords meta tag (comma-separated)
+	const keywordsMeta =
+		meta.keywords && meta.keywords.length > 0
+			? `\n\t<meta name="keywords" content="${escapeHtml(meta.keywords.join(', '))}" />`
+			: '';
+
+	// Generate article:tag meta tags (one per tag, for Open Graph)
+	const articleTags =
+		meta.keywords && meta.keywords.length > 0
+			? meta.keywords
+					.map(
+						(tag) =>
+							`\n\t<meta property="article:tag" content="${escapeHtml(tag)}" />`,
+					)
+					.join('')
+			: '';
+
 	return `<title>${escapeHtml(meta.title)}</title>
-	<meta name="description" content="${escapeHtml(meta.description)}" />
+	<meta name="description" content="${escapeHtml(meta.description)}" />${keywordsMeta}
 	<meta property="og:type" content="website" />
 	<meta property="og:url" content="${fullUrl}" />
 	<meta property="og:title" content="${escapeHtml(meta.title)}" />
 	<meta property="og:description" content="${escapeHtml(meta.description)}" />
-	<meta property="og:image" content="${fullImageUrl}" />
+	<meta property="og:image" content="${fullImageUrl}" />${articleTags}
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:title" content="${escapeHtml(meta.title)}" />
 	<meta name="twitter:description" content="${escapeHtml(meta.description)}" />

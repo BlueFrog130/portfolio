@@ -1,8 +1,11 @@
 import type { Route } from './lib/router';
 import { lazyWithPreload } from './lib/router';
-import { getBlogPostMeta, getProjectMeta } from './lib/content/meta';
-import { loadProjectContent } from './content/projects';
-import { loadBlogPostContent, getAdjacentSeriesPosts } from './content/blog';
+import { loadProjectContent, getProjectMeta } from './content/projects';
+import {
+	loadBlogPostContent,
+	getAdjacentSeriesPosts,
+	getBlogPostMeta,
+} from './content/blog';
 
 export const routes: Route[] = [
 	{

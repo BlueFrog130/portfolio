@@ -1,8 +1,10 @@
 import { type ComponentType, type ReactNode } from 'react';
 import {
 	lazyWithPreload,
+	RouteMeta,
 	type PreloadableComponent,
 } from '@/lib/router';
+import { extractTextFromReactNode } from '@/lib/util';
 
 export interface ProjectMetadata {
 	slug: string;
@@ -60,4 +62,27 @@ export function getProject(slug: string): Project | undefined {
 
 export function getFeaturedProjects(): Project[] {
 	return projects.filter((p) => p.featured);
+}
+
+export function getProjectMeta(slug: string): RouteMeta {
+	const project = projects.find((p) => p.slug === slug);
+
+	if (!project) {
+		return {
+			title: 'Project Not Found | Adam Grady',
+			description: 'The requested project could not be found.',
+		};
+	}
+
+	const description =
+		typeof project.description === 'string'
+			? project.description
+			: extractTextFromReactNode(project.description);
+
+	return {
+		title: `${project.title} | Adam Grady`,
+		description: description,
+		ogImage: project.featuredImage,
+		keywords: project.technologies,
+	};
 }

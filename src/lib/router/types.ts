@@ -8,6 +8,7 @@ export interface RouteMeta {
 	title: string;
 	description: string;
 	ogImage?: string;
+	keywords?: string[];
 }
 
 export interface LoaderContext {

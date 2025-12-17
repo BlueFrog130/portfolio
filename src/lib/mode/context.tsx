@@ -4,7 +4,6 @@ import { MODE_CONFIGS } from './types';
 
 function getModeFromPath(path: string): PortfolioMode {
 	if (path.startsWith('/terminal')) return 'terminal';
-	if (path.startsWith('/chat')) return 'ai';
 	return 'web';
 }
 

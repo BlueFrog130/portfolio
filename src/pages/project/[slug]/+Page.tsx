@@ -1,7 +1,7 @@
 import { Link } from '@/lib/router';
 import { type Project } from '@/content/projects';
 import { Layout } from '@/lib/components/Layout';
-import { ViewTransition } from 'react';
+import { Suspense, ViewTransition } from 'react';
 import { ArrowLeft, FolderOpen, ExternalLink, Clock } from 'lucide-react';
 import { GitHubIcon } from '@/lib/components/icons';
 
@@ -124,7 +124,9 @@ export default function ProjectDetail({ project }: ProjectPageProps) {
 
 							<section className="prose prose-surface mt-12 max-w-none">
 								<ViewTransition name="project-content">
-									<project.Content />
+									<Suspense>
+										<project.Content />
+									</Suspense>
 								</ViewTransition>
 							</section>
 						</article>
