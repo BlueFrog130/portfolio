@@ -6,7 +6,7 @@ import { resolve } from 'path';
 const VIRTUAL_PREFIX = 'virtual:og-image';
 
 // Font file path for Inter
-const INTER_FONT_DIR = resolve(process.cwd(), 'public/fonts/static');
+const INTER_FONT_DIR = resolve(process.cwd(), 'fonts/static');
 
 interface OgImageParams {
 	title: string;
@@ -73,10 +73,15 @@ function generateSvg(params: OgImageParams): string {
 	// Calculate positions from top down with tighter spacing
 	const titleStartY = contentTop + 60;
 	const descriptionStartY = titleStartY + titleHeight + 15;
-	const seriesY = descriptionStartY + descriptionHeight + (descriptionLines.length > 0 ? 20 : 0);
+	const seriesY =
+		descriptionStartY +
+		descriptionHeight +
+		(descriptionLines.length > 0 ? 20 : 0);
 	const tagsY = hasSeries
 		? seriesY + 45
-		: descriptionStartY + descriptionHeight + (descriptionLines.length > 0 ? 25 : 10);
+		: descriptionStartY +
+			descriptionHeight +
+			(descriptionLines.length > 0 ? 25 : 10);
 
 	const titleSvg = titleLines
 		.map(
