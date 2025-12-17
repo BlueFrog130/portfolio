@@ -2,6 +2,23 @@
 @plugin '@tailwindcss/typography';
 @plugin '@tailwindcss/container-queries';
 
+/* Inter Variable Font */
+@font-face {
+	font-family: 'Inter';
+	font-style: normal;
+	font-weight: 100 900;
+	font-display: swap;
+	src: url('/fonts/Inter-VariableFont_opsz,wght.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'Inter';
+	font-style: italic;
+	font-weight: 100 900;
+	font-display: swap;
+	src: url('/fonts/Inter-Italic-VariableFont_opsz,wght.ttf') format('truetype');
+}
+
 @theme {
 	/* Indigo as standout accent color */
 	--color-accent-50: #eef2ff;

@@ -1,8 +1,12 @@
 import { Plugin } from 'vite';
-import sharp from 'sharp';
+import { Resvg } from '@resvg/resvg-js';
 import { createHash } from 'crypto';
+import { resolve } from 'path';
 
 const VIRTUAL_PREFIX = 'virtual:og-image';
+
+// Font file path for Inter
+const INTER_FONT_DIR = resolve(process.cwd(), 'public/fonts/static');
 
 interface OgImageParams {
 	title: string;
@@ -55,24 +59,36 @@ function generateSvg(params: OgImageParams): string {
 		: [];
 
 	const hasSeries = seriesPart !== undefined && seriesTotalParts !== undefined;
-	const titleStartY = 220;
-	const titleLineHeight = 70;
-	const descriptionStartY =
-		titleStartY + titleLines.length * titleLineHeight + 20;
-	const seriesY = descriptionStartY + descriptionLines.length * 40 + 30;
-	const tagsY = hasSeries ? seriesY + 50 : descriptionStartY + descriptionLines.length * 40 + 40;
+
+	// Dynamic layout calculation
+	const descriptionLineHeight = 40;
+	const descriptionHeight = descriptionLines.length * descriptionLineHeight;
+	const contentTop = 180; // Below logo area
+
+	// Title sizing - use smaller font/spacing for 3+ lines
+	const titleFontSize = titleLines.length >= 3 ? 52 : 64;
+	const titleLineHeight = titleLines.length >= 3 ? 65 : 75;
+	const titleHeight = titleLines.length * titleLineHeight;
+
+	// Calculate positions from top down with tighter spacing
+	const titleStartY = contentTop + 60;
+	const descriptionStartY = titleStartY + titleHeight + 15;
+	const seriesY = descriptionStartY + descriptionHeight + (descriptionLines.length > 0 ? 20 : 0);
+	const tagsY = hasSeries
+		? seriesY + 45
+		: descriptionStartY + descriptionHeight + (descriptionLines.length > 0 ? 25 : 10);
 
 	const titleSvg = titleLines
 		.map(
 			(line, i) =>
-				`<text x="80" y="${titleStartY + i * titleLineHeight}" font-family="system-ui, -apple-system, sans-serif" font-size="56" font-weight="700" fill="#18181b">${escapeXml(line)}</text>`,
+				`<text x="80" y="${titleStartY + i * titleLineHeight}" font-family="Inter" font-size="${titleFontSize}" font-weight="700" fill="#18181b">${escapeXml(line)}</text>`,
 		)
 		.join('\n  ');
 
 	const descriptionSvg = descriptionLines
 		.map(
 			(line, i) =>
-				`<text x="80" y="${descriptionStartY + i * 40}" font-family="system-ui, -apple-system, sans-serif" font-size="26" fill="#52525b">${escapeXml(line)}</text>`,
+				`<text x="80" y="${descriptionStartY + i * descriptionLineHeight}" font-family="Inter" font-size="26" fill="#52525b">${escapeXml(line)}</text>`,
 		)
 		.join('\n  ');
 
@@ -83,7 +99,7 @@ function generateSvg(params: OgImageParams): string {
 			const width = Math.max(70, tag.length * 12 + 30);
 			const pill = `
       <rect x="${xOffset}" y="0" width="${width}" height="36" rx="18" fill="#e0e7ff"/>
-      <text x="${xOffset + width / 2}" y="24" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="500" fill="#4338ca" text-anchor="middle">${escapeXml(tag)}</text>`;
+      <text x="${xOffset + width / 2}" y="24" font-family="Inter" font-size="16" font-weight="500" fill="#4338ca" text-anchor="middle">${escapeXml(tag)}</text>`;
 			xOffset += width + 10;
 			return pill;
 		});
@@ -112,7 +128,7 @@ function generateSvg(params: OgImageParams): string {
 
 		seriesIndicatorSvg = `
   <!-- Series indicator -->
-  <text x="80" y="${seriesY}" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="600" fill="#6366f1">PART ${seriesPart} OF ${seriesTotalParts}</text>
+  <text x="80" y="${seriesY}" font-family="Inter" font-size="16" font-weight="600" fill="#6366f1">PART ${seriesPart} OF ${seriesTotalParts}</text>
   <g>
     ${dots}
   </g>`;
@@ -158,11 +174,11 @@ function generateSvg(params: OgImageParams): string {
 
   <!-- Logo badge -->
   <rect x="80" y="80" width="80" height="80" rx="16" fill="url(#accent-gradient)"/>
-  <text x="120" y="138" font-family="system-ui, -apple-system, sans-serif" font-size="40" font-weight="700" fill="white" text-anchor="middle">AG</text>
+  <text x="120" y="138" font-family="Inter" font-size="40" font-weight="700" fill="white" text-anchor="middle">AG</text>
 
   <!-- Type label -->
-  <text x="180" y="115" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="600" fill="#6366f1">${typeLabel}</text>
-  <text x="180" y="140" font-family="system-ui, -apple-system, sans-serif" font-size="16" fill="#71717a">Adam Grady</text>
+  <text x="180" y="115" font-family="Inter" font-size="18" font-weight="600" fill="#6366f1">${typeLabel}</text>
+  <text x="180" y="140" font-family="Inter" font-size="16" font-weight="500" fill="#71717a">Adam Grady</text>
 
   <!-- Title -->
   ${titleSvg}
@@ -175,7 +191,7 @@ function generateSvg(params: OgImageParams): string {
   ${tagsSvg}
 
   <!-- Website URL -->
-  <text x="1120" y="580" font-family="system-ui, -apple-system, sans-serif" font-size="20" font-weight="500" fill="#a1a1aa" text-anchor="end">adamgrady.dev</text>
+  <text x="1120" y="580" font-family="Inter" font-size="20" font-weight="500" fill="#a1a1aa" text-anchor="end">adamgrady.dev</text>
 </svg>`;
 }
 
@@ -231,15 +247,21 @@ export function ogImagePlugin(): Plugin {
 			// Generate the SVG
 			const svg = generateSvg(params);
 
-			// Convert to PNG using sharp
-			const pngBuffer = await sharp(Buffer.from(svg))
-				.resize(1200, 630)
-				.png({ quality: 90 })
-				.toBuffer();
+			// Convert to PNG using resvg-js with custom font
+			const resvg = new Resvg(svg, {
+				font: {
+					fontDirs: [INTER_FONT_DIR],
+					loadSystemFonts: false,
+					defaultFontFamily: 'Inter',
+				},
+			});
+
+			const pngData = resvg.render();
+			const pngBuffer = pngData.asPng();
 
 			if (isDev) {
 				// In dev mode, return a data URL
-				const base64 = pngBuffer.toString('base64');
+				const base64 = Buffer.from(pngBuffer).toString('base64');
 				return `export default "data:image/png;base64,${base64}"`;
 			}
 
