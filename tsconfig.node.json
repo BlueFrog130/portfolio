@@ -11,7 +11,8 @@
 		"strict": true,
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
-		"types": ["node", "react/canary"]
+		"types": ["node", "react/canary"],
+		"jsx": "react-jsx"
 	},
 	"include": ["vite.config.ts", "vite-*.ts", "scripts"]
 }
