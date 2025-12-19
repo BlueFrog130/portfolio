@@ -3,7 +3,7 @@ import { StrictMode } from 'react';
 import { RouterProvider, Router } from './lib/router';
 import { routes } from './routes';
 import { getMetaForPath } from './lib/router/match';
-import { generateHead } from './lib/head';
+import { Head } from './lib/head';
 import { AnalyticsProvider } from './lib/analytics';
 
 export interface RenderResult {
@@ -28,14 +28,15 @@ export async function render(path: string): Promise<RenderResult> {
 	const html = await streamToString(stream);
 
 	// Generate head based on route metadata
-	const meta = getMetaForPath(path, routes);
-	const head = meta
-		? generateHead({ ...meta, url: path })
-		: generateHead({
-				title: 'Adam Grady',
-				description: '',
-				url: path,
-			});
+	const meta = getMetaForPath(path, routes) || {
+		title: 'Untitled Page',
+		description: 'No description available.',
+		url: path,
+	};
+	const headStream = await renderToReadableStream(
+		<Head {...meta} url={path} server={true} />,
+	);
+	const head = await streamToString(headStream);
 
 	return { html, head };
 }

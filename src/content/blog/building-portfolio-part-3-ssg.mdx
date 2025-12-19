@@ -87,6 +87,7 @@ The SSG script needs a way to render React to HTML. That's the server entry:
 ```tsx
 // src/entry-server.tsx
 import { renderToReadableStream } from 'react-dom/server';
+import { Head } from './lib/head';
 
 export async function render(path: string): Promise<RenderResult> {
 	const stream = await renderToReadableStream(
@@ -102,9 +103,12 @@ export async function render(path: string): Promise<RenderResult> {
 
 	const html = await streamToString(stream);
 
-	// Generate head tags based on route metadata
+	// Render head tags using the same component as client
 	const meta = getMetaForPath(path, routes);
-	const head = meta ? generateHead({ ...meta, url: path }) : defaultHead;
+	const headStream = await renderToReadableStream(
+		<Head {...meta} url={path} server={true} />,
+	);
+	const head = await streamToString(headStream);
 
 	return { html, head };
 }
@@ -115,7 +119,7 @@ A few things happening here:
 - **`renderToReadableStream`**: React 18+ streaming API. Returns a stream we can convert to a string.
 - **`stream.allReady`**: Waits for all Suspense boundaries to resolve. Since we're pre-rendering, we want the complete HTML.
 - **`initialPath`**: Tells the router which route to render (see [Part 2](/blog/building-portfolio-part-2-router)).
-- **`generateHead`**: Creates meta tags, OpenGraph data, and canonical URLs.
+- **`Head` component**: The same component used on the client, rendered to HTML for SSG. The `server={true}` flag makes it render immediately instead of waiting for `useEffect`.
 
 ## Auto-Crawling
 
@@ -341,26 +345,101 @@ The router handles this by accepting `initialPath` during SSG and reading `windo
 
 ## Head Generation
 
-Each page needs proper meta tags for SEO and social sharing:
+Each page needs proper meta tags for SEO and social sharing. The typical approach is to have a string-based `generateHead()` function for SSG and a separate React component for client-side updates. But that means maintaining two implementations that need to stay in sync.
 
-```typescript
-export function generateHead(meta: HeadMeta): string {
-	const fullUrl = `${BASE_URL}${meta.url}`;
-	const fullImageUrl = meta.ogImage?.startsWith('http')
-		? meta.ogImage
-		: `${BASE_URL}${meta.ogImage}`;
+Instead, I use a single `Head` component for both:
 
-	return `<title>${escapeHtml(meta.title)}</title>
-  <meta name="description" content="${escapeHtml(meta.description)}" />
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="${fullUrl}" />
-  <meta property="og:title" content="${escapeHtml(meta.title)}" />
-  <meta property="og:description" content="${escapeHtml(meta.description)}" />
-  <meta property="og:image" content="${fullImageUrl}" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <link rel="canonical" href="${fullUrl}" />`;
+```tsx
+// src/lib/head/Head.tsx
+export function Head({
+	title,
+	description,
+	url,
+	ogImage,
+	keywords,
+	type = 'website',
+	server = false,
+}: HeadProps) {
+	const [isClient, setIsClient] = useState(server);
+
+	useEffect(() => {
+		clearExistingMetaTags();
+		setIsClient(true);
+	}, []);
+
+	if (!isClient) {
+		return null;
+	}
+
+	const fullUrl = `${BASE_URL}${url}`;
+	// ...
+
+	return (
+		<>
+			<title>{title}</title>
+			<meta name="description" content={description} />
+			<meta property="og:title" content={title} />
+			<meta property="og:description" content={description} />
+			{/* ... */}
+		</>
+	);
 }
 ```
+
+React 19 automatically hoists `<title>`, `<meta>`, and `<link>` tags to the document `<head>`. No portal required, no Helmet library. You render them inline and React handles the rest.
+
+### Server vs Client Rendering
+
+During SSG, the component renders with `server={true}`:
+
+```tsx
+// entry-server.tsx
+const headStream = await renderToReadableStream(
+	<Head {...meta} url={path} server={true} />,
+);
+```
+
+This produces HTML that gets injected into each page's `<head>`. Standard SSG behavior.
+
+On the client, the component needs to handle hydration carefully. If it rendered the same tags immediately, React would try to hydrate against the SSG-generated HTML—but those tags are in the `<head>`, not inside the React root. Hydration would fail or produce duplicates.
+
+The solution is two-pass rendering:
+
+1. **First pass**: Return `null`. React hydrates successfully because there's nothing to match.
+2. **Second pass**: After `useEffect` runs, render the actual tags. React 19 hoists them to `<head>`.
+
+The `useState(server)` initialization handles this. On the server, `server={true}` so it renders immediately. On the client, `server` defaults to `false`, so `isClient` starts as `false` and only becomes `true` after the effect runs.
+
+### Cleaning Up SSG Tags
+
+There's a catch. When navigating to a new page, the new route's `Head` component renders fresh meta tags. But the old page's SSG-generated tags are still sitting in the `<head>`. Now you have duplicates—two titles, two descriptions, two OG images.
+
+Search engines might pick up the wrong one. Page weight increases. The canonical URL could be wrong.
+
+The fix is manual cleanup before React adds new tags:
+
+```typescript
+function clearExistingMetaTags() {
+	document.querySelector('title')?.remove();
+
+	const metaNames = ['description', 'author', 'keywords', 'twitter:card' /* ... */];
+	metaNames.forEach((name) => {
+		document.querySelector(`meta[name="${name}"]`)?.remove();
+	});
+
+	const metaProperties = ['og:type', 'og:url', 'og:title' /* ... */];
+	metaProperties.forEach((property) => {
+		document.querySelector(`meta[property="${property}"]`)?.remove();
+	});
+
+	document.querySelector('link[rel="canonical"]')?.remove();
+	document.querySelector('script[type="application/ld+json"]')?.remove();
+}
+```
+
+This runs in the `useEffect` before `setIsClient(true)`. The SSG tags get removed, then React adds the new ones. Clean slate on every navigation.
+
+Is this elegant? Not particularly. It's the kind of thing frameworks hide from you. But it's also about 30 lines of code, it works reliably, and I understand exactly what it does. That trade-off works for me.
 
 The route's `meta` property (defined in `routes.ts`) provides the data. For dynamic routes like `/blog/:slug`, meta is a function that computes values from params.
 
@@ -417,11 +496,12 @@ None of these are hard—they're just not worth the complexity for a handful of 
 
 ## The Full Picture
 
-The complete SSG system is about 300 lines across two files:
+The complete SSG system is about 350 lines across a few files:
 
 - `scripts/ssg.ts` - Crawling, manifest parsing, preload calculation, HTML generation
-- `src/entry-server.tsx` - React rendering and head generation
+- `src/entry-server.tsx` - React rendering entry point
+- `src/lib/head/Head.tsx` - Unified head component for server and client
 
-No special webpack loaders, no framework-specific data fetching conventions, no magic. Just Node.js reading a manifest, rendering React, and writing HTML files.
+No special webpack loaders, no framework-specific data fetching conventions, no magic. Just Node.js reading a manifest, rendering React, and writing HTML files. The head management is the messiest part—cleaning up SSG tags on navigation isn't pretty—but it's all explicit and debuggable.
 
 ---

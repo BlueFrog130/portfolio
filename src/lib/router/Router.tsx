@@ -1,6 +1,7 @@
 import { Suspense, useContext, ViewTransition, use } from 'react';
 import type { RouteParams } from './types';
 import { RouterContext } from './context';
+import { Head } from '@/lib/head';
 
 interface RouterProps {
 	fallback?: React.ReactNode;
@@ -19,6 +20,13 @@ export function Router({ fallback }: RouterProps) {
 
 	const { matchedRoute, path, params, loaderCache } = context;
 
+	// Get metadata for current route
+	const meta = matchedRoute?.meta
+		? typeof matchedRoute.meta === 'function'
+			? matchedRoute.meta(params)
+			: matchedRoute.meta
+		: null;
+
 	// Get or create loader promise for current path
 	const loaderPromise = matchedRoute?.loader
 		? loaderCache.get(path) ??
@@ -34,8 +42,13 @@ export function Router({ fallback }: RouterProps) {
 		const notFoundRoute = context.routes.find((r) => r.path === '*');
 		if (notFoundRoute) {
 			const Component = notFoundRoute.component;
+			const notFoundMeta =
+				typeof notFoundRoute.meta === 'function'
+					? notFoundRoute.meta(params)
+					: notFoundRoute.meta;
 			return (
 				<ViewTransition>
+					{notFoundMeta && <Head {...notFoundMeta} url={path} />}
 					<Suspense fallback={fallback ?? <LoadingFallback />}>
 						<Component />
 					</Suspense>
@@ -49,6 +62,7 @@ export function Router({ fallback }: RouterProps) {
 
 	return (
 		<ViewTransition>
+			{meta && <Head {...meta} url={path} />}
 			<Suspense fallback={fallback ?? <LoadingFallback />}>
 				{loaderPromise ? (
 					<RouteWithLoader
