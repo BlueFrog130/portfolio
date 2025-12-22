@@ -37,7 +37,7 @@ The real answer? I wanted to understand how routing actually works. The bundle s
 
 ## File-Based Route Discovery
 
-Before diving into the router itself, here's how routes are defined. Instead of manually maintaining an array of route objects, I use Vite's `import.meta.glob` to auto-discover pages from the filesystem:
+Before diving into the router itself, here's how routes are defined. Instead of manually maintaining an array of route objects, I use Vite's `import.meta.glob` to auto-discover pages from the filesystem, this is heavily inspired by SvelteKit's routing conventions:
 
 ```typescript
 // src/routes.ts
@@ -62,9 +62,7 @@ export const routes: Route[] = Object.entries(pageImports)
 		let optionsPath = path.replace('+Page.tsx', '+Page.options.ts');
 		let options = optionImports[optionsPath] || {};
 
-		const routePath = path
-			.replace('./pages', '')
-			.replace('+Page.tsx', '');
+		const routePath = path.replace('./pages', '').replace('+Page.tsx', '');
 
 		return {
 			...options,
@@ -119,7 +117,11 @@ For dynamic routes, `meta` can be a function that computes values from params:
 
 ```typescript
 // src/pages/blog/[slug]/+Page.options.ts
-import { getBlogPostMeta, blogPosts, loadBlogPostContent } from '@/content/blog';
+import {
+	getBlogPostMeta,
+	blogPosts,
+	loadBlogPostContent,
+} from '@/content/blog';
 
 export const meta = (params) => getBlogPostMeta(params.slug);
 
@@ -127,8 +129,7 @@ export const load = async ({ params }) => {
 	return await loadBlogPostContent(params.slug);
 };
 
-export const entries = () =>
-	blogPosts.map((post) => `/blog/${post.slug}`);
+export const entries = () => blogPosts.map((post) => `/blog/${post.slug}`);
 ```
 
 A few things to notice:
@@ -141,11 +142,11 @@ A few things to notice:
 
 ## Pattern Matching
 
-The heart of any router is matching a URL to a route. Here's the implementation:
+The heart of any router is matching a URL path against a route pattern. Since the file structure uses `[param]` folders for dynamic segments, the matcher checks for brackets:
 
 ```typescript
 function matchPath(pattern: string, path: string): MatchResult {
-	// Handle catch-all
+	// Handle catch-all (404 folder becomes * route)
 	if (pattern === '*') return { matched: true, params: {} };
 
 	const patternParts = pattern.split('/').filter(Boolean);
@@ -162,9 +163,9 @@ function matchPath(pattern: string, path: string): MatchResult {
 		const patternPart = patternParts[i];
 		const pathPart = pathParts[i];
 
-		if (patternPart.startsWith(':')) {
-			// Dynamic segment - extract param
-			params[patternPart.slice(1)] = pathPart;
+		if (patternPart.startsWith('[') && patternPart.endsWith(']')) {
+			// Dynamic segment - extract param name from brackets
+			params[patternPart.slice(1, -1)] = pathPart;
 		} else if (patternPart !== pathPart) {
 			// Static segment doesn't match
 			return { matched: false, params: {} };
@@ -177,9 +178,9 @@ function matchPath(pattern: string, path: string): MatchResult {
 
 This handles:
 
-- Static routes: `/blog` matches `/blog`
-- Dynamic routes: `/projects/:slug` matches `/projects/portfolio` with `{ slug: 'portfolio' }`
-- Catch-all: `*` matches anything
+- Static routes: `/blog/` matches `/blog`
+- Dynamic routes: `/project/[slug]/` matches `/project/portfolio` with `{ slug: 'portfolio' }`
+- Catch-all: `*` matches anything (mapped from the `/404/` folder)
 
 What it doesn't handle (and I don't need): optional segments, wildcards in the middle of routes, or query string parsing. Those would be easy to add, but why add code I won't use?
 
