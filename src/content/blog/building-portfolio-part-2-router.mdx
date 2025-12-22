@@ -1,10 +1,10 @@
-import ogImage from 'virtual:og-image?title=Building a Custom React Router&description=Pattern matching, ViewTransition API, and navigation with React 19 startTransition.&tags=React,Router,ViewTransitions&type=blog&seriesPart=2&seriesTotalParts=9';
+import ogImage from 'virtual:og-image?title=Building a Custom React Router&description=File-based route discovery, pattern matching, and ViewTransition API with React 19.&tags=React,Router,ViewTransitions&type=blog&seriesPart=2&seriesTotalParts=9';
 
 export const metadata = {
 	slug: 'building-portfolio-part-2-router',
 	title: 'Building a Custom React Router',
 	description:
-		'Pattern matching, ViewTransition API, and navigation with React 19 startTransition.',
+		'File-based route discovery, pattern matching, and ViewTransition API with React 19.',
 	tags: ['React', 'Router', 'ViewTransitions'],
 	publishedAt: '2025-12-16T09:00:00.000Z',
 	featuredImage: ogImage,
@@ -35,48 +35,109 @@ React Router is battle-tested and handles edge cases I'll never encounter. So wh
 
 The real answer? I wanted to understand how routing actually works. The bundle savings are a bonus.
 
-## The Route Definition
+## File-Based Route Discovery
 
-Before diving into the router itself, here's how routes are defined:
+Before diving into the router itself, here's how routes are defined. Instead of manually maintaining an array of route objects, I use Vite's `import.meta.glob` to auto-discover pages from the filesystem:
 
 ```typescript
 // src/routes.ts
-import { lazy } from 'react';
 import type { Route } from './lib/router';
+import { lazyWithPreload } from './lib/router';
+import { PageOptions } from './lib/router/types';
 
-export const routes: Route[] = [
-	{
-		path: '/',
-		component: lazy(() => import('./pages/+Page')),
-		meta: {
-			title: 'Adam Grady | Senior Software Engineer',
-			description: 'Experienced Software Engineer...',
-		},
-	},
-	{
-		path: '/projects/:slug',
-		component: lazy(() => import('./pages/project/[slug]/+Page')),
-		meta: (params) => getProjectMeta(params.slug),
-	},
-	{
-		path: '/blog/:slug',
-		component: lazy(() => import('./pages/blog/[slug]/+Page')),
-		meta: (params) => getBlogPostMeta(params.slug),
-	},
-	{
-		path: '*',
-		component: lazy(() => import('./pages/404/+Page')),
-		meta: { title: '404 - Page Not Found' },
-	},
-];
+// Eagerly load +Page.options.ts
+const optionImports = import.meta.glob<PageOptions>(
+	'./pages/**/+Page.options.{ts,tsx}',
+	{ eager: true },
+);
+
+// Lazily load +Page.tsx components with preload capability
+const pageImports = import.meta.glob<{ default: React.ComponentType<any> }>(
+	'./pages/**/+Page.tsx',
+	{ eager: false },
+);
+
+export const routes: Route[] = Object.entries(pageImports)
+	.map(([path, module]) => {
+		let optionsPath = path.replace('+Page.tsx', '+Page.options.ts');
+		let options = optionImports[optionsPath] || {};
+
+		const routePath = path
+			.replace('./pages', '')
+			.replace('+Page.tsx', '');
+
+		return {
+			...options,
+			path: routePath === '/404/' ? '*' : routePath,
+			component: lazyWithPreload(module),
+		};
+	})
+	.sort((a, b) => {
+		// Ensure catch-all route is last
+		if (a.path === '*') return 1;
+		if (b.path === '*') return -1;
+		return 0;
+	});
+```
+
+The file structure determines the routes:
+
+```
+src/pages/
+├── +Page.tsx              # /
+├── +Page.options.ts       # Route options for /
+├── 404/
+│   └── +Page.tsx          # * (catch-all)
+├── blog/
+│   ├── +Page.tsx          # /blog
+│   └── [slug]/
+│       ├── +Page.tsx      # /blog/:slug
+│       └── +Page.options.ts
+├── project/
+│   └── [slug]/
+│       └── +Page.tsx      # /project/:slug
+└── terminal/
+    └── +Page.tsx          # /terminal
+```
+
+## Route Options
+
+Each route can have an accompanying `+Page.options.ts` file that exports metadata, loaders, and entry points:
+
+```typescript
+// src/pages/+Page.options.ts
+import { RouteMeta } from '@/lib/router';
+
+export const meta: RouteMeta = {
+	title: 'Adam Grady | Senior Software Engineer',
+	description: 'Experienced Software Engineer...',
+	sitemapPriority: 1.0,
+};
+```
+
+For dynamic routes, `meta` can be a function that computes values from params:
+
+```typescript
+// src/pages/blog/[slug]/+Page.options.ts
+import { getBlogPostMeta, blogPosts, loadBlogPostContent } from '@/content/blog';
+
+export const meta = (params) => getBlogPostMeta(params.slug);
+
+export const load = async ({ params }) => {
+	return await loadBlogPostContent(params.slug);
+};
+
+export const entries = () =>
+	blogPosts.map((post) => `/blog/${post.slug}`);
 ```
 
 A few things to notice:
 
-- **Every component is lazy**: More on this later, but this is the key to bundle splitting.
-- **Dynamic routes use `:param` syntax**: Standard stuff, borrowed from Express.
-- **Meta can be a function**: For dynamic routes, meta is computed from the params.
-- **Catch-all with `*`**: The 404 page matches anything that doesn't match above.
+- **Options are eagerly loaded**: They're small and needed immediately for routing decisions.
+- **Components are lazy**: The actual page code only loads when the route matches.
+- **Dynamic routes use `[param]` folders**: Similar to Next.js/SvelteKit convention.
+- **`entries()` for dynamic routes**: Returns all possible paths for SSG pre-rendering.
+- **Catch-all with `/404/`**: The 404 folder is special-cased to the `*` pattern.
 
 ## Pattern Matching
 
