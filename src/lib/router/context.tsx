@@ -232,8 +232,8 @@ export function RouterProvider({
 					}
 
 					// Call loader and cache the promise
-					if (typeof route.loader === 'function') {
-						const loaderPromise = route.loader({ params: result.params });
+					if (typeof route.load === 'function') {
+						const loaderPromise = route.load({ params: result.params });
 						loaderCache.current.set(targetPath, loaderPromise);
 					}
 

@@ -31,12 +31,10 @@ export interface LoaderContext {
 	params: RouteParams;
 }
 
-export interface Route<T = any> {
+export type Route<T = any> = {
 	path: string;
 	component: ComponentType<T> | LazyExoticComponent<ComponentType<T>>;
-	meta?: RouteMeta | ((params: RouteParams) => RouteMeta);
-	loader?: (context: LoaderContext) => Promise<T>;
-}
+} & PageOptions;
 
 export type SearchParams = URLSearchParams;
 
@@ -67,3 +65,15 @@ export interface MatchResult {
 	matched: boolean;
 	params: RouteParams;
 }
+
+export type PageLoad<T> = (context: LoaderContext) => Promise<T>;
+
+export type RouteEntries = () => string[];
+
+export type PageMeta = RouteMeta | ((params: RouteParams) => RouteMeta);
+
+export type PageOptions = {
+	meta?: PageMeta;
+	load?: PageLoad<any>;
+	entries?: RouteEntries;
+};

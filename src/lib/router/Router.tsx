@@ -28,13 +28,13 @@ export function Router({ fallback }: RouterProps) {
 		: null;
 
 	// Get or create loader promise for current path
-	const loaderPromise = matchedRoute?.loader
-		? loaderCache.get(path) ??
+	const loaderPromise = matchedRoute?.load
+		? (loaderCache.get(path) ??
 			(() => {
-				const promise = matchedRoute.loader!({ params });
+				const promise = matchedRoute.load!({ params });
 				loaderCache.set(path, promise);
 				return promise;
-			})()
+			})())
 		: null;
 
 	if (!matchedRoute) {

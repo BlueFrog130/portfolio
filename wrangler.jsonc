@@ -3,7 +3,7 @@
 	"name": "portfolio",
 	"compatibility_date": "2025-11-17",
 	"compatibility_flags": ["nodejs_compat"],
-	"main": "./worker/index.ts",
+	"main": "./src/entry-worker.ts",
 	"ai": {
 		"binding": "AI",
 		"remote": true,

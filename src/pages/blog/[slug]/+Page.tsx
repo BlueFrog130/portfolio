@@ -99,9 +99,7 @@ export default function BlogPostPage({ post, prev, next }: BlogPostPageProps) {
 							</header>
 
 							<section className="prose prose-surface mt-12 max-w-none prose-headings:scroll-mt-24">
-								<ViewTransition name="blog-content">
-									<post.Content />
-								</ViewTransition>
+								<post.Content />
 
 								<SeriesNav post={post} prev={prev} next={next} />
 							</section>

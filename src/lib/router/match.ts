@@ -11,7 +11,7 @@ export interface RouteMatch {
  */
 export function matchPath(pattern: string, path: string): MatchResult {
 	// Handle catch-all
-	if (pattern === '*') {
+	if (pattern === '404') {
 		return { matched: true, params: {} };
 	}
 
@@ -28,9 +28,9 @@ export function matchPath(pattern: string, path: string): MatchResult {
 		const patternPart = patternParts[i];
 		const pathPart = pathParts[i];
 
-		if (patternPart.startsWith(':')) {
+		if (patternPart.startsWith('[') && patternPart.endsWith(']')) {
 			// Dynamic segment - extract param
-			params[patternPart.slice(1)] = pathPart;
+			params[patternPart.slice(1, -1)] = pathPart;
 		} else if (patternPart !== pathPart) {
 			// Static segment doesn't match
 			return { matched: false, params: {} };

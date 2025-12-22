@@ -16,4 +16,7 @@ export type {
 	RouteMeta,
 	SearchParams,
 	SetSearchParamsOptions,
+	PageLoad,
+	PageMeta,
+	PageOptions,
 } from './types';

@@ -20,6 +20,8 @@ export interface HeadProps {
 		| 'monthly'
 		| 'yearly'
 		| 'never';
+	preloads?: string[];
+	stylesheets?: string[];
 	server?: boolean; // Indicates if rendering on server
 }
 
@@ -94,6 +96,8 @@ export function Head({
 	sitemapPriority,
 	sitemapChangefreq = 'weekly',
 	server = false,
+	preloads,
+	stylesheets,
 }: HeadProps) {
 	// Two-pass rendering: render null on server and initial hydration,
 	// then render meta tags after useEffect runs on client
@@ -177,6 +181,18 @@ export function Head({
 			{/* Sitemap meta tags */}
 			<meta name="sitemap:priority" content={String(sitemapPriority)} />
 			<meta name="sitemap:changefreq" content={sitemapChangefreq} />
+
+			{/* Module preloads */}
+			{preloads &&
+				preloads.map((href) => (
+					<link key={href} rel="modulepreload" href={href} />
+				))}
+
+			{/* Stylesheets */}
+			{stylesheets &&
+				stylesheets.map((href) => (
+					<link key={href} rel="stylesheet" href={href} />
+				))}
 		</>
 	);
 }

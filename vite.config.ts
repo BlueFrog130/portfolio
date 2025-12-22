@@ -20,6 +20,9 @@ export default defineConfig({
 	build: {
 		minify: 'esbuild',
 	},
+	define: {
+		'import.meta.env.VITE_BUILD_DATE': JSON.stringify(new Date().toISOString()),
+	},
 	plugins: [
 		ssrDevPlugin(),
 		tailwindcss(),
@@ -54,6 +57,9 @@ export default defineConfig({
 			build: {
 				outDir: 'dist/client',
 				manifest: true,
+				rollupOptions: {
+					input: resolve(__dirname, 'src/entry-client.tsx'),
+				},
 			},
 		},
 		ssr: {

@@ -111,7 +111,7 @@ export function Projects() {
 										</div>
 										<h3 className="mt-4 text-lg font-semibold text-surface-900 group-hover:text-accent-600">
 											<Link
-												to={`/projects/${project.slug}`}
+												to={`/project/${project.slug}`}
 												className="hover:underline focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2 rounded"
 											>
 												{project.title}
@@ -132,7 +132,7 @@ export function Projects() {
 										</div>
 										<div className="mt-4 flex items-center gap-4">
 											<Link
-												to={`/projects/${project.slug}`}
+												to={`/project/${project.slug}`}
 												className="group/link inline-flex items-center text-sm font-medium text-accent-600 hover:text-accent-700"
 											>
 												View Details

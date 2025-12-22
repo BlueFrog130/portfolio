@@ -15,7 +15,7 @@ export const BlogCard = memo(function BlogCard({ post }: BlogCardProps) {
 	});
 
 	return (
-		<ViewTransition>
+		<ViewTransition name={`blog-${post.slug}`}>
 			<article className="group rounded-xl border border-surface-200 bg-white p-6 shadow-sm transition-all duration-200 hover:shadow-md">
 				<div className="flex items-center gap-4 text-sm text-surface-500">
 					<span className="inline-flex items-center gap-1">
