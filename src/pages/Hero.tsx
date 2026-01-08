@@ -1,59 +1,171 @@
 import { profile, links } from '@/lib/data';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, ArrowDown } from 'lucide-react';
 
 export function Hero() {
 	return (
-		<section className="relative py-20 sm:py-32" aria-labelledby="hero-heading">
-			{/* Animated gradient blobs */}
-			<div className="absolute inset-0 -z-10">
-				{/* Primary indigo blob */}
-				<div className="blob blob-1 absolute h-150 w-150 rounded-full bg-linear-to-br from-accent-400/20 to-accent-600/15 blur-3xl" />
-				{/* Purple accent blob */}
-				<div className="blob blob-2 absolute h-125 w-125 rounded-full bg-linear-to-br from-purple-400/15 to-fuchsia-500/10 blur-3xl" />
-				{/* Cyan accent blob */}
-				<div className="blob blob-3 absolute h-100 w-100 rounded-full bg-linear-to-br from-cyan-400/12 to-blue-500/10 blur-3xl" />
-				{/* Subtle pink blob */}
-				<div className="blob blob-4 absolute h-87.5 w-87.5 rounded-full bg-linear-to-br from-pink-300/10 to-rose-400/8 blur-3xl" />
+		<section
+			className="relative min-h-screen flex items-center overflow-hidden"
+			aria-labelledby="hero-heading"
+		>
+			{/* Ambient glow orbs */}
+			<div className="absolute inset-0 -z-10 overflow-hidden">
+				{/* Primary amber glow */}
+				<div className="glow-orb blob-1 absolute -top-40 -left-40 h-125 w-125 bg-accent-500/20" />
+				{/* Secondary warm glow */}
+				<div className="glow-orb blob-2 absolute top-1/4 -right-20 h-100 w-100 bg-accent-600/15" />
+				{/* Subtle accent */}
+				<div className="glow-orb blob-3 absolute -bottom-32 left-1/3 h-87.5 w-87.5 bg-accent-400/10" />
+				{/* Grid pattern overlay */}
+				<div
+					className="absolute inset-0 opacity-[0.02]"
+					style={{
+						backgroundImage: `linear-gradient(var(--color-surface-500) 1px, transparent 1px),
+							linear-gradient(90deg, var(--color-surface-500) 1px, transparent 1px)`,
+						backgroundSize: '60px 60px',
+					}}
+				/>
 			</div>
 
-			<div className="mx-auto max-w-5xl px-4 sm:px-6">
-				<div className="animate-slide-up text-center">
-					<p className="text-sm font-medium tracking-wide text-accent-600 sm:text-base">
-						Hello, I'm
-					</p>
-
-					<h1
-						id="hero-heading"
-						className="mt-2 text-4xl font-bold tracking-tight text-surface-900 sm:text-5xl lg:text-6xl"
-					>
-						{profile.name}
-					</h1>
-
-					<p className="mt-4 text-xl font-medium text-accent-600 sm:text-2xl">
-						{profile.title}
-					</p>
-
-					<p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-surface-600">
-						{profile.summary}
-					</p>
-
-					<div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-						<a
-							href="#contact"
-							className="inline-flex items-center justify-center rounded-lg bg-accent-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-accent-700 hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-accent-600"
+			<div className="mx-auto w-full max-w-6xl px-6 py-20 sm:px-8 lg:px-12">
+				<div className="grid gap-12 lg:grid-cols-12 lg:gap-8 items-center">
+					{/* Left column - Main content */}
+					<div className="lg:col-span-7 space-y-8">
+						{/* Greeting with accent line */}
+						<div
+							className="flex items-center gap-4 opacity-0 animate-slide-up"
+							style={{ animationDelay: '0.1s' }}
 						>
-							Get in touch
-						</a>
-						<a
-							href={links.github}
-							target="_blank"
-							rel="noopener noreferrer"
-							className="group inline-flex items-center justify-center rounded-lg border border-surface-300 bg-white px-6 py-3 text-sm font-semibold text-surface-700 shadow-sm hover:bg-surface-50 hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-accent-600"
+							<div className="h-px w-12 bg-linear-to-r from-accent-500 to-transparent" />
+							<span className="text-sm font-medium tracking-widest text-accent-400 uppercase">
+								Hello, I'm
+							</span>
+						</div>
+
+						{/* Name - Massive display typography */}
+						<h1
+							id="hero-heading"
+							className="font-display text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight text-surface-100 opacity-0 animate-slide-up"
+							style={{ animationDelay: '0.2s' }}
 						>
-							View GitHub
-							<ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-0.5" />
-						</a>
+							{profile.name.split(' ')[0]}
+							<br />
+							<span className="text-gradient">
+								{profile.name.split(' ')[1]}
+							</span>
+						</h1>
+
+						{/* Title with decorative element */}
+						<div
+							className="flex items-center gap-4 opacity-0 animate-slide-up"
+							style={{ animationDelay: '0.3s' }}
+						>
+							<div className="flex h-3 w-3 items-center justify-center">
+								<span className="absolute h-3 w-3 rounded-full bg-accent-500 animate-ping opacity-75" />
+								<span className="relative h-2 w-2 rounded-full bg-accent-400" />
+							</div>
+							<p className="text-xl sm:text-2xl font-medium text-surface-300">
+								{profile.title}
+							</p>
+						</div>
+
+						{/* Summary */}
+						<p
+							className="max-w-xl text-lg leading-relaxed text-surface-400 opacity-0 animate-slide-up"
+							style={{ animationDelay: '0.4s' }}
+						>
+							{profile.summary}
+						</p>
+
+						{/* CTA buttons */}
+						<div
+							className="flex flex-wrap items-center gap-4 pt-4 opacity-0 animate-slide-up"
+							style={{ animationDelay: '0.5s' }}
+						>
+							<a href="#contact" className="btn btn-primary group">
+								Let's talk
+								<ArrowRight className="h-4 w-4 group-hover:translate-x-1" />
+							</a>
+							<a
+								href={links.github}
+								target="_blank"
+								rel="noopener noreferrer"
+								className="btn btn-secondary group"
+							>
+								View GitHub
+								<ArrowRight className="h-4 w-4 opacity-0 -ml-2 group-hover:opacity-100 group-hover:ml-0" />
+							</a>
+						</div>
 					</div>
+
+					{/* Right column - Stats/decorative */}
+					<div className="lg:col-span-5 hidden lg:block">
+						<div
+							className="relative opacity-0 animate-scale-in"
+							style={{ animationDelay: '0.6s' }}
+						>
+							{/* Decorative card with stats */}
+							<div className="card p-8 space-y-8">
+								{/* Years of experience */}
+								<div className="space-y-2">
+									<div className="flex items-baseline gap-2">
+										<span className="font-display text-5xl font-black text-accent-400">
+											6+
+										</span>
+										<span className="text-surface-500">years</span>
+									</div>
+									<p className="text-sm text-surface-400">
+										Professional experience in software engineering
+									</p>
+								</div>
+
+								<div className="h-px bg-linear-to-r from-surface-800 via-surface-700 to-surface-800" />
+
+								{/* Current focus */}
+								<div className="space-y-3">
+									<p className="text-xs font-medium uppercase tracking-widest text-surface-500">
+										Currently focused on
+									</p>
+									<div className="flex flex-wrap gap-2">
+										{['React', 'TypeScript', 'AI Integration', '.NET'].map(
+											(tech) => (
+												<span key={tech} className="tag tag-accent">
+													{tech}
+												</span>
+											),
+										)}
+									</div>
+								</div>
+
+								<div className="h-px bg-linear-to-r from-surface-800 via-surface-700 to-surface-800" />
+
+								{/* Status */}
+								<div className="flex items-center gap-3">
+									<div className="relative flex h-3 w-3">
+										<span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+										<span className="relative inline-flex h-3 w-3 rounded-full bg-green-500" />
+									</div>
+									<span className="text-sm text-surface-300">
+										Available for new opportunities
+									</span>
+								</div>
+							</div>
+
+							{/* Floating decorative elements */}
+							<div className="absolute -z-10 -top-4 -right-4 h-24 w-24 rounded-2xl border border-accent-500/20 bg-accent-500/5" />
+							<div className="absolute -z-10 -bottom-6 -left-6 h-16 w-16 rounded-xl border border-surface-700 bg-surface-800/50" />
+						</div>
+					</div>
+				</div>
+
+				{/* Scroll indicator */}
+				<div
+					className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-0 animate-fade-in"
+					style={{ animationDelay: '1s' }}
+				>
+					<span className="text-xs font-medium uppercase tracking-widest text-surface-500">
+						Scroll
+					</span>
+					<ArrowDown className="h-4 w-4 text-surface-500 animate-bounce" />
 				</div>
 			</div>
 		</section>

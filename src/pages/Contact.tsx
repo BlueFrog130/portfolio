@@ -1,73 +1,127 @@
 import { profile, links } from '@/lib/data';
-import { Mail, Globe } from 'lucide-react';
+import { Mail, ArrowUpRight } from 'lucide-react';
 import { GitHubIcon, LinkedInIcon } from '@/lib/components/icons';
 
 export function Contact() {
 	return (
 		<section
 			id="contact"
-			className="py-20 sm:py-24"
+			className="relative py-24 sm:py-32 overflow-hidden"
 			aria-labelledby="contact-heading"
 		>
-			<div className="mx-auto max-w-5xl px-4 sm:px-6">
-				<div className="mx-auto max-w-2xl text-center">
-					<h2
-						id="contact-heading"
-						className="text-3xl font-bold tracking-tight text-surface-900 sm:text-4xl"
-					>
-						Let's Connect
-					</h2>
+			{/* Dramatic background */}
+			<div className="absolute inset-0 -z-10">
+				{/* Central glow */}
+				<div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[600px] w-[600px] rounded-full bg-accent-500/10 blur-3xl" />
+				{/* Grid pattern */}
+				<div
+					className="absolute inset-0 opacity-[0.02]"
+					style={{
+						backgroundImage: `linear-gradient(var(--color-surface-500) 1px, transparent 1px),
+							linear-gradient(90deg, var(--color-surface-500) 1px, transparent 1px)`,
+						backgroundSize: '40px 40px',
+					}}
+				/>
+			</div>
 
-					<p className="mt-4 text-lg text-surface-600">
-						I'm always open to discussing new opportunities, interesting
-						projects, or just having a chat about technology.
-					</p>
+			<div className="mx-auto max-w-6xl px-6 sm:px-8 lg:px-12">
+				<div className="relative">
+					{/* Main CTA card */}
+					<div className="card card-accent p-8 sm:p-12 lg:p-16 text-center">
+						{/* Section number - positioned absolutely */}
+						<span className="absolute -top-8 left-8 section-number opacity-30">
+							06
+						</span>
 
-					<div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-						<a
-							href={links.email}
-							className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-accent-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-accent-700 hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-accent-600 sm:w-auto"
+						{/* Heading */}
+						<h2
+							id="contact-heading"
+							className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-surface-100"
 						>
-							<Mail className="h-5 w-5" />
-							{profile.email}
-						</a>
+							Let's build something
+							<br />
+							<span className="text-gradient">amazing together</span>
+						</h2>
 
-						<a
-							href={links.linkedin}
-							target="_blank"
-							rel="noopener noreferrer"
-							className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-surface-300 bg-white px-6 py-3 text-sm font-semibold text-surface-700 shadow-sm hover:bg-surface-50 hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-accent-600 sm:w-auto"
-						>
-							<LinkedInIcon className="h-5 w-5" />
-							Connect on LinkedIn
-						</a>
+						<p className="mt-6 text-lg text-surface-400 max-w-2xl mx-auto leading-relaxed">
+							I'm always open to discussing new opportunities, interesting
+							projects, or just having a chat about technology and engineering.
+						</p>
+
+						{/* CTA Buttons */}
+						<div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+							<a href={links.email} className="btn btn-primary w-full sm:w-auto">
+								<Mail className="h-5 w-5" />
+								{profile.email}
+							</a>
+
+							<a
+								href={links.linkedin}
+								target="_blank"
+								rel="noopener noreferrer"
+								className="btn btn-secondary w-full sm:w-auto group"
+							>
+								<LinkedInIcon className="h-5 w-5" />
+								Connect on LinkedIn
+								<ArrowUpRight className="h-4 w-4 opacity-0 -ml-2 group-hover:opacity-100 group-hover:ml-0 transition-all" />
+							</a>
+						</div>
+
+						{/* Social links */}
+						<div className="mt-12 pt-8 border-t border-surface-800/50">
+							<p className="text-xs font-medium uppercase tracking-widest text-surface-500 mb-6">
+								Find me elsewhere
+							</p>
+							<div className="flex items-center justify-center gap-6">
+								<a
+									href={links.github}
+									target="_blank"
+									rel="noopener noreferrer"
+									className="group flex items-center gap-2 text-surface-400 hover:text-accent-400"
+									aria-label="GitHub Profile"
+								>
+									<GitHubIcon className="h-5 w-5 group-hover:scale-110 transition-transform" />
+									<span className="text-sm font-medium">GitHub</span>
+								</a>
+
+								<span
+									className="h-4 w-px bg-surface-700"
+									aria-hidden="true"
+								/>
+
+								<a
+									href={links.linkedin}
+									target="_blank"
+									rel="noopener noreferrer"
+									className="group flex items-center gap-2 text-surface-400 hover:text-accent-400"
+									aria-label="LinkedIn Profile"
+								>
+									<LinkedInIcon className="h-5 w-5 group-hover:scale-110 transition-transform" />
+									<span className="text-sm font-medium">LinkedIn</span>
+								</a>
+
+								<span
+									className="h-4 w-px bg-surface-700"
+									aria-hidden="true"
+								/>
+
+								<a
+									href={links.website}
+									target="_blank"
+									rel="noopener noreferrer"
+									className="group flex items-center gap-2 text-surface-400 hover:text-accent-400"
+									aria-label="Personal Website"
+								>
+									<span className="text-sm font-medium">adamgrady.dev</span>
+									<ArrowUpRight className="h-4 w-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+								</a>
+							</div>
+						</div>
 					</div>
 
-					<div className="mt-12 flex items-center justify-center gap-6">
-						<a
-							href={links.github}
-							target="_blank"
-							rel="noopener noreferrer"
-							className="group flex items-center gap-2 text-surface-500 hover:text-accent-600"
-							aria-label="GitHub Profile"
-						>
-							<GitHubIcon className="h-6 w-6 group-hover:scale-110" />
-							<span className="text-sm font-medium">GitHub</span>
-						</a>
-
-						<span className="h-4 w-px bg-surface-300" aria-hidden="true" />
-
-						<a
-							href={links.website}
-							target="_blank"
-							rel="noopener noreferrer"
-							className="group flex items-center gap-2 text-surface-500 hover:text-accent-600"
-							aria-label="Grady Development Website"
-						>
-							<Globe className="h-6 w-6 group-hover:scale-110" />
-							<span className="text-sm font-medium">Grady Development</span>
-						</a>
-					</div>
+					{/* Decorative elements */}
+					<div className="absolute -top-6 -right-6 h-32 w-32 rounded-3xl border border-accent-500/20 bg-accent-500/5 -z-10" />
+					<div className="absolute -bottom-6 -left-6 h-24 w-24 rounded-2xl border border-surface-700 bg-surface-800/50 -z-10" />
 				</div>
 			</div>
 		</section>

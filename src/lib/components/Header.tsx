@@ -13,7 +13,7 @@ function useIsClient() {
 	return useSyncExternalStore(
 		emptySubscribe,
 		() => true,
-		() => false,
+		() => false
 	);
 }
 
@@ -28,10 +28,20 @@ const navItems = [
 
 export function Header() {
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+	const [scrolled, setScrolled] = useState(false);
 	const isClient = useIsClient();
 
 	const closeMenu = useCallback(() => {
 		setMobileMenuOpen(false);
+	}, []);
+
+	// Track scroll position for header background
+	useEffect(() => {
+		function handleScroll() {
+			setScrolled(window.scrollY > 50);
+		}
+		window.addEventListener('scroll', handleScroll, { passive: true });
+		return () => window.removeEventListener('scroll', handleScroll);
 	}, []);
 
 	// Close menu on escape key and prevent scrolling
@@ -66,23 +76,32 @@ export function Header() {
 	}, [mobileMenuOpen, closeMenu]);
 
 	return (
-		<header className="sticky top-0 z-30 w-full border-b border-surface-200 bg-surface-50/80 backdrop-blur-sm">
-			<nav className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
+		<header
+			className={clsx(
+				'fixed top-0 z-30 w-full border-b transition-all duration-300',
+				scrolled
+					? 'bg-surface-950/80 backdrop-blur-xl border-surface-800/50'
+					: 'bg-transparent border-transparent'
+			)}
+		>
+			<nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6 sm:px-8 lg:px-12">
+				{/* Logo */}
 				<Link
 					to="/"
-					className="text-lg font-semibold text-surface-900 hover:text-accent-600 hover:scale-105"
+					className="group relative font-display text-xl font-black text-surface-100 hover:text-accent-400"
 					aria-label="Home"
 				>
-					AG
+					<span className="relative z-10">AG</span>
+					<span className="absolute inset-0 -z-10 scale-0 rounded-lg bg-accent-500/10 transition-transform duration-300 group-hover:scale-110" />
 				</Link>
 
 				{/* Desktop Navigation */}
-				<ul className="hidden items-center gap-6 sm:flex" role="list">
+				<ul className="hidden items-center gap-1 sm:flex" role="list">
 					{navItems.map((item) => (
 						<li key={item.href}>
 							<Link
 								to={item.href}
-								className="text-sm font-medium text-surface-600 hover:text-accent-600 hover:-translate-y-0.5"
+								className="hover-underline px-4 py-2 text-sm font-medium text-surface-400 hover:text-surface-100"
 							>
 								{item.label}
 							</Link>
@@ -90,36 +109,40 @@ export function Header() {
 					))}
 				</ul>
 
-				<div className="flex items-center gap-4">
+				<div className="flex items-center gap-3">
 					<ModeSwitcher />
-					<div className="hidden h-6 w-px bg-surface-200 sm:block" />
-					<Tooltip content="GitHub">
-						<a
-							href={links.github}
-							target="_blank"
-							rel="noopener noreferrer"
-							className="inline-flex text-surface-600 hover:text-accent-600 hover:scale-110"
-							aria-label="GitHub Profile"
-						>
-							<GitHubIcon className="h-5 w-5" />
-						</a>
-					</Tooltip>
-					<Tooltip content="LinkedIn">
-						<a
-							href={links.linkedin}
-							target="_blank"
-							rel="noopener noreferrer"
-							className="inline-flex text-surface-600 hover:text-accent-600 hover:scale-110"
-							aria-label="LinkedIn Profile"
-						>
-							<LinkedInIcon className="h-5 w-5" />
-						</a>
-					</Tooltip>
+
+					<div className="hidden h-5 w-px bg-surface-800 sm:block" />
+
+					<div className="hidden sm:flex items-center gap-2">
+						<Tooltip content="GitHub">
+							<a
+								href={links.github}
+								target="_blank"
+								rel="noopener noreferrer"
+								className="btn-ghost p-2 rounded-lg"
+								aria-label="GitHub Profile"
+							>
+								<GitHubIcon className="h-5 w-5" />
+							</a>
+						</Tooltip>
+						<Tooltip content="LinkedIn">
+							<a
+								href={links.linkedin}
+								target="_blank"
+								rel="noopener noreferrer"
+								className="btn-ghost p-2 rounded-lg"
+								aria-label="LinkedIn Profile"
+							>
+								<LinkedInIcon className="h-5 w-5" />
+							</a>
+						</Tooltip>
+					</div>
 
 					{/* Mobile Menu Button */}
 					<button
 						type="button"
-						className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-surface-700 sm:hidden"
+						className="btn-ghost p-2 rounded-lg sm:hidden"
 						onClick={() => setMobileMenuOpen(true)}
 						aria-label="Open main menu"
 					>
@@ -134,7 +157,7 @@ export function Header() {
 					<div
 						className={clsx(
 							'sm:hidden',
-							mobileMenuOpen ? 'pointer-events-auto' : 'pointer-events-none',
+							mobileMenuOpen ? 'pointer-events-auto' : 'pointer-events-none'
 						)}
 						role="dialog"
 						aria-modal="true"
@@ -143,8 +166,8 @@ export function Header() {
 						{/* Overlay */}
 						<div
 							className={clsx(
-								'fixed inset-0 z-40 bg-surface-900/20 backdrop-blur-sm transition-opacity duration-300',
-								mobileMenuOpen ? 'opacity-100' : 'opacity-0',
+								'fixed inset-0 z-40 bg-surface-950/80 backdrop-blur-sm transition-opacity duration-300',
+								mobileMenuOpen ? 'opacity-100' : 'opacity-0'
 							)}
 							onClick={closeMenu}
 							aria-hidden="true"
@@ -153,34 +176,39 @@ export function Header() {
 						{/* Panel */}
 						<div
 							className={clsx(
-								'fixed inset-y-0 right-0 z-50 w-full max-w-xs transform bg-surface-50 px-6 py-6 shadow-xl transition-transform duration-300 ease-in-out',
-								mobileMenuOpen ? 'translate-x-0' : 'translate-x-full',
+								'fixed inset-y-0 right-0 z-50 w-full max-w-sm transform bg-surface-900 border-l border-surface-800 px-6 py-6 shadow-2xl transition-transform duration-300 ease-out',
+								mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
 							)}
 						>
 							<div className="flex items-center justify-between">
 								<Link
 									to="/"
-									className="text-lg font-semibold text-surface-900"
+									className="font-display text-xl font-black text-surface-100"
 									onClick={closeMenu}
 								>
 									AG
 								</Link>
 								<button
 									type="button"
-									className="-m-2.5 rounded-md p-2.5 text-surface-700"
+									className="btn-ghost p-2 rounded-lg"
 									onClick={closeMenu}
 									aria-label="Close menu"
 								>
 									<X className="h-6 w-6" />
 								</button>
 							</div>
-							<nav className="mt-6 flow-root">
-								<ul className="-my-2 divide-y divide-surface-200" role="list">
-									{navItems.map((item) => (
-										<li key={item.href}>
+
+							<nav className="mt-8 flow-root">
+								<ul className="space-y-1" role="list">
+									{navItems.map((item, index) => (
+										<li
+											key={item.href}
+											className="opacity-0 animate-slide-in-right"
+											style={{ animationDelay: `${index * 0.05}s` }}
+										>
 											<Link
 												to={item.href}
-												className="block py-3 text-base font-medium text-surface-900 hover:text-accent-600"
+												className="block rounded-xl px-4 py-3 text-lg font-medium text-surface-300 hover:bg-surface-800 hover:text-accent-400"
 												onClick={closeMenu}
 											>
 												{item.label}
@@ -188,32 +216,35 @@ export function Header() {
 										</li>
 									))}
 								</ul>
-								<div className="mt-6 flex items-center gap-4 border-t border-surface-200 pt-6">
-									<a
-										href={links.github}
-										target="_blank"
-										rel="noopener noreferrer"
-										className="inline-flex items-center gap-2 text-surface-600 hover:text-accent-600"
-										aria-label="GitHub Profile"
-									>
-										<GitHubIcon className="h-5 w-5" />
-										<span className="text-sm font-medium">GitHub</span>
-									</a>
-									<a
-										href={links.linkedin}
-										target="_blank"
-										rel="noopener noreferrer"
-										className="inline-flex items-center gap-2 text-surface-600 hover:text-accent-600"
-										aria-label="LinkedIn Profile"
-									>
-										<LinkedInIcon className="h-5 w-5" />
-										<span className="text-sm font-medium">LinkedIn</span>
-									</a>
+
+								<div className="mt-8 pt-8 border-t border-surface-800">
+									<div className="flex items-center gap-4">
+										<a
+											href={links.github}
+											target="_blank"
+											rel="noopener noreferrer"
+											className="btn-ghost flex items-center gap-3 px-4 py-3 rounded-xl"
+											aria-label="GitHub Profile"
+										>
+											<GitHubIcon className="h-5 w-5" />
+											<span className="text-sm font-medium">GitHub</span>
+										</a>
+										<a
+											href={links.linkedin}
+											target="_blank"
+											rel="noopener noreferrer"
+											className="btn-ghost flex items-center gap-3 px-4 py-3 rounded-xl"
+											aria-label="LinkedIn Profile"
+										>
+											<LinkedInIcon className="h-5 w-5" />
+											<span className="text-sm font-medium">LinkedIn</span>
+										</a>
+									</div>
 								</div>
 							</nav>
 						</div>
 					</div>,
-					document.body,
+					document.body
 				)}
 		</header>
 	);

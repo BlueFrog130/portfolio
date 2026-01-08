@@ -18,6 +18,7 @@ import {
 	Loader2,
 	MessageCircle,
 	RotateCcw,
+	ArrowUpRight,
 } from 'lucide-react';
 import { GitHubIcon } from '@/lib/components/icons';
 import { Tooltip } from '@/lib/components/Tooltip';
@@ -49,20 +50,34 @@ export function Projects() {
 				)}
 			<section
 				id="projects"
-				className="bg-surface-100/50 py-20 sm:py-24"
+				className="relative py-24 sm:py-32"
 				aria-labelledby="projects-heading"
 			>
-				<div className="mx-auto max-w-5xl px-4 sm:px-6">
-					<h2
-						id="projects-heading"
-						className="text-3xl font-bold tracking-tight text-surface-900 sm:text-4xl"
-					>
-						Featured Projects
-					</h2>
-					<p className="mt-4 text-lg text-surface-600">
-						A selection of projects I've built and contributed to.
-					</p>
-					<div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+				{/* Background accents */}
+				<div className="absolute inset-0 -z-10">
+					<div className="absolute -left-40 top-1/3 h-125 w-125 rounded-full bg-accent-500/5 blur-3xl" />
+					<div className="absolute right-0 bottom-0 h-75 w-75 rounded-full bg-accent-600/5 blur-3xl" />
+				</div>
+
+				<div className="mx-auto max-w-6xl px-6 sm:px-8 lg:px-12">
+					{/* Section header */}
+					<div className="flex items-end gap-6 mb-16">
+						<span className="section-number">02</span>
+						<div className="flex-1">
+							<h2
+								id="projects-heading"
+								className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-surface-100"
+							>
+								Featured Projects
+							</h2>
+							<p className="mt-2 text-surface-400">
+								A selection of projects I've built and contributed to
+							</p>
+						</div>
+					</div>
+
+					{/* Bento grid */}
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
 						{featuredProjects
 							.filter((p) => p.slug !== openProject?.slug)
 							.map((project, index) => (
@@ -72,87 +87,118 @@ export function Projects() {
 								>
 									<article
 										className={clsx(
-											'group flex flex-col rounded-xl border border-surface-200 bg-white p-6 shadow-sm transition-all duration-200 hover:shadow-md',
+											'group card gradient-border p-6 flex flex-col',
+											// First project spans 2 columns on larger screens
+											index === 0 && 'md:col-span-2 lg:col-span-2',
 											clickedProject?.slug === project.slug && 'z-50',
 										)}
 										style={{ animationDelay: `${index * 0.1}s` }}
 									>
-										<div className="flex items-start gap-2">
-											<div className="grow">
-												<div className="flex h-12 w-12 items-center justify-center rounded-lg bg-accent-100">
-													<FolderOpen className="h-6 w-6 text-accent-600" />
-												</div>
+										{/* Header row */}
+										<div className="flex items-start justify-between gap-4">
+											<div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-accent-500/10 border border-accent-500/20 group-hover:bg-accent-500/20 transition-colors">
+												<FolderOpen className="h-5 w-5 text-accent-400" />
 											</div>
-											{project.github && (
-												<a
-													href={project.github}
-													target="_blank"
-													rel="noopener noreferrer"
-													className="text-surface-400 hover:text-accent-600 hover:scale-110"
-													aria-label={`View ${project.title} on GitHub`}
-												>
-													<GitHubIcon className="h-5 w-5" />
-												</a>
-											)}
-											<Tooltip content="Ask AI about this project">
-												<button
-													className="text-surface-400 hover:text-accent-600 hover:scale-110 cursor-pointer"
-													aria-label={`Open ${project.title} details`}
-													onClick={() => {
-														setClickedProject(project);
-														startTransition(() => {
-															setOpenProject(project);
-														});
-													}}
-												>
-													<Sparkles className="h-5 w-5" />
-												</button>
-											</Tooltip>
+
+											<div className="flex items-center gap-2">
+												{project.github && (
+													<a
+														href={project.github}
+														target="_blank"
+														rel="noopener noreferrer"
+														className="btn-ghost p-2 rounded-lg"
+														aria-label={`View ${project.title} on GitHub`}
+													>
+														<GitHubIcon className="h-5 w-5" />
+													</a>
+												)}
+												{project.link && (
+													<a
+														href={project.link}
+														target="_blank"
+														rel="noopener noreferrer"
+														className="btn-ghost p-2 rounded-lg"
+														aria-label={`Visit ${project.title}`}
+													>
+														<ExternalLink className="h-5 w-5" />
+													</a>
+												)}
+												<Tooltip content="Ask AI about this project">
+													<button
+														className="btn-ghost p-2 rounded-lg text-accent-400"
+														aria-label={`Open ${project.title} details`}
+														onClick={() => {
+															setClickedProject(project);
+															startTransition(() => {
+																setOpenProject(project);
+															});
+														}}
+													>
+														<Sparkles className="h-5 w-5" />
+													</button>
+												</Tooltip>
+											</div>
 										</div>
-										<h3 className="mt-4 text-lg font-semibold text-surface-900 group-hover:text-accent-600">
-											<Link
-												to={`/project/${project.slug}`}
-												className="hover:underline focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2 rounded"
-											>
-												{project.title}
-											</Link>
-										</h3>
-										<p className="mt-2 flex-1 text-sm text-surface-600">
-											{project.description}
-										</p>
-										<div className="mt-4 flex flex-wrap gap-2">
-											{project.technologies.slice(0, 4).map((tech) => (
-												<span
-													key={tech}
-													className="inline-flex items-center rounded-full bg-surface-100 px-2.5 py-0.5 text-xs font-medium text-surface-600"
+
+										{/* Content */}
+										<div className="mt-5 flex-1">
+											<h3 className="font-display text-xl font-semibold text-surface-100 group-hover:text-accent-400 transition-colors">
+												<Link
+													to={`/project/${project.slug}`}
+													className="focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 rounded"
 												>
+													{project.title}
+												</Link>
+											</h3>
+											<p className="mt-2 text-sm text-surface-400 leading-relaxed line-clamp-3">
+												{project.description}
+											</p>
+										</div>
+
+										{/* Technologies */}
+										<div className="mt-5 flex flex-wrap gap-2">
+											{project.technologies.slice(0, 4).map((tech) => (
+												<span key={tech} className="tag">
 													{tech}
 												</span>
 											))}
+											{project.technologies.length > 4 && (
+												<span className="tag">
+													+{project.technologies.length - 4}
+												</span>
+											)}
 										</div>
-										<div className="mt-4 flex items-center gap-4">
+
+										{/* Footer */}
+										<div className="mt-5 pt-5 border-t border-surface-800 flex items-center justify-between">
 											<Link
 												to={`/project/${project.slug}`}
-												className="group/link inline-flex items-center text-sm font-medium text-accent-600 hover:text-accent-700"
+												className="inline-flex items-center gap-2 text-sm font-medium text-accent-400 hover:text-accent-300 group/link"
 											>
-												View Details
-												<ArrowRight className="ml-1 h-4 w-4 group-hover/link:translate-x-1" />
+												View project
+												<ArrowUpRight className="h-4 w-4 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
 											</Link>
-											{project.link && (
-												<a
-													href={project.link}
-													target="_blank"
-													rel="noopener noreferrer"
-													className="group/ext inline-flex items-center text-sm font-medium text-surface-500 hover:text-surface-700"
-												>
-													Live Site
-													<ExternalLink className="ml-1 h-4 w-4 group-hover/ext:scale-110" />
-												</a>
+
+											{project.readTime && (
+												<span className="text-xs text-surface-500">
+													{project.readTime} min read
+												</span>
 											)}
 										</div>
 									</article>
 								</ViewTransition>
 							))}
+					</div>
+
+					{/* Mobile view all link */}
+					<div className="mt-8 text-center sm:hidden">
+						<Link
+							to="/projects"
+							className="inline-flex items-center gap-2 text-sm font-medium text-accent-400 hover:text-accent-300"
+						>
+							View all projects
+							<ArrowRight className="h-4 w-4" />
+						</Link>
 					</div>
 				</div>
 			</section>
@@ -212,82 +258,88 @@ function ProjectDialog({ project, onClose }: ProjectDialogProps) {
 	);
 
 	return (
-		<div className="fixed inset-0 flex justify-center items-center z-40">
+		<div className="fixed inset-0 flex justify-center items-center z-40 p-4">
+			{/* Backdrop */}
+			<div className="absolute inset-0 bg-surface-950/90 backdrop-blur-sm" />
+
 			<ViewTransition name={`project-${project.slug}`}>
 				<article
 					ref={outClickRef}
-					className="@container relative group flex flex-col rounded-xl border border-surface-200 bg-white p-6 max-w-[90vw] w-full z-50 max-h-[90vh] overflow-y-auto @3xl:overflow-hidden shadow-lg"
+					className="@container relative group flex flex-col rounded-2xl border border-surface-800 bg-surface-900 p-6 lg:p-8 max-w-[95vw] lg:max-w-4xl w-full z-50 max-h-[90vh] overflow-y-auto @3xl:overflow-hidden shadow-2xl"
 				>
+					{/* Close button */}
 					<button
-						className="text-surface-400 hover:text-accent-600 hover:scale-110 absolute top-6 right-6"
+						className="absolute top-4 right-4 btn-ghost p-2 rounded-lg z-10"
 						aria-label={`Close ${project.title} details`}
 						onClick={handleClose}
 					>
 						<X className="h-5 w-5" />
 					</button>
-					<div className="flex flex-col @3xl:grid @3xl:grid-cols-12 gap-6 mt-6 @3xl:mt-0">
-						<div className="@3xl:col-span-4">
-							<div className="flex items-start gap-2">
-								<div className="grow">
-									<div className="flex h-12 w-12 items-center justify-center rounded-lg bg-accent-100">
-										<FolderOpen className="h-6 w-6 text-accent-600" />
+
+					<div className="flex flex-col @3xl:grid @3xl:grid-cols-12 gap-6 @3xl:gap-8">
+						{/* Project info column */}
+						<div className="@3xl:col-span-5">
+							<div className="flex items-start gap-4">
+								<div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-accent-500/10 border border-accent-500/20">
+									<FolderOpen className="h-6 w-6 text-accent-400" />
+								</div>
+								<div className="flex-1 min-w-0 pt-1">
+									<h3 className="font-display text-xl font-semibold text-surface-100">
+										{project.title}
+									</h3>
+									<div className="mt-2 flex items-center gap-3">
+										{project.github && (
+											<a
+												href={project.github}
+												target="_blank"
+												rel="noopener noreferrer"
+												className="btn-ghost p-1.5 rounded-lg"
+												aria-label={`View ${project.title} on GitHub`}
+											>
+												<GitHubIcon className="h-4 w-4" />
+											</a>
+										)}
+										{project.link && (
+											<a
+												href={project.link}
+												target="_blank"
+												rel="noopener noreferrer"
+												className="btn-ghost p-1.5 rounded-lg"
+												aria-label={`Visit ${project.title}`}
+											>
+												<ExternalLink className="h-4 w-4" />
+											</a>
+										)}
 									</div>
 								</div>
-								{project.github && (
-									<a
-										href={project.github}
-										target="_blank"
-										rel="noopener noreferrer"
-										className="text-surface-400 hover:text-accent-600 hover:scale-110"
-										aria-label={`View ${project.title} on GitHub`}
-									>
-										<GitHubIcon className="h-5 w-5" />
-									</a>
-								)}
 							</div>
-							<h3 className="mt-4 text-lg font-semibold text-surface-900 group-hover:text-accent-600">
-								<Link
-									to={`/projects/${project.slug}`}
-									className="hover:underline focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2 rounded"
-								>
-									{project.title}
-								</Link>
-							</h3>
-							<p className="mt-2 flex-1 text-sm text-surface-600">
+
+							<p className="mt-5 text-sm text-surface-400 leading-relaxed">
 								{project.description}
 							</p>
-							<div className="mt-4 flex flex-wrap gap-2">
-								{project.technologies.slice(0, 4).map((tech) => (
-									<span
-										key={tech}
-										className="inline-flex items-center rounded-full bg-surface-100 px-2.5 py-0.5 text-xs font-medium text-surface-600"
-									>
+
+							<div className="mt-5 flex flex-wrap gap-2">
+								{project.technologies.map((tech) => (
+									<span key={tech} className="tag tag-accent">
 										{tech}
 									</span>
 								))}
 							</div>
-							<div className="mt-4 flex items-center gap-4">
+
+							<div className="mt-6">
 								<Link
-									to={`/projects/${project.slug}`}
-									className="group/link inline-flex items-center text-sm font-medium text-accent-600 hover:text-accent-700"
+									to={`/project/${project.slug}`}
+									className="btn btn-primary w-full justify-center"
+									onClick={handleClose}
 								>
-									View Details
-									<ArrowRight className="ml-1 h-4 w-4 group-hover/link:translate-x-1" />
+									View full project
+									<ArrowRight className="h-4 w-4" />
 								</Link>
-								{project.link && (
-									<a
-										href={project.link}
-										target="_blank"
-										rel="noopener noreferrer"
-										className="group/ext inline-flex items-center text-sm font-medium text-surface-500 hover:text-surface-700"
-									>
-										Live Site
-										<ExternalLink className="ml-1 h-4 w-4 group-hover/ext:scale-110" />
-									</a>
-								)}
 							</div>
 						</div>
-						<div className="pt-6 border-t border-surface-200 @3xl:col-span-8 @3xl:pl-6 @3xl:border-l @3xl:border-t-0 @3xl:pt-6 @3xl:overflow-y-auto @3xl:max-h-[calc(90vh-5rem)]">
+
+						{/* Chat column */}
+						<div className="@3xl:col-span-7 @3xl:pl-8 @3xl:border-l @3xl:border-surface-800">
 							<ProjectChat
 								project={project}
 								onMessageCountChange={handleMessageCountChange}
@@ -373,18 +425,24 @@ function ProjectChat({ project, onMessageCountChange }: ProjectChatProps) {
 	const starterQuestions = getStarterQuestions(project);
 
 	return (
-		<div className="flex flex-col min-h-100">
+		<div className="flex flex-col h-full min-h-87.5 @3xl:min-h-100">
+			{/* Header */}
 			<div className="flex items-center justify-between mb-4">
-				<div className="flex items-center gap-2">
-					<MessageCircle className="h-5 w-5 text-accent-600" />
-					<h4 className="font-semibold text-surface-900">
-						Ask me about this project
-					</h4>
+				<div className="flex items-center gap-3">
+					<div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent-500/10 border border-accent-500/20">
+						<MessageCircle className="h-4 w-4 text-accent-400" />
+					</div>
+					<div>
+						<h4 className="font-display font-semibold text-surface-100">
+							Ask about this project
+						</h4>
+						<p className="text-xs text-surface-500">Powered by AI</p>
+					</div>
 				</div>
 				{messages.length > 0 && (
 					<button
 						onClick={clearMessages}
-						className="text-surface-400 hover:text-surface-600 p-1 rounded"
+						className="btn-ghost p-2 rounded-lg"
 						aria-label="Clear chat"
 						title="Clear chat"
 					>
@@ -393,7 +451,8 @@ function ProjectChat({ project, onMessageCountChange }: ProjectChatProps) {
 				)}
 			</div>
 
-			<div className="flex-1 overflow-y-auto space-y-3 mb-4 pr-2">
+			{/* Messages */}
+			<div className="flex-1 overflow-y-auto space-y-3 mb-4 pr-2 @3xl:max-h-70">
 				{messages.length === 0 ? (
 					<div className="space-y-2">
 						<p className="text-sm text-surface-500 mb-3">
@@ -404,7 +463,7 @@ function ProjectChat({ project, onMessageCountChange }: ProjectChatProps) {
 								key={idx}
 								onClick={() => handleStarterQuestion(question, idx)}
 								disabled={isLoading}
-								className="block w-full text-left text-sm px-3 py-2 rounded-lg bg-surface-50 hover:bg-surface-100 text-surface-700 transition-colors disabled:opacity-50"
+								className="block w-full text-left text-sm px-4 py-3 rounded-xl bg-surface-800/50 hover:bg-surface-800 border border-surface-700/50 hover:border-surface-700 text-surface-300 transition-all disabled:opacity-50"
 							>
 								{question}
 							</button>
@@ -415,17 +474,21 @@ function ProjectChat({ project, onMessageCountChange }: ProjectChatProps) {
 						<div
 							key={idx}
 							className={clsx(
-								'text-sm px-3 py-2 rounded-lg w-fit max-w-[85%] prose-sm prose-h1:text-xl prose-h2:text-lg prose-h3:text-base prose-headings:font-semibold prose-headings:my-1 prose-p:my-1 prose-ul:my-1 prose-ul:list-inside prose-ul:list-disc prose-ul:pl-2 prose-ol:my-1 prose-ol:list-inside prose-ol:list-decimal prose-ol:pl-2',
+								'text-sm px-4 py-3 rounded-xl w-fit max-w-[85%]',
+								'prose-sm prose-headings:font-display prose-headings:text-surface-100',
+								'prose-h1:text-lg prose-h2:text-base prose-h3:text-sm',
+								'prose-p:my-1 prose-ul:my-1 prose-ul:list-inside prose-ul:list-disc prose-ul:pl-2',
+								'prose-ol:my-1 prose-ol:list-inside prose-ol:list-decimal prose-ol:pl-2',
 								msg.role === 'user'
-									? 'bg-accent-600 text-white ml-auto'
-									: 'bg-surface-100 text-surface-800',
+									? 'bg-accent-500 text-surface-950 ml-auto font-medium'
+									: 'bg-surface-800 text-surface-300 border border-surface-700',
 							)}
 						>
 							{msg.role === 'assistant' ? (
 								<Markdown>{msg.content}</Markdown>
 							) : (
 								msg.content || (
-									<span className="inline-flex items-center gap-1">
+									<span className="inline-flex items-center gap-2">
 										<Loader2 className="h-3 w-3 animate-spin" />
 										Thinking...
 									</span>
@@ -437,21 +500,24 @@ function ProjectChat({ project, onMessageCountChange }: ProjectChatProps) {
 				<div ref={messagesEndRef} />
 			</div>
 
-			{error && <p className="text-sm text-red-600 mb-2">Error: {error}</p>}
+			{error && (
+				<p className="text-sm text-red-400 mb-3 px-1">Error: {error}</p>
+			)}
 
-			<form onSubmit={handleSubmit} className="flex gap-2 pr-2 mb-2">
+			{/* Input */}
+			<form onSubmit={handleSubmit} className="flex gap-3">
 				<input
 					type="text"
 					value={input}
 					onChange={(e) => setInput(e.target.value)}
 					placeholder="Ask a question..."
 					disabled={isLoading}
-					className="flex-1 px-3 py-2 text-sm rounded-lg border border-surface-200 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent disabled:opacity-50"
+					className="flex-1 px-4 py-3 text-sm rounded-xl bg-surface-800 border border-surface-700 text-surface-100 placeholder:text-surface-500 focus:outline-none focus:ring-2 focus:ring-accent-500/50 focus:border-accent-500/50 disabled:opacity-50"
 				/>
 				<button
 					type="submit"
 					disabled={isLoading || !input.trim()}
-					className="px-3 py-2 bg-accent-600 text-white rounded-lg hover:bg-accent-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+					className="btn btn-primary px-4"
 					aria-label="Send message"
 				>
 					{isLoading ? (

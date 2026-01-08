@@ -36,21 +36,21 @@ export function BlogSearch({
 		<div className="space-y-4">
 			{/* Search Input */}
 			<div className="relative">
-				<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-surface-400" />
+				<Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-surface-500" />
 				<input
 					type="text"
 					placeholder="Search posts..."
 					value={inputValue}
 					onChange={(e) => setInputValue(e.target.value)}
-					className="w-full rounded-lg border border-surface-200 bg-white py-3 pl-10 pr-10 text-surface-900 placeholder:text-surface-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-accent-500"
+					className="w-full rounded-xl border border-surface-700 bg-surface-800/50 py-3.5 pl-12 pr-12 text-surface-100 placeholder:text-surface-500 focus:border-accent-500/50 focus:outline-none focus:ring-2 focus:ring-accent-500/20 transition-all"
 				/>
 				{inputValue && (
 					<button
 						onClick={() => setInputValue('')}
-						className="absolute right-3 top-1/2 -translate-y-1/2 text-surface-400 hover:text-surface-600"
+						className="absolute right-4 top-1/2 -translate-y-1/2 p-1 rounded-lg text-surface-500 hover:text-surface-300 hover:bg-surface-700/50 transition-colors"
 						aria-label="Clear search"
 					>
-						<X className="h-5 w-5" />
+						<X className="h-4 w-4" />
 					</button>
 				)}
 			</div>
@@ -64,28 +64,14 @@ export function BlogSearch({
 							<button
 								key={tag}
 								onClick={() => onTagToggle(tag)}
-								className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium transition-colors ${
+								className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-all ${
 									isSelected
-										? 'bg-accent-600 text-white'
-										: 'bg-surface-100 text-surface-600 hover:bg-surface-200'
+										? 'bg-accent-500 text-surface-950 shadow-sm shadow-accent-500/25'
+										: 'bg-surface-800 text-surface-300 border border-surface-700 hover:border-surface-600 hover:bg-surface-700'
 								}`}
 							>
 								{tag}
-								{isSelected && (
-									<svg
-										className="ml-1 h-3 w-3"
-										fill="none"
-										stroke="currentColor"
-										viewBox="0 0 24 24"
-									>
-										<path
-											strokeLinecap="round"
-											strokeLinejoin="round"
-											strokeWidth={2}
-											d="M6 18L18 6M6 6l12 12"
-										/>
-									</svg>
-								)}
+								{isSelected && <X className="h-3 w-3" />}
 							</button>
 						);
 					})}

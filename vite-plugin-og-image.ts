@@ -5,8 +5,8 @@ import { resolve } from 'path';
 
 const VIRTUAL_PREFIX = 'virtual:og-image';
 
-// Font file path for Inter
-const INTER_FONT_DIR = resolve(process.cwd(), 'fonts');
+// Font file paths
+const FONTS_DIR = resolve(process.cwd(), 'fonts');
 
 interface OgImageParams {
 	title: string;
@@ -83,17 +83,32 @@ function generateSvg(params: OgImageParams): string {
 			descriptionHeight +
 			(descriptionLines.length > 0 ? 25 : 10);
 
+	// Dark theme colors
+	const colors = {
+		bg: '#0c0a09', // surface-950
+		bgGradientEnd: '#1c1917', // surface-900
+		text: '#fafaf9', // surface-50
+		textMuted: '#a8a29e', // surface-400
+		textSubtle: '#78716c', // surface-500
+		accent: '#f59e0b', // amber-500
+		accentLight: '#fbbf24', // amber-400
+		accentDark: '#d97706', // amber-600
+		accentSubtle: 'rgba(245, 158, 11, 0.2)',
+		surface: '#292524', // surface-800
+		surfaceLight: '#44403c', // surface-700
+	};
+
 	const titleSvg = titleLines
 		.map(
 			(line, i) =>
-				`<text x="80" y="${titleStartY + i * titleLineHeight}" font-family="Inter" font-size="${titleFontSize}" font-weight="700" fill="#18181b">${escapeXml(line)}</text>`,
+				`<text x="80" y="${titleStartY + i * titleLineHeight}" font-family="Satoshi" font-size="${titleFontSize}" font-weight="700" fill="${colors.text}">${escapeXml(line)}</text>`,
 		)
 		.join('\n  ');
 
 	const descriptionSvg = descriptionLines
 		.map(
 			(line, i) =>
-				`<text x="80" y="${descriptionStartY + i * descriptionLineHeight}" font-family="Inter" font-size="26" fill="#52525b">${escapeXml(line)}</text>`,
+				`<text x="80" y="${descriptionStartY + i * descriptionLineHeight}" font-family="Geist" font-size="26" fill="${colors.textMuted}">${escapeXml(line)}</text>`,
 		)
 		.join('\n  ');
 
@@ -103,8 +118,8 @@ function generateSvg(params: OgImageParams): string {
 		const tagPills = tags.slice(0, 4).map((tag) => {
 			const width = Math.max(70, tag.length * 12 + 30);
 			const pill = `
-      <rect x="${xOffset}" y="0" width="${width}" height="36" rx="18" fill="#e0e7ff"/>
-      <text x="${xOffset + width / 2}" y="24" font-family="Inter" font-size="16" font-weight="500" fill="#4338ca" text-anchor="middle">${escapeXml(tag)}</text>`;
+      <rect x="${xOffset}" y="0" width="${width}" height="36" rx="18" fill="${colors.accentSubtle}" stroke="${colors.accent}" stroke-opacity="0.3" stroke-width="1"/>
+      <text x="${xOffset + width / 2}" y="24" font-family="Geist" font-size="16" font-weight="500" fill="${colors.accentLight}" text-anchor="middle">${escapeXml(tag)}</text>`;
 			xOffset += width + 10;
 			return pill;
 		});
@@ -126,14 +141,14 @@ function generateSvg(params: OgImageParams): string {
 			const cx = startX + i * dotSpacing;
 			const isActive = i + 1 === seriesPart;
 			const isPast = i + 1 < seriesPart!;
-			const fill = isActive ? '#6366f1' : isPast ? '#a5b4fc' : '#e0e7ff';
+			const fill = isActive ? colors.accent : isPast ? colors.accentDark : colors.surface;
 			const radius = isActive ? activeRadius : dotRadius;
 			return `<circle cx="${cx}" cy="${seriesY + 20}" r="${radius}" fill="${fill}"/>`;
 		}).join('\n    ');
 
 		seriesIndicatorSvg = `
   <!-- Series indicator -->
-  <text x="80" y="${seriesY}" font-family="Inter" font-size="16" font-weight="600" fill="#6366f1">PART ${seriesPart} OF ${seriesTotalParts}</text>
+  <text x="80" y="${seriesY}" font-family="Geist" font-size="16" font-weight="600" fill="${colors.accent}">PART ${seriesPart} OF ${seriesTotalParts}</text>
   <g>
     ${dots}
   </g>`;
@@ -142,48 +157,50 @@ function generateSvg(params: OgImageParams): string {
 	return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
   <defs>
     <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#fafafa"/>
-      <stop offset="100%" style="stop-color:#f4f4f5"/>
+      <stop offset="0%" style="stop-color:${colors.bg}"/>
+      <stop offset="100%" style="stop-color:${colors.bgGradientEnd}"/>
     </linearGradient>
     <linearGradient id="accent-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#818cf8"/>
-      <stop offset="100%" style="stop-color:#6366f1"/>
+      <stop offset="0%" style="stop-color:${colors.accentLight}"/>
+      <stop offset="100%" style="stop-color:${colors.accent}"/>
     </linearGradient>
     <linearGradient id="blob1" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#818cf8;stop-opacity:0.15"/>
-      <stop offset="100%" style="stop-color:#6366f1;stop-opacity:0.1"/>
+      <stop offset="0%" style="stop-color:${colors.accent};stop-opacity:0.15"/>
+      <stop offset="100%" style="stop-color:${colors.accentDark};stop-opacity:0.08"/>
     </linearGradient>
     <linearGradient id="blob2" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#a78bfa;stop-opacity:0.12"/>
-      <stop offset="100%" style="stop-color:#c084fc;stop-opacity:0.08"/>
-    </linearGradient>
-    <linearGradient id="blob3" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#22d3ee;stop-opacity:0.1"/>
-      <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:0.08"/>
+      <stop offset="0%" style="stop-color:${colors.accentLight};stop-opacity:0.1"/>
+      <stop offset="100%" style="stop-color:${colors.accent};stop-opacity:0.05"/>
     </linearGradient>
     <filter id="blur1" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur in="SourceGraphic" stdDeviation="60"/>
+      <feGaussianBlur in="SourceGraphic" stdDeviation="80"/>
     </filter>
     <filter id="blur2" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur in="SourceGraphic" stdDeviation="50"/>
+      <feGaussianBlur in="SourceGraphic" stdDeviation="60"/>
     </filter>
+    <!-- Grid pattern -->
+    <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
+      <path d="M 60 0 L 0 0 0 60" fill="none" stroke="${colors.surface}" stroke-width="1" stroke-opacity="0.5"/>
+    </pattern>
   </defs>
 
   <!-- Background -->
   <rect width="1200" height="630" fill="url(#bg-gradient)"/>
 
-  <!-- Decorative blobs -->
-  <ellipse cx="150" cy="100" rx="300" ry="250" fill="url(#blob1)" filter="url(#blur1)"/>
-  <ellipse cx="1050" cy="150" rx="280" ry="220" fill="url(#blob2)" filter="url(#blur1)"/>
-  <ellipse cx="600" cy="550" rx="350" ry="200" fill="url(#blob3)" filter="url(#blur2)"/>
+  <!-- Grid overlay -->
+  <rect width="1200" height="630" fill="url(#grid)" opacity="0.4"/>
+
+  <!-- Decorative glows -->
+  <ellipse cx="100" cy="80" rx="350" ry="280" fill="url(#blob1)" filter="url(#blur1)"/>
+  <ellipse cx="1100" cy="550" rx="300" ry="250" fill="url(#blob2)" filter="url(#blur1)"/>
 
   <!-- Logo badge -->
   <rect x="80" y="80" width="80" height="80" rx="16" fill="url(#accent-gradient)"/>
-  <text x="120" y="138" font-family="Inter" font-size="40" font-weight="700" fill="white" text-anchor="middle">AG</text>
+  <text x="120" y="138" font-family="Satoshi" font-size="40" font-weight="900" fill="${colors.bg}" text-anchor="middle">AG</text>
 
   <!-- Type label -->
-  <text x="180" y="115" font-family="Inter" font-size="18" font-weight="600" fill="#6366f1">${typeLabel}</text>
-  <text x="180" y="140" font-family="Inter" font-size="16" font-weight="500" fill="#71717a">Adam Grady</text>
+  <text x="180" y="115" font-family="Geist" font-size="18" font-weight="600" fill="${colors.accent}">${typeLabel}</text>
+  <text x="180" y="140" font-family="Geist" font-size="16" font-weight="500" fill="${colors.textSubtle}">Adam Grady</text>
 
   <!-- Title -->
   ${titleSvg}
@@ -196,7 +213,7 @@ function generateSvg(params: OgImageParams): string {
   ${tagsSvg}
 
   <!-- Website URL -->
-  <text x="1120" y="580" font-family="Inter" font-size="20" font-weight="500" fill="#a1a1aa" text-anchor="end">adamgrady.dev</text>
+  <text x="1120" y="580" font-family="Geist Mono" font-size="20" font-weight="500" fill="${colors.textSubtle}" text-anchor="end">adamgrady.dev</text>
 </svg>`;
 }
 
@@ -252,12 +269,14 @@ export function ogImagePlugin(): Plugin {
 			// Generate the SVG
 			const svg = generateSvg(params);
 
-			// Convert to PNG using resvg-js with custom font
+			// Convert to PNG using resvg-js with custom fonts
+			// Fonts directory should contain Satoshi and Geist font files
+			// Falls back to system fonts if custom fonts aren't available
 			const resvg = new Resvg(svg, {
 				font: {
-					fontDirs: [INTER_FONT_DIR],
-					loadSystemFonts: false,
-					defaultFontFamily: 'Inter',
+					fontDirs: [FONTS_DIR],
+					loadSystemFonts: true,
+					defaultFontFamily: 'Geist',
 				},
 			});
 

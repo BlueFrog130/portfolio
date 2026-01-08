@@ -19,7 +19,7 @@ export function ModeSwitcher() {
 
 	return (
 		<nav
-			className="flex items-center gap-1 rounded-lg bg-surface-100 p-1"
+			className="flex items-center gap-1 rounded-lg bg-surface-800/50 border border-surface-700/50 p-1"
 			aria-label="Portfolio mode"
 		>
 			{(['web', 'terminal'] as const).map((m) => (
@@ -28,10 +28,10 @@ export function ModeSwitcher() {
 						to={modeRoutes[m]}
 						aria-current={mode === m ? 'page' : undefined}
 						aria-label={MODE_CONFIGS[m].name}
-						className={`inline-flex rounded-md p-2 ${
+						className={`inline-flex rounded-md p-2 transition-all ${
 							mode === m
-								? 'bg-accent-600 text-white'
-								: 'text-surface-600 hover:bg-surface-200 hover:text-surface-900 hover:scale-105'
+								? 'bg-accent-500 text-surface-950 shadow-sm shadow-accent-500/25'
+								: 'text-surface-400 hover:bg-surface-700/50 hover:text-surface-200'
 						}`}
 					>
 						{modeIcons[m]}

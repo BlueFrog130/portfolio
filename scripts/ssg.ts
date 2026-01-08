@@ -11,6 +11,7 @@ import {
 import { dirname, join, resolve } from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import 'dotenv/config';
+import { generateFavicons } from './generate-favicons';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -129,6 +130,10 @@ export async function ssg() {
 	// Copy static assets from client build
 	console.log('\nCopying static assets...');
 	copyDir(join(CLIENT_DIR, 'assets'), join(OUTPUT_DIR, 'assets'));
+
+	// Generate favicons from SVG before copying public files
+	console.log('\nGenerating favicons...');
+	await generateFavicons();
 
 	// Copy any public files
 	const publicDir = join(ROOT, 'public');

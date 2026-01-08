@@ -2,59 +2,97 @@
 @plugin '@tailwindcss/typography';
 @plugin '@tailwindcss/container-queries';
 
-/* Inter Variable Font */
+/* Satoshi Variable Font - Distinctive geometric sans */
+
 @font-face {
-	font-family: 'Inter';
+	font-family: 'Satoshi';
+	src: url('/fonts/Satoshi-Variable.woff2') format('woff2');
+	font-weight: 300 900;
+	font-display: swap;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'Satoshi';
+	src: url('/fonts/Satoshi-VariableItalic.woff2') format('woff2');
+	font-weight: 300 900;
+	font-display: swap;
+	font-style: italic;
+}
+
+/* Geist for body text */
+@font-face {
+	font-family: 'Geist';
 	font-style: normal;
 	font-weight: 100 900;
 	font-display: swap;
-	src: url('/fonts/Inter-VariableFont_opsz,wght.ttf') format('truetype');
+	src: url('/fonts/Geist[wght].woff2') format('woff2');
 }
 
 @font-face {
-	font-family: 'Inter';
+	font-family: 'Geist';
 	font-style: italic;
 	font-weight: 100 900;
 	font-display: swap;
-	src: url('/fonts/Inter-Italic-VariableFont_opsz,wght.ttf') format('truetype');
+	src: url('/fonts/Geist-Italic[wght].woff2') format('woff2');
+}
+
+/* Geist Mono for code */
+@font-face {
+	font-family: 'Geist Mono';
+	font-style: normal;
+	font-weight: 100 900;
+	font-display: swap;
+	src: url('/fonts/GeistMono[wght].woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'Geist Mono';
+	font-style: italic;
+	font-weight: 100 900;
+	font-display: swap;
+	src: url('/fonts/GeistMono-Italic[wght].woff2') format('woff2');
 }
 
 @theme {
-	/* Indigo as standout accent color */
-	--color-accent-50: #eef2ff;
-	--color-accent-100: #e0e7ff;
-	--color-accent-200: #c7d2fe;
-	--color-accent-300: #a5b4fc;
-	--color-accent-400: #818cf8;
-	--color-accent-500: #6366f1;
-	--color-accent-600: #4f46e5;
-	--color-accent-700: #4338ca;
-	--color-accent-800: #3730a3;
-	--color-accent-900: #312e81;
-	--color-accent-950: #1e1b4b;
+	/* Warm amber accent - unexpected for tech, memorable */
+	--color-accent-50: #fffbeb;
+	--color-accent-100: #fef3c7;
+	--color-accent-200: #fde68a;
+	--color-accent-300: #fcd34d;
+	--color-accent-400: #fbbf24;
+	--color-accent-500: #f59e0b;
+	--color-accent-600: #d97706;
+	--color-accent-700: #b45309;
+	--color-accent-800: #92400e;
+	--color-accent-900: #78350f;
+	--color-accent-950: #451a03;
 
-	/* Neutral palette for surfaces */
-	--color-surface-50: #fafafa;
-	--color-surface-100: #f4f4f5;
-	--color-surface-200: #e4e4e7;
-	--color-surface-300: #d4d4d8;
-	--color-surface-400: #a1a1aa;
-	--color-surface-500: #71717a;
-	--color-surface-600: #52525b;
-	--color-surface-700: #3f3f46;
-	--color-surface-800: #27272a;
-	--color-surface-900: #18181b;
-	--color-surface-950: #09090b;
+	/* Dark surface palette - rich blacks */
+	--color-surface-50: #fafaf9;
+	--color-surface-100: #f5f5f4;
+	--color-surface-200: #e7e5e4;
+	--color-surface-300: #d6d3d1;
+	--color-surface-400: #a8a29e;
+	--color-surface-500: #78716c;
+	--color-surface-600: #57534e;
+	--color-surface-700: #44403c;
+	--color-surface-800: #292524;
+	--color-surface-900: #1c1917;
+	--color-surface-950: #0c0a09;
 
 	/* Typography */
-	--font-family-sans:
-		'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
-	--font-family-mono: 'JetBrains Mono', ui-monospace, 'Fira Code', monospace;
+	--font-family-display: 'Satoshi', ui-sans-serif, system-ui, sans-serif;
+	--font-family-sans: 'Geist', ui-sans-serif, system-ui, sans-serif;
+	--font-family-mono: 'Geist Mono', ui-monospace, monospace;
 
 	/* Custom animations */
-	--animate-fade-in: fade-in 0.5s ease-out;
-	--animate-slide-up: slide-up 0.6s ease-out;
-	--animate-slide-in-right: slide-in-right 0.5s ease-out;
+	--animate-fade-in: fade-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+	--animate-slide-up: slide-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+	--animate-slide-in-right: slide-in-right 0.6s cubic-bezier(0.16, 1, 0.3, 1)
+		forwards;
+	--animate-scale-in: scale-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+	--animate-glow-pulse: glow-pulse 3s ease-in-out infinite;
 
 	@keyframes fade-in {
 		from {
@@ -68,7 +106,7 @@
 	@keyframes slide-up {
 		from {
 			opacity: 0;
-			transform: translateY(24px);
+			transform: translateY(40px);
 		}
 		to {
 			opacity: 1;
@@ -79,16 +117,69 @@
 	@keyframes slide-in-right {
 		from {
 			opacity: 0;
-			transform: translateX(-24px);
+			transform: translateX(-30px);
 		}
 		to {
 			opacity: 1;
 			transform: translateX(0);
 		}
 	}
+
+	@keyframes scale-in {
+		from {
+			opacity: 0;
+			transform: scale(0.95);
+		}
+		to {
+			opacity: 1;
+			transform: scale(1);
+		}
+	}
+
+	@keyframes glow-pulse {
+		0%,
+		100% {
+			opacity: 0.4;
+		}
+		50% {
+			opacity: 0.8;
+		}
+	}
+
+	@keyframes float {
+		0%,
+		100% {
+			transform: translateY(0) rotate(0deg);
+		}
+		50% {
+			transform: translateY(-20px) rotate(2deg);
+		}
+	}
+
+	@keyframes grain {
+		0%,
+		100% {
+			transform: translate(0, 0);
+		}
+		10% {
+			transform: translate(-5%, -10%);
+		}
+		30% {
+			transform: translate(3%, -15%);
+		}
+		50% {
+			transform: translate(-15%, 5%);
+		}
+		70% {
+			transform: translate(10%, 15%);
+		}
+		90% {
+			transform: translate(15%, 5%);
+		}
+	}
 }
 
-/* Base styles */
+/* Base styles - Dark mode by default */
 html {
 	scroll-behavior: smooth;
 	scrollbar-gutter: stable;
@@ -110,12 +201,39 @@ html {
 }
 
 body {
-	@apply bg-surface-50 text-surface-900 antialiased overflow-x-hidden;
+	@apply bg-surface-950 text-surface-100 antialiased overflow-x-hidden;
 	font-family: var(--font-family-sans);
 }
 
 #root {
 	display: contents;
+}
+
+/* Display font utility - Tailwind v4 custom utility */
+@utility font-display {
+	font-family: var(--font-family-display);
+}
+
+/* Grain texture overlay for depth - subtle static effect */
+.grain::before {
+	content: '';
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+	opacity: 0.015;
+	pointer-events: none;
+	z-index: 9999;
+}
+
+/* Glowing orb effect */
+.glow-orb {
+	position: absolute;
+	border-radius: 50%;
+	filter: blur(100px);
+	animation: glow-pulse 4s ease-in-out infinite;
 }
 
 /* Focus styles for accessibility */
@@ -125,7 +243,7 @@ body {
 
 /* Skip link for accessibility */
 .skip-link {
-	@apply absolute -top-12 left-4 z-50 bg-accent-600 text-white px-4 py-2 rounded-md;
+	@apply absolute -top-12 left-4 z-50 bg-accent-500 text-surface-950 px-4 py-2 rounded-md font-semibold;
 	@apply transition-transform duration-200;
 }
 
@@ -135,16 +253,16 @@ body {
 
 /* Selection color */
 ::selection {
-	@apply bg-accent-200 text-accent-900;
+	@apply bg-accent-500/30 text-accent-100;
 }
 
 /* View Transitions API */
 ::view-transition-old(root) {
-	animation: fade-out 150ms ease-out forwards;
+	animation: fade-out 200ms ease-out forwards;
 }
 
 ::view-transition-new(root) {
-	animation: fade-in 150ms ease-in forwards;
+	animation: fade-in 200ms ease-in forwards;
 }
 
 @keyframes fade-out {
@@ -196,31 +314,31 @@ body {
 /* Smooth transitions for interactive elements */
 a,
 button {
-	@apply transition-all duration-200;
+	@apply transition-all duration-300;
 }
 
 /* Ensure icons and child elements animate smoothly */
 a svg,
 button svg {
-	@apply transition-transform duration-200;
+	@apply transition-transform duration-300;
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar - minimal dark design */
 ::-webkit-scrollbar {
-	width: 8px;
-	height: 8px;
+	width: 6px;
+	height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-	@apply bg-surface-100;
+	@apply bg-transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-	@apply bg-surface-300 rounded-full;
+	@apply bg-surface-700 rounded-full;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-	@apply bg-surface-400;
+	@apply bg-surface-600;
 }
 
 /* Utility for staggered animations */
@@ -239,8 +357,158 @@ button svg {
 .stagger-5 {
 	animation-delay: 0.5s;
 }
+.stagger-6 {
+	animation-delay: 0.6s;
+}
 
-/* Animated gradient blobs */
+/* Section number styling - editorial touch */
+.section-number {
+	@apply font-display text-8xl sm:text-9xl font-black text-surface-800/50 select-none;
+	line-height: 0.8;
+}
+
+/* Card styles - glass morphism with borders */
+.card {
+	@apply bg-surface-900/50 border border-surface-800 rounded-2xl backdrop-blur-sm;
+	@apply transition-all duration-300;
+}
+
+.card:hover {
+	@apply border-surface-700 bg-surface-900/70;
+	box-shadow:
+		0 0 0 1px rgba(245, 158, 11, 0.1),
+		0 20px 40px -20px rgba(0, 0, 0, 0.5);
+}
+
+/* Accent card variant */
+.card-accent {
+	@apply bg-linear-to-br from-accent-500/10 to-accent-600/5 border-accent-500/20;
+}
+
+.card-accent:hover {
+	@apply border-accent-500/40;
+	box-shadow:
+		0 0 0 1px rgba(245, 158, 11, 0.2),
+		0 20px 40px -20px rgba(245, 158, 11, 0.2);
+}
+
+/* Tag/pill styles */
+.tag {
+	@apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium;
+	@apply bg-surface-800 text-surface-300 border border-surface-700;
+	@apply transition-all duration-200;
+}
+
+.tag:hover {
+	@apply bg-surface-700 border-surface-600 text-surface-200;
+}
+
+.tag-accent {
+	@apply bg-accent-500/10 text-accent-400 border-accent-500/30;
+}
+
+.tag-accent:hover {
+	@apply bg-accent-500/20 border-accent-500/50;
+}
+
+/* Button base styles */
+.btn {
+	@apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold;
+	@apply transition-all duration-300;
+}
+
+.btn-primary {
+	@apply bg-accent-500 text-surface-950 hover:bg-accent-400;
+	@apply shadow-lg shadow-accent-500/25 hover:shadow-accent-400/30;
+	@apply hover:-translate-y-0.5;
+}
+
+.btn-secondary {
+	@apply bg-surface-800 text-surface-100 border border-surface-700;
+	@apply hover:bg-surface-700 hover:border-surface-600;
+	@apply hover:-translate-y-0.5;
+}
+
+.btn-ghost {
+	@apply text-surface-300 hover:text-accent-400 hover:bg-surface-800/50;
+}
+
+/* Animated gradient border */
+.gradient-border {
+	position: relative;
+}
+
+.gradient-border::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	padding: 1px;
+	background: linear-gradient(
+		135deg,
+		var(--color-accent-500),
+		var(--color-accent-600),
+		var(--color-surface-700),
+		var(--color-accent-500)
+	);
+	background-size: 300% 300%;
+	animation: gradient-shift 4s ease infinite;
+	-webkit-mask:
+		linear-gradient(#fff 0 0) content-box,
+		linear-gradient(#fff 0 0);
+	-webkit-mask-composite: xor;
+	mask-composite: exclude;
+	opacity: 0;
+	transition: opacity 0.3s;
+	pointer-events: none;
+}
+
+.gradient-border:hover::before {
+	opacity: 1;
+}
+
+@keyframes gradient-shift {
+	0% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+	100% {
+		background-position: 0% 50%;
+	}
+}
+
+/* Animated underline */
+.hover-underline {
+	position: relative;
+}
+
+.hover-underline::after {
+	content: '';
+	position: absolute;
+	bottom: -2px;
+	left: 0;
+	width: 0;
+	height: 2px;
+	background: linear-gradient(
+		90deg,
+		var(--color-accent-500),
+		var(--color-accent-400)
+	);
+	transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hover-underline:hover::after {
+	width: 100%;
+}
+
+/* Text gradient */
+.text-gradient {
+	@apply bg-linear-to-r from-accent-400 via-accent-500 to-accent-600 bg-clip-text text-transparent;
+}
+
+/* Animated blob backgrounds */
 .blob {
 	animation-timing-function: ease-in-out;
 	animation-iteration-count: infinite;
@@ -248,27 +516,15 @@ button svg {
 }
 
 .blob-1 {
-	top: -20%;
-	left: 10%;
-	animation: blob-float-1 20s infinite alternate;
+	animation: blob-float-1 25s infinite alternate;
 }
 
 .blob-2 {
-	top: -10%;
-	right: -5%;
-	animation: blob-float-2 25s infinite alternate;
+	animation: blob-float-2 30s infinite alternate;
 }
 
 .blob-3 {
-	bottom: -15%;
-	left: 30%;
-	animation: blob-float-3 18s infinite alternate;
-}
-
-.blob-4 {
-	bottom: 10%;
-	right: 15%;
-	animation: blob-float-4 22s infinite alternate;
+	animation: blob-float-3 20s infinite alternate;
 }
 
 @keyframes blob-float-1 {
@@ -276,13 +532,13 @@ button svg {
 		transform: translate(0, 0) scale(1);
 	}
 	33% {
-		transform: translate(30px, 50px) scale(1.05);
+		transform: translate(40px, 60px) scale(1.1);
 	}
 	66% {
-		transform: translate(-20px, 30px) scale(0.95);
+		transform: translate(-30px, 40px) scale(0.9);
 	}
 	100% {
-		transform: translate(50px, -20px) scale(1.02);
+		transform: translate(60px, -30px) scale(1.05);
 	}
 }
 
@@ -291,13 +547,13 @@ button svg {
 		transform: translate(0, 0) scale(1);
 	}
 	33% {
-		transform: translate(-40px, 30px) scale(0.98);
+		transform: translate(-50px, 40px) scale(0.95);
 	}
 	66% {
-		transform: translate(20px, -40px) scale(1.04);
+		transform: translate(30px, -50px) scale(1.1);
 	}
 	100% {
-		transform: translate(-30px, -20px) scale(1);
+		transform: translate(-40px, -30px) scale(1);
 	}
 }
 
@@ -306,32 +562,73 @@ button svg {
 		transform: translate(0, 0) scale(1);
 	}
 	33% {
-		transform: translate(50px, -30px) scale(1.03);
+		transform: translate(60px, -40px) scale(1.05);
 	}
 	66% {
-		transform: translate(-30px, -20px) scale(0.97);
+		transform: translate(-40px, -30px) scale(0.95);
 	}
 	100% {
-		transform: translate(20px, 40px) scale(1.01);
-	}
-}
-
-@keyframes blob-float-4 {
-	0% {
-		transform: translate(0, 0) scale(1);
-	}
-	33% {
-		transform: translate(-20px, -40px) scale(1.02);
-	}
-	66% {
-		transform: translate(40px, 20px) scale(0.96);
-	}
-	100% {
-		transform: translate(-40px, 30px) scale(1.04);
+		transform: translate(30px, 50px) scale(1.02);
 	}
 }
 
 ::view-transition-old(.project),
 ::view-transition-new(.project) {
 	z-index: 999;
+}
+
+/* Prose styling for dark mode */
+.prose {
+	@apply text-surface-300;
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4 {
+	@apply text-surface-100 font-display;
+}
+
+.prose a {
+	@apply text-accent-400 hover:text-accent-300;
+}
+
+.prose strong {
+	@apply text-surface-100;
+}
+
+.prose code {
+	@apply bg-surface-800 text-accent-400 px-1.5 py-0.5 rounded text-sm;
+	font-family: var(--font-family-mono);
+}
+
+.prose pre {
+	@apply bg-surface-900 border border-surface-800;
+	font-family: var(--font-family-mono);
+}
+
+.prose pre code {
+	@apply bg-transparent p-0;
+}
+
+.prose th {
+	@apply text-surface-100;
+}
+
+.prose ol > li::marker {
+	@apply text-accent-500;
+}
+
+.prose ul > li::marker {
+	@apply text-accent-500;
+}
+
+/* Line decoration */
+.line-decoration {
+	@apply relative;
+}
+
+.line-decoration::before {
+	content: '';
+	@apply absolute left-0 top-1/2 -translate-y-1/2 w-12 h-px bg-linear-to-r from-accent-500 to-transparent;
 }

@@ -36,7 +36,7 @@ export function Tooltip({
 		onOpenChange: setIsOpen,
 		placement,
 		middleware: [
-			offset(6),
+			offset(8),
 			flip({ fallbackAxisSideDirection: 'start' }),
 			shift({ padding: 5 }),
 		],
@@ -69,11 +69,11 @@ export function Tooltip({
 						ref={refs.setFloating}
 						style={floatingStyles}
 						className={clsx(
-							'z-50 rounded-md bg-surface-800 px-2.5 py-1.5 text-xs font-medium text-white shadow-lg transition-opacity duration-150',
+							'z-50 rounded-lg bg-surface-800 border border-surface-700 px-3 py-1.5 text-xs font-medium text-surface-200 shadow-xl transition-opacity duration-150',
 							{
 								'opacity-100': status === 'open',
 								'opacity-0': status !== 'open',
-							},
+							}
 						)}
 						{...getFloatingProps()}
 					>

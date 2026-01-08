@@ -1,60 +1,139 @@
 import { experiences } from '@/lib/data';
+import { Briefcase, MapPin, Calendar } from 'lucide-react';
 
 export function Experience() {
 	return (
 		<section
 			id="experience"
-			className="py-20 sm:py-24"
+			className="relative py-24 sm:py-32"
 			aria-labelledby="experience-heading"
 		>
-			<div className="mx-auto max-w-5xl px-4 sm:px-6">
-				<h2
-					id="experience-heading"
-					className="text-3xl font-bold tracking-tight text-surface-900 sm:text-4xl"
-				>
-					Experience
-				</h2>
+			{/* Background accent */}
+			<div className="absolute inset-0 -z-10">
+				<div className="absolute top-1/4 right-0 h-[400px] w-[400px] rounded-full bg-accent-500/5 blur-3xl" />
+			</div>
 
-				<div className="group/list mt-12 space-y-4">
-					{experiences.map((exp, index) => (
-						<article
-							key={`${exp.company}-${exp.role}`}
-							className="group relative pl-8 transition-opacity duration-300 lg:group-has-[article:hover]/list:opacity-40 lg:hover:opacity-100! after:absolute after:left-1.25 after:top-5 after:h-[calc(100%+1rem)] after:w-0.5 after:bg-surface-200 last:after:hidden"
-							style={{ animationDelay: `${index * 0.1}s` }}
+			<div className="mx-auto max-w-6xl px-6 sm:px-8 lg:px-12">
+				{/* Section header with number */}
+				<div className="flex items-end gap-6 mb-16">
+					<span className="section-number">01</span>
+					<div>
+						<h2
+							id="experience-heading"
+							className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-surface-100"
 						>
-							{/* Timeline dot with ping effect on hover */}
-							<span className="absolute left-0 top-2 flex h-3 w-3">
-								<span className="absolute inline-flex h-full w-full rounded-full bg-accent-400 opacity-0 group-hover:animate-ping group-hover:opacity-75" />
-								<span className="relative inline-flex h-3 w-3 rounded-full bg-accent-500" />
-							</span>
-							<div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-								<h3 className="text-lg font-semibold text-surface-900">
-									{exp.role}
-								</h3>
-								<span className="text-sm font-medium text-accent-600">
-									{exp.company}
-								</span>
-							</div>
+							Experience
+						</h2>
+						<p className="mt-2 text-surface-400">
+							My professional journey in software engineering
+						</p>
+					</div>
+				</div>
 
-							<p className="mt-1 text-sm text-surface-500">
-								{exp.period} • {exp.location}
-								{exp.current && (
-									<span className="ml-2 inline-flex items-center rounded-full bg-accent-100 px-2 py-0.5 text-xs font-medium text-accent-700">
-										Current
-									</span>
-								)}
-							</p>
+				{/* Timeline */}
+				<div className="relative">
+					{/* Timeline line */}
+					<div className="absolute left-0 top-0 bottom-0 w-px bg-gradient-to-b from-accent-500 via-surface-700 to-transparent lg:left-1/2 lg:-translate-x-1/2" />
 
-							<ul className="mt-4 space-y-2" role="list">
-								{exp.description.map((item, i) => (
-									<li key={i} className="flex items-start text-surface-600">
-										<span className="mr-3 mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-surface-400" />
-										{item}
-									</li>
-								))}
-							</ul>
-						</article>
-					))}
+					<div className="space-y-12 lg:space-y-16">
+						{experiences.map((exp, index) => (
+							<article
+								key={`${exp.company}-${exp.role}`}
+								className={`relative lg:grid lg:grid-cols-2 lg:gap-8 ${
+									index % 2 === 0 ? '' : 'lg:text-right'
+								}`}
+							>
+								{/* Timeline dot */}
+								<div className="absolute left-0 top-0 lg:left-1/2 lg:-translate-x-1/2">
+									<div className="relative flex h-4 w-4 items-center justify-center">
+										{exp.current && (
+											<span className="absolute h-4 w-4 rounded-full bg-accent-500 animate-ping opacity-50" />
+										)}
+										<span
+											className={`relative h-3 w-3 rounded-full ${
+												exp.current
+													? 'bg-accent-500 ring-4 ring-accent-500/20'
+													: 'bg-surface-600 ring-4 ring-surface-800'
+											}`}
+										/>
+									</div>
+								</div>
+
+								{/* Content */}
+								<div
+									className={`pl-8 lg:pl-0 ${
+										index % 2 === 0
+											? 'lg:pr-12'
+											: 'lg:col-start-2 lg:pl-12 lg:text-left'
+									}`}
+								>
+									<div
+										className="card p-6 group hover:border-accent-500/30"
+										style={{ animationDelay: `${index * 0.1}s` }}
+									>
+										{/* Header */}
+										<div
+											className={`flex items-start gap-4 ${
+												index % 2 === 0 ? '' : 'lg:flex-row'
+											}`}
+										>
+											<div
+												className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-accent-500/10 border border-accent-500/20 group-hover:bg-accent-500/20 transition-colors`}
+											>
+												<Briefcase className="h-5 w-5 text-accent-400" />
+											</div>
+
+											<div className="flex-1 min-w-0">
+												<div className="flex flex-wrap items-center gap-2">
+													<h3 className="font-display text-lg font-semibold text-surface-100">
+														{exp.role}
+													</h3>
+													{exp.current && (
+														<span className="tag tag-accent text-[10px]">
+															Current
+														</span>
+													)}
+												</div>
+												<p className="mt-1 text-accent-400 font-medium">
+													{exp.company}
+												</p>
+											</div>
+										</div>
+
+										{/* Meta */}
+										<div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-surface-500">
+											<span className="inline-flex items-center gap-1.5">
+												<Calendar className="h-3.5 w-3.5" />
+												{exp.period}
+											</span>
+											<span className="inline-flex items-center gap-1.5">
+												<MapPin className="h-3.5 w-3.5" />
+												{exp.location}
+											</span>
+										</div>
+
+										{/* Description */}
+										<ul className="mt-5 space-y-2.5" role="list">
+											{exp.description.map((item, i) => (
+												<li
+													key={i}
+													className={`flex items-start gap-3 text-surface-400 text-sm leading-relaxed ${
+														index % 2 === 0 ? '' : 'lg:flex-row'
+													}`}
+												>
+													<span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-accent-500/50" />
+													<span>{item}</span>
+												</li>
+											))}
+										</ul>
+									</div>
+								</div>
+
+								{/* Empty column for alternating layout */}
+								{index % 2 === 0 && <div className="hidden lg:block" />}
+							</article>
+						))}
+					</div>
 				</div>
 			</div>
 		</section>
