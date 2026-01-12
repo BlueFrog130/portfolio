@@ -73,7 +73,7 @@ export function Tooltip({
 							{
 								'opacity-100': status === 'open',
 								'opacity-0': status !== 'open',
-							}
+							},
 						)}
 						{...getFloatingProps()}
 					>

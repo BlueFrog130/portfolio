@@ -13,7 +13,7 @@ function useIsClient() {
 	return useSyncExternalStore(
 		emptySubscribe,
 		() => true,
-		() => false
+		() => false,
 	);
 }
 
@@ -81,7 +81,7 @@ export function Header() {
 				'fixed top-0 z-30 w-full border-b transition-all duration-300',
 				scrolled
 					? 'bg-surface-950/80 backdrop-blur-xl border-surface-800/50'
-					: 'bg-transparent border-transparent'
+					: 'bg-transparent border-transparent',
 			)}
 		>
 			<nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6 sm:px-8 lg:px-12">
@@ -101,7 +101,7 @@ export function Header() {
 						<li key={item.href}>
 							<Link
 								to={item.href}
-								className="hover-underline px-4 py-2 text-sm font-medium text-surface-400 hover:text-surface-100"
+								className="relative px-4 py-2 text-sm font-medium text-surface-400 hover:text-surface-100 after:content-[''] after:absolute after:-bottom-0.5 after:left-0 after:w-0 after:h-0.5 after:bg-linear-to-r after:from-accent-500 after:to-accent-400 after:transition-[width] after:duration-300 after:ease-[cubic-bezier(0.16,1,0.3,1)] hover:after:w-full"
 							>
 								{item.label}
 							</Link>
@@ -120,7 +120,7 @@ export function Header() {
 								href={links.github}
 								target="_blank"
 								rel="noopener noreferrer"
-								className="btn-ghost p-2 rounded-lg"
+								className="text-surface-300 hover:text-accent-400 shrink-0 hover:bg-surface-800/50 p-2 rounded-lg transition-all duration-300"
 								aria-label="GitHub Profile"
 							>
 								<GitHubIcon className="h-5 w-5" />
@@ -131,7 +131,7 @@ export function Header() {
 								href={links.linkedin}
 								target="_blank"
 								rel="noopener noreferrer"
-								className="btn-ghost p-2 rounded-lg"
+								className="text-surface-300 hover:text-accent-400 shrink-0 hover:bg-surface-800/50 p-2 rounded-lg transition-all duration-300"
 								aria-label="LinkedIn Profile"
 							>
 								<LinkedInIcon className="h-5 w-5" />
@@ -142,7 +142,7 @@ export function Header() {
 					{/* Mobile Menu Button */}
 					<button
 						type="button"
-						className="btn-ghost p-2 rounded-lg sm:hidden"
+						className="text-surface-300 hover:text-accent-400 hover:bg-surface-800/50 p-2 rounded-lg transition-all duration-300 sm:hidden"
 						onClick={() => setMobileMenuOpen(true)}
 						aria-label="Open main menu"
 					>
@@ -157,7 +157,7 @@ export function Header() {
 					<div
 						className={clsx(
 							'sm:hidden',
-							mobileMenuOpen ? 'pointer-events-auto' : 'pointer-events-none'
+							mobileMenuOpen ? 'pointer-events-auto' : 'pointer-events-none',
 						)}
 						role="dialog"
 						aria-modal="true"
@@ -167,7 +167,7 @@ export function Header() {
 						<div
 							className={clsx(
 								'fixed inset-0 z-40 bg-surface-950/80 backdrop-blur-sm transition-opacity duration-300',
-								mobileMenuOpen ? 'opacity-100' : 'opacity-0'
+								mobileMenuOpen ? 'opacity-100' : 'opacity-0',
 							)}
 							onClick={closeMenu}
 							aria-hidden="true"
@@ -177,7 +177,7 @@ export function Header() {
 						<div
 							className={clsx(
 								'fixed inset-y-0 right-0 z-50 w-full max-w-sm transform bg-surface-900 border-l border-surface-800 px-6 py-6 shadow-2xl transition-transform duration-300 ease-out',
-								mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+								mobileMenuOpen ? 'translate-x-0' : 'translate-x-full',
 							)}
 						>
 							<div className="flex items-center justify-between">
@@ -190,7 +190,7 @@ export function Header() {
 								</Link>
 								<button
 									type="button"
-									className="btn-ghost p-2 rounded-lg"
+									className="text-surface-300 hover:text-accent-400 hover:bg-surface-800/50 p-2 rounded-lg transition-all duration-300"
 									onClick={closeMenu}
 									aria-label="Close menu"
 								>
@@ -223,7 +223,7 @@ export function Header() {
 											href={links.github}
 											target="_blank"
 											rel="noopener noreferrer"
-											className="btn-ghost flex items-center gap-3 px-4 py-3 rounded-xl"
+											className="text-surface-300 hover:text-accent-400 hover:bg-surface-800/50 flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300"
 											aria-label="GitHub Profile"
 										>
 											<GitHubIcon className="h-5 w-5" />
@@ -233,7 +233,7 @@ export function Header() {
 											href={links.linkedin}
 											target="_blank"
 											rel="noopener noreferrer"
-											className="btn-ghost flex items-center gap-3 px-4 py-3 rounded-xl"
+											className="text-surface-300 hover:text-accent-400 hover:bg-surface-800/50 flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300"
 											aria-label="LinkedIn Profile"
 										>
 											<LinkedInIcon className="h-5 w-5" />
@@ -244,7 +244,7 @@ export function Header() {
 							</nav>
 						</div>
 					</div>,
-					document.body
+					document.body,
 				)}
 		</header>
 	);

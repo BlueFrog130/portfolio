@@ -1,6 +1,7 @@
 import { Layout } from '@/lib/components/Layout';
 import { Link } from '@/lib/router';
 import { Home, ArrowLeft } from 'lucide-react';
+import { Button } from '@/lib/components/ui';
 
 export default function NotFound() {
 	return (
@@ -28,17 +29,14 @@ export default function NotFound() {
 
 					{/* Actions */}
 					<div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-						<Link to="/" className="btn btn-primary">
+						<Button as="a" href="/" variant="primary">
 							<Home className="h-4 w-4" />
 							Go back home
-						</Link>
-						<button
-							onClick={() => window.history.back()}
-							className="btn btn-secondary"
-						>
+						</Button>
+						<Button onClick={() => window.history.back()} variant="secondary">
 							<ArrowLeft className="h-4 w-4" />
 							Go back
-						</button>
+						</Button>
 					</div>
 				</div>
 			</section>

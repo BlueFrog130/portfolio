@@ -25,25 +25,25 @@
 
 **Solarity**, Sioux Falls, SD | **Senior Software Engineer** | Jun 2025 - Present
 
-* AI Integration Leadership: Spearheading adoption of AI development tools and agentic technologies, creating internal MCP tools that accelerated development and QA workflows, saving ~4 hours per week per developer
-* Mentoring: Training 30+ engineers on AI technologies and best practices for modern development
+- AI Integration Leadership: Spearheading adoption of AI development tools and agentic technologies, creating internal MCP tools that accelerated development and QA workflows, saving ~4 hours per week per developer
+- Mentoring: Training 30+ engineers on AI technologies and best practices for modern development
 
 **Solarity**, Sioux Falls, SD | **Software Engineer II** | Apr 2023 - Jun 2025
 
-* Frontend Modernization: Led adoption of React and TypeScript across 4 development teams, establishing patterns and best practices that standardized front-end architecture
-* System Redesign: Designed and implemented replacement backend system using .NET Core with state machine patterns for critical business component, increasing throughput by 30%
-* Developer Experience: Created Figma training materials and led API documentation initiative with Postman, documenting 100% of endpoints and allowing QA to automate testing
-* Mentorship: Coached junior developers and interns on modern development practices, all interns received full-time offers
+- Frontend Modernization: Led adoption of React and TypeScript across 4 development teams, establishing patterns and best practices that standardized front-end architecture
+- System Redesign: Designed and implemented replacement backend system using .NET Core with state machine patterns for critical business component, increasing throughput by 30%
+- Developer Experience: Created Figma training materials and led API documentation initiative with Postman, documenting 100% of endpoints and allowing QA to automate testing
+- Mentorship: Coached junior developers and interns on modern development practices, all interns received full-time offers
 
 **Solarity**, Sioux Falls, SD | **Software Engineer** | Jan 2022 - Apr 2023
 
-* Design System Leadership: Led company-wide adoption of Figma for UI/UX design, contributing 4+ prototypes that improved design-to-development workflow
-* Legacy Modernization: Introduced modern JavaScript practices to ASP.NET MVC application, improving maintainability of 300k lines of legacy code
+- Design System Leadership: Led company-wide adoption of Figma for UI/UX design, contributing 4+ prototypes that improved design-to-development workflow
+- Legacy Modernization: Introduced modern JavaScript practices to ASP.NET MVC application, improving maintainability of 300k lines of legacy code
 
 **Solarity**, Sioux Falls, SD | **Software Engineer Intern** | May 2019 - Jun 2022
 
-* Full-Stack Development: Designed and implemented complete web application used by 6 warehouse staff using Vue.js, ASP.NET Core, and SQL Server as solo intern
-* DevOps Implementation: Containerized application with Docker and automated both production and preview deployment pipelines using GitLab CI/CD, saving 2 hours of manual work per week
+- Full-Stack Development: Designed and implemented complete web application used by 6 warehouse staff using Vue.js, ASP.NET Core, and SQL Server as solo intern
+- DevOps Implementation: Containerized application with Docker and automated both production and preview deployment pipelines using GitLab CI/CD, saving 2 hours of manual work per week
 
 ---
 

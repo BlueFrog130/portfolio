@@ -1,5 +1,6 @@
 import { profile, links } from '@/lib/data';
 import { ArrowRight, ArrowDown } from 'lucide-react';
+import { Button, Card, Tag } from '@/lib/components/ui';
 
 export function Hero() {
 	return (
@@ -10,11 +11,11 @@ export function Hero() {
 			{/* Ambient glow orbs */}
 			<div className="absolute inset-0 -z-10 overflow-hidden">
 				{/* Primary amber glow */}
-				<div className="glow-orb blob-1 absolute -top-40 -left-40 h-125 w-125 bg-accent-500/20" />
+				<div className="absolute -top-40 -left-40 h-125 w-125 rounded-full bg-accent-500/20 blur-[100px] animate-[blob-float-1_25s_infinite_alternate]" />
 				{/* Secondary warm glow */}
-				<div className="glow-orb blob-2 absolute top-1/4 -right-20 h-100 w-100 bg-accent-600/15" />
+				<div className="absolute top-1/4 -right-20 h-100 w-100 rounded-full bg-accent-600/15 blur-[100px] animate-[blob-float-2_30s_infinite_alternate]" />
 				{/* Subtle accent */}
-				<div className="glow-orb blob-3 absolute -bottom-32 left-1/3 h-87.5 w-87.5 bg-accent-400/10" />
+				<div className="absolute -bottom-32 left-1/3 h-87.5 w-87.5 rounded-full bg-accent-400/10 blur-[100px] animate-[blob-float-3_20s_infinite_alternate]" />
 				{/* Grid pattern overlay */}
 				<div
 					className="absolute inset-0 opacity-[0.02]"
@@ -81,19 +82,26 @@ export function Hero() {
 							className="flex flex-wrap items-center gap-4 pt-4 opacity-0 animate-slide-up"
 							style={{ animationDelay: '0.5s' }}
 						>
-							<a href="#contact" className="btn btn-primary group">
+							<Button
+								as="a"
+								href="#contact"
+								variant="primary"
+								className="group"
+							>
 								Let's talk
 								<ArrowRight className="h-4 w-4 group-hover:translate-x-1" />
-							</a>
-							<a
+							</Button>
+							<Button
+								as="a"
 								href={links.github}
 								target="_blank"
 								rel="noopener noreferrer"
-								className="btn btn-secondary group"
+								variant="secondary"
+								className="group"
 							>
 								View GitHub
 								<ArrowRight className="h-4 w-4 opacity-0 -ml-2 group-hover:opacity-100 group-hover:ml-0" />
-							</a>
+							</Button>
 						</div>
 					</div>
 
@@ -104,7 +112,7 @@ export function Hero() {
 							style={{ animationDelay: '0.6s' }}
 						>
 							{/* Decorative card with stats */}
-							<div className="card p-8 space-y-8">
+							<Card className="p-8 space-y-8">
 								{/* Years of experience */}
 								<div className="space-y-2">
 									<div className="flex items-baseline gap-2">
@@ -128,9 +136,9 @@ export function Hero() {
 									<div className="flex flex-wrap gap-2">
 										{['React', 'TypeScript', 'AI Integration', '.NET'].map(
 											(tech) => (
-												<span key={tech} className="tag tag-accent">
+												<Tag key={tech} variant="accent">
 													{tech}
-												</span>
+												</Tag>
 											),
 										)}
 									</div>
@@ -148,7 +156,7 @@ export function Hero() {
 										Available for new opportunities
 									</span>
 								</div>
-							</div>
+							</Card>
 
 							{/* Floating decorative elements */}
 							<div className="absolute -z-10 -top-4 -right-4 h-24 w-24 rounded-2xl border border-accent-500/20 bg-accent-500/5" />

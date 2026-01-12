@@ -11,8 +11,6 @@ import {
 import {
 	FolderOpen,
 	ArrowRight,
-	ExternalLink,
-	Sparkles,
 	X,
 	Send,
 	Loader2,
@@ -27,6 +25,12 @@ import { clsx } from 'clsx';
 import { useProjectChat } from '@/lib/chat';
 import { useChatAnalytics } from '@/lib/chat/analytics';
 import Markdown from 'react-markdown';
+import { Button, GradientCard, SectionNumber, Tag } from '@/lib/components/ui';
+import {
+	ExternalLinkIcon,
+	FolderIcon,
+	SparklesIcon,
+} from '@/lib/components/ui/icon';
 
 export function Projects() {
 	const featuredProjects = getFeaturedProjects();
@@ -62,7 +66,7 @@ export function Projects() {
 				<div className="mx-auto max-w-6xl px-6 sm:px-8 lg:px-12">
 					{/* Section header */}
 					<div className="flex items-end gap-6 mb-16">
-						<span className="section-number">02</span>
+						<SectionNumber number={2} />
 						<div className="flex-1">
 							<h2
 								id="projects-heading"
@@ -85,47 +89,40 @@ export function Projects() {
 									name={`project-${project.slug}`}
 									key={project.slug}
 								>
-									<article
+									<GradientCard
+										as="article"
 										className={clsx(
-											'group card gradient-border p-6 flex flex-col',
 											// First project spans 2 columns on larger screens
 											index === 0 && 'md:col-span-2 lg:col-span-2',
 											clickedProject?.slug === project.slug && 'z-50',
 										)}
+										contentClassName="p-6 flex flex-col"
 										style={{ animationDelay: `${index * 0.1}s` }}
 									>
 										{/* Header row */}
 										<div className="flex items-start justify-between gap-4">
 											<div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-accent-500/10 border border-accent-500/20 group-hover:bg-accent-500/20 transition-colors">
-												<FolderOpen className="h-5 w-5 text-accent-400" />
+												<FolderIcon className="h-5 w-5 group-hover:[--active:1] transition-transform duration-200 ease-out group-hover:-translate-y-0.5" />
 											</div>
 
 											<div className="flex items-center gap-2">
 												{project.github && (
-													<a
+													<Button
+														as="a"
 														href={project.github}
 														target="_blank"
 														rel="noopener noreferrer"
-														className="btn-ghost p-2 rounded-lg"
+														variant="ghost"
+														className="p-2 rounded-lg"
 														aria-label={`View ${project.title} on GitHub`}
 													>
 														<GitHubIcon className="h-5 w-5" />
-													</a>
-												)}
-												{project.link && (
-													<a
-														href={project.link}
-														target="_blank"
-														rel="noopener noreferrer"
-														className="btn-ghost p-2 rounded-lg"
-														aria-label={`Visit ${project.title}`}
-													>
-														<ExternalLink className="h-5 w-5" />
-													</a>
+													</Button>
 												)}
 												<Tooltip content="Ask AI about this project">
-													<button
-														className="btn-ghost p-2 rounded-lg text-accent-400"
+													<Button
+														variant="ghost"
+														className="group/ai p-2 rounded-lg text-accent-400"
 														aria-label={`Open ${project.title} details`}
 														onClick={() => {
 															setClickedProject(project);
@@ -134,8 +131,8 @@ export function Projects() {
 															});
 														}}
 													>
-														<Sparkles className="h-5 w-5" />
-													</button>
+														<SparklesIcon className="h-5 w-5 group-hover/ai:[--active:1]" />
+													</Button>
 												</Tooltip>
 											</div>
 										</div>
@@ -158,14 +155,10 @@ export function Projects() {
 										{/* Technologies */}
 										<div className="mt-5 flex flex-wrap gap-2">
 											{project.technologies.slice(0, 4).map((tech) => (
-												<span key={tech} className="tag">
-													{tech}
-												</span>
+												<Tag key={tech}>{tech}</Tag>
 											))}
 											{project.technologies.length > 4 && (
-												<span className="tag">
-													+{project.technologies.length - 4}
-												</span>
+												<Tag>+{project.technologies.length - 4}</Tag>
 											)}
 										</div>
 
@@ -185,7 +178,7 @@ export function Projects() {
 												</span>
 											)}
 										</div>
-									</article>
+									</GradientCard>
 								</ViewTransition>
 							))}
 					</div>
@@ -269,7 +262,7 @@ function ProjectDialog({ project, onClose }: ProjectDialogProps) {
 				>
 					{/* Close button */}
 					<button
-						className="absolute top-4 right-4 btn-ghost p-2 rounded-lg z-10"
+						className="absolute top-4 right-4 text-surface-300 hover:text-accent-400 hover:bg-surface-800/50 p-2 rounded-lg transition-all duration-300 z-10"
 						aria-label={`Close ${project.title} details`}
 						onClick={handleClose}
 					>
@@ -293,7 +286,7 @@ function ProjectDialog({ project, onClose }: ProjectDialogProps) {
 												href={project.github}
 												target="_blank"
 												rel="noopener noreferrer"
-												className="btn-ghost p-1.5 rounded-lg"
+												className="text-surface-300 hover:text-accent-400 hover:bg-surface-800/50 p-1.5 rounded-lg transition-all duration-300"
 												aria-label={`View ${project.title} on GitHub`}
 											>
 												<GitHubIcon className="h-4 w-4" />
@@ -304,10 +297,10 @@ function ProjectDialog({ project, onClose }: ProjectDialogProps) {
 												href={project.link}
 												target="_blank"
 												rel="noopener noreferrer"
-												className="btn-ghost p-1.5 rounded-lg"
+												className="group/link text-surface-300 hover:text-accent-400 hover:bg-surface-800/50 p-1.5 rounded-lg transition-all duration-300"
 												aria-label={`Visit ${project.title}`}
 											>
-												<ExternalLink className="h-4 w-4" />
+												<ExternalLinkIcon className="h-4 w-4 group-hover/link:[--active:1]" />
 											</a>
 										)}
 									</div>
@@ -442,7 +435,7 @@ function ProjectChat({ project, onMessageCountChange }: ProjectChatProps) {
 				{messages.length > 0 && (
 					<button
 						onClick={clearMessages}
-						className="btn-ghost p-2 rounded-lg"
+						className="text-surface-300 hover:text-accent-400 hover:bg-surface-800/50 p-2 rounded-lg transition-all duration-300"
 						aria-label="Clear chat"
 						title="Clear chat"
 					>

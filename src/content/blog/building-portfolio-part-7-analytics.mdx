@@ -179,11 +179,14 @@ The router integrates with analytics through context—no direct imports needed:
 // In RouterProvider
 const analytics = useAnalytics();
 
-const navigate = useCallback((to: string) => {
-	// ... parse URL
-	analytics.trackNavigation(newPath);
-	// ... update state
-}, [analytics]);
+const navigate = useCallback(
+	(to: string) => {
+		// ... parse URL
+		analytics.trackNavigation(newPath);
+		// ... update state
+	},
+	[analytics],
+);
 ```
 
 ### Web Vitals
@@ -208,10 +211,10 @@ const reportMetric = (metric: Metric) => {
 	});
 };
 
-onCLS(reportMetric);  // Cumulative Layout Shift
-onINP(reportMetric);  // Interaction to Next Paint
-onLCP(reportMetric);  // Largest Contentful Paint
-onFCP(reportMetric);  // First Contentful Paint
+onCLS(reportMetric); // Cumulative Layout Shift
+onINP(reportMetric); // Interaction to Next Paint
+onLCP(reportMetric); // Largest Contentful Paint
+onFCP(reportMetric); // First Contentful Paint
 onTTFB(reportMetric); // Time to First Byte
 ```
 
@@ -284,16 +287,19 @@ function AnalyticsProvider({ children, config, enabled = true }) {
 	const queueRef = useRef<AnalyticsEvent[]>([]);
 	const flushTimerRef = useRef<number | null>(null);
 
-	const enqueue = useCallback((event: AnalyticsEvent) => {
-		if (!enabled) return;
+	const enqueue = useCallback(
+		(event: AnalyticsEvent) => {
+			if (!enabled) return;
 
-		queueRef.current.push(event);
+			queueRef.current.push(event);
 
-		// Flush when batch is full
-		if (queueRef.current.length >= mergedConfig.batchSize) {
-			flush();
-		}
-	}, [enabled, mergedConfig.batchSize]);
+			// Flush when batch is full
+			if (queueRef.current.length >= mergedConfig.batchSize) {
+				flush();
+			}
+		},
+		[enabled, mergedConfig.batchSize],
+	);
 
 	// Start timer in initialization effect
 	useEffect(() => {
@@ -354,27 +360,32 @@ const flush = useCallback(() => {
 Flush on visibility change and page hide—handled in the provider's cleanup effect:
 
 ```typescript
-useEffect(() => {
-	// ... initialization code
+useEffect(
+	() => {
+		// ... initialization code
 
-	const handleVisibilityChange = () => {
-		if (document.visibilityState === 'hidden') {
-			flush();
-		}
-	};
+		const handleVisibilityChange = () => {
+			if (document.visibilityState === 'hidden') {
+				flush();
+			}
+		};
 
-	document.addEventListener('visibilitychange', handleVisibilityChange);
-	window.addEventListener('pagehide', flush);
+		document.addEventListener('visibilitychange', handleVisibilityChange);
+		window.addEventListener('pagehide', flush);
 
-	return () => {
-		if (flushTimerRef.current) {
-			clearInterval(flushTimerRef.current);
-		}
-		document.removeEventListener('visibilitychange', handleVisibilityChange);
-		window.removeEventListener('pagehide', flush);
-		flush(); // Final flush on unmount
-	};
-}, [/* dependencies */]);
+		return () => {
+			if (flushTimerRef.current) {
+				clearInterval(flushTimerRef.current);
+			}
+			document.removeEventListener('visibilitychange', handleVisibilityChange);
+			window.removeEventListener('pagehide', flush);
+			flush(); // Final flush on unmount
+		};
+	},
+	[
+		/* dependencies */
+	],
+);
 ```
 
 When the user switches tabs or closes the page, any queued events get sent immediately. The cleanup function ensures we don't leak event listeners and sends any remaining events when the provider unmounts.
@@ -582,7 +593,10 @@ interface AnalyticsContextValue {
 		eventCategory: string,
 		eventData?: Record<string, unknown>,
 	) => void;
-	trackChat: (eventType: ChatEventType, eventData?: Record<string, unknown>) => void;
+	trackChat: (
+		eventType: ChatEventType,
+		eventData?: Record<string, unknown>,
+	) => void;
 	sessionId: string;
 }
 ```

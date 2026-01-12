@@ -18,6 +18,7 @@ A deep-dive into building a production React 19 portfolio with custom routing, S
 ### Part 1: Why I Built My Own (Introduction & Philosophy)
 
 **Key Points:**
+
 - The meta-framework landscape in 2024/2025 (Next.js, Remix, TanStack Start, Astro)
 - Why I chose to go custom: learning, control, minimal footprint
 - Trade-offs: what you gain vs what you lose
@@ -25,6 +26,7 @@ A deep-dive into building a production React 19 portfolio with custom routing, S
 - Brief tour of the final architecture
 
 **Alternatives Discussed:**
+
 - Next.js (App Router) - full-featured but opinionated
 - Remix - great DX but heavier than needed
 - TanStack Start - promising but still maturing
@@ -36,6 +38,7 @@ A deep-dive into building a production React 19 portfolio with custom routing, S
 ### Part 2: The Custom Router
 
 **Key Points:**
+
 - Why build a router? (control over transitions, simpler mental model)
 - Pattern matching implementation (`/projects/:slug`)
 - React 19's `startTransition` for navigation
@@ -45,6 +48,7 @@ A deep-dive into building a production React 19 portfolio with custom routing, S
 - SSR/SSG considerations (initial path hydration)
 
 **Code Deep-Dive:**
+
 - `RouterProvider` context setup
 - `matchPath` function for dynamic routes
 - `navigate` function with analytics integration
@@ -52,6 +56,7 @@ A deep-dive into building a production React 19 portfolio with custom routing, S
 - Handling browser back/forward (`popstate`)
 
 **Alternatives Discussed:**
+
 - React Router v6/v7
 - TanStack Router
 - Wouter (minimal alternative)
@@ -61,6 +66,7 @@ A deep-dive into building a production React 19 portfolio with custom routing, S
 ### Part 3: Static Site Generation Without the Framework
 
 **Key Points:**
+
 - The SSG mental model: render at build time, serve static HTML
 - Auto-crawling approach vs explicit route definitions
 - Dynamic routes with content discovery (MDX -> route mapping)
@@ -69,6 +75,7 @@ A deep-dive into building a production React 19 portfolio with custom routing, S
 - Hydration strategy
 
 **Code Deep-Dive:**
+
 - Route mapping from Vite manifest
 - Link extraction from rendered HTML
 - Per-route preload tag generation
@@ -76,6 +83,7 @@ A deep-dive into building a production React 19 portfolio with custom routing, S
 - The build pipeline: client -> SSG -> static output
 
 **Alternatives Discussed:**
+
 - Next.js `getStaticProps`/`generateStaticParams`
 - Astro's static-first approach
 - Vite-SSG plugin
@@ -85,6 +93,7 @@ A deep-dive into building a production React 19 portfolio with custom routing, S
 ### Part 4: MDX Content & the Metadata Plugin
 
 **Key Points:**
+
 - MDX for rich content (projects, blog posts)
 - The metadata extraction problem: need data without full MDX parse
 - Virtual modules in Vite
@@ -92,12 +101,14 @@ A deep-dive into building a production React 19 portfolio with custom routing, S
 - HMR support for metadata changes
 
 **Code Deep-Dive:**
+
 - `vite-plugin-mdx-metadata.ts` implementation
 - The `?metadata` query pattern
 - Virtual module resolution (`\0` prefix)
 - `handleHotUpdate` for development experience
 
 **Alternatives Discussed:**
+
 - Frontmatter with gray-matter
 - Content Collections (Astro-style)
 - Contentlayer (RIP)
@@ -108,6 +119,7 @@ A deep-dive into building a production React 19 portfolio with custom routing, S
 ### Part 5: Cloudflare Workers & Hono Backend
 
 **Key Points:**
+
 - Edge-first architecture philosophy
 - Hono as a minimal, fast framework
 - D1 for analytics storage
@@ -115,12 +127,14 @@ A deep-dive into building a production React 19 portfolio with custom routing, S
 - Vite's `@cloudflare/vite-plugin` for unified DX
 
 **Code Deep-Dive:**
+
 - Worker entry point setup
 - API routes with Hono
 - Request validation with Zod
 - D1 database operations
 
 **Alternatives Discussed:**
+
 - Express/Fastify (traditional Node)
 - tRPC
 - Serverless functions (Vercel, Netlify)
@@ -130,6 +144,7 @@ A deep-dive into building a production React 19 portfolio with custom routing, S
 ### Part 6: AI Chat with Streaming & Analytics
 
 **Key Points:**
+
 - Per-project AI chat: giving context to the model
 - System prompt engineering for personality/boundaries
 - Server-Sent Events (SSE) for streaming responses
@@ -138,12 +153,14 @@ A deep-dive into building a production React 19 portfolio with custom routing, S
 - HTML to Markdown conversion for context
 
 **Code Deep-Dive:**
+
 - `createLoggingStream` implementation
 - System prompt construction
 - Cloudflare AI API usage
 - Execution context and `waitUntil` for background work
 
 **Alternatives Discussed:**
+
 - OpenAI API
 - Anthropic Claude
 - Ollama (self-hosted)
@@ -154,6 +171,7 @@ A deep-dive into building a production React 19 portfolio with custom routing, S
 ### Part 7: Analytics from Scratch
 
 **Key Points:**
+
 - Privacy-respecting analytics (no cookies, session-based)
 - What to track: sessions, pageviews, Web Vitals, custom events
 - Client-side batching for efficiency
@@ -161,12 +179,14 @@ A deep-dive into building a production React 19 portfolio with custom routing, S
 - Web Vitals integration (LCP, FID, CLS, etc.)
 
 **Code Deep-Dive:**
+
 - Session fingerprinting (device, browser, screen)
 - Batch POST to `/api/analytics`
 - Web Vitals library integration
 - Database schema and queries
 
 **Alternatives Discussed:**
+
 - Google Analytics
 - Plausible/Fathom
 - Umami
@@ -177,6 +197,7 @@ A deep-dive into building a production React 19 portfolio with custom routing, S
 ### Part 8: Dual Mode UI (Web vs Terminal)
 
 **Key Points:**
+
 - Creative portfolio differentiation
 - Mode context and persistence
 - Terminal emulator implementation
@@ -184,6 +205,7 @@ A deep-dive into building a production React 19 portfolio with custom routing, S
 - Shared components between modes
 
 **Code Deep-Dive:**
+
 - Mode context provider
 - Terminal command parsing
 - ASCII art and styling
@@ -194,6 +216,7 @@ A deep-dive into building a production React 19 portfolio with custom routing, S
 ### Part 9: Performance & Production Hardening
 
 **Key Points:**
+
 - Vite 7 production build optimizations
 - React Compiler for automatic memoization
 - Asset optimization and caching
@@ -202,6 +225,7 @@ A deep-dive into building a production React 19 portfolio with custom routing, S
 - Monitoring with Grafana dashboards
 
 **Topics:**
+
 - Bundle analysis
 - Code splitting strategies
 - Image optimization
@@ -213,6 +237,7 @@ A deep-dive into building a production React 19 portfolio with custom routing, S
 ### Part 10: Lessons Learned & What I'd Do Differently
 
 **Key Points:**
+
 - Was it worth building custom? (honest assessment)
 - Time investment vs learning value
 - Features I wish I had (hot takes)

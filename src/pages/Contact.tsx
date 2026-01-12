@@ -1,6 +1,7 @@
 import { profile, links } from '@/lib/data';
 import { Mail, ArrowUpRight } from 'lucide-react';
 import { GitHubIcon, LinkedInIcon } from '@/lib/components/icons';
+import { Button, Card } from '@/lib/components/ui';
 
 export function Contact() {
 	return (
@@ -12,7 +13,7 @@ export function Contact() {
 			{/* Dramatic background */}
 			<div className="absolute inset-0 -z-10">
 				{/* Central glow */}
-				<div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[600px] w-[600px] rounded-full bg-accent-500/10 blur-3xl" />
+				<div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-150 w-150 rounded-full bg-accent-500/10 blur-3xl" />
 				{/* Grid pattern */}
 				<div
 					className="absolute inset-0 opacity-[0.02]"
@@ -27,12 +28,7 @@ export function Contact() {
 			<div className="mx-auto max-w-6xl px-6 sm:px-8 lg:px-12">
 				<div className="relative">
 					{/* Main CTA card */}
-					<div className="card card-accent p-8 sm:p-12 lg:p-16 text-center">
-						{/* Section number - positioned absolutely */}
-						<span className="absolute -top-8 left-8 section-number opacity-30">
-							06
-						</span>
-
+					<Card variant="accent" className="p-8 sm:p-12 lg:p-16 text-center">
 						{/* Heading */}
 						<h2
 							id="contact-heading"
@@ -50,21 +46,28 @@ export function Contact() {
 
 						{/* CTA Buttons */}
 						<div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-							<a href={links.email} className="btn btn-primary w-full sm:w-auto">
+							<Button
+								as="a"
+								href={links.email}
+								variant="primary"
+								className="w-full sm:w-auto"
+							>
 								<Mail className="h-5 w-5" />
 								{profile.email}
-							</a>
+							</Button>
 
-							<a
+							<Button
+								as="a"
 								href={links.linkedin}
 								target="_blank"
 								rel="noopener noreferrer"
-								className="btn btn-secondary w-full sm:w-auto group"
+								variant="secondary"
+								className="w-full sm:w-auto group"
 							>
 								<LinkedInIcon className="h-5 w-5" />
 								Connect on LinkedIn
 								<ArrowUpRight className="h-4 w-4 opacity-0 -ml-2 group-hover:opacity-100 group-hover:ml-0 transition-all" />
-							</a>
+							</Button>
 						</div>
 
 						{/* Social links */}
@@ -84,10 +87,7 @@ export function Contact() {
 									<span className="text-sm font-medium">GitHub</span>
 								</a>
 
-								<span
-									className="h-4 w-px bg-surface-700"
-									aria-hidden="true"
-								/>
+								<span className="h-4 w-px bg-surface-700" aria-hidden="true" />
 
 								<a
 									href={links.linkedin}
@@ -99,25 +99,9 @@ export function Contact() {
 									<LinkedInIcon className="h-5 w-5 group-hover:scale-110 transition-transform" />
 									<span className="text-sm font-medium">LinkedIn</span>
 								</a>
-
-								<span
-									className="h-4 w-px bg-surface-700"
-									aria-hidden="true"
-								/>
-
-								<a
-									href={links.website}
-									target="_blank"
-									rel="noopener noreferrer"
-									className="group flex items-center gap-2 text-surface-400 hover:text-accent-400"
-									aria-label="Personal Website"
-								>
-									<span className="text-sm font-medium">adamgrady.dev</span>
-									<ArrowUpRight className="h-4 w-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-								</a>
 							</div>
 						</div>
-					</div>
+					</Card>
 
 					{/* Decorative elements */}
 					<div className="absolute -top-6 -right-6 h-32 w-32 rounded-3xl border border-accent-500/20 bg-accent-500/5 -z-10" />

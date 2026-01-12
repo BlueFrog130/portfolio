@@ -27,7 +27,12 @@ export function Link({ to, children, onClick, ...props }: LinkProps) {
 	};
 
 	return (
-		<a href={to} onClick={handleClick} onMouseEnter={handleMouseEnter} {...props}>
+		<a
+			href={to}
+			onClick={handleClick}
+			onMouseEnter={handleMouseEnter}
+			{...props}
+		>
 			{children}
 		</a>
 	);

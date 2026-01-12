@@ -1,6 +1,8 @@
 import { blogPosts } from '@/content/blog';
 import { Link } from '@/lib/router';
-import { ArrowRight, Calendar, Clock, PenLine, ArrowUpRight } from 'lucide-react';
+import { ArrowRight, Calendar, Clock, ArrowUpRight } from 'lucide-react';
+import { GradientCard, SectionNumber, Tag } from '@/lib/components/ui';
+import { PenLineIcon } from '@/lib/components/ui/icon';
 
 export function Blog() {
 	// Show the 3 most recent posts
@@ -18,14 +20,14 @@ export function Blog() {
 		>
 			{/* Background accents */}
 			<div className="absolute inset-0 -z-10">
-				<div className="absolute right-0 top-1/3 h-[400px] w-[400px] rounded-full bg-accent-500/5 blur-3xl" />
+				<div className="absolute right-0 top-1/3 h-100 w-100 rounded-full bg-accent-500/5 blur-3xl" />
 			</div>
 
 			<div className="mx-auto max-w-6xl px-6 sm:px-8 lg:px-12">
 				{/* Section header */}
 				<div className="flex items-end justify-between gap-6 mb-16">
 					<div className="flex items-end gap-6">
-						<span className="section-number">05</span>
+						<SectionNumber number={5} />
 						<div>
 							<h2
 								id="blog-heading"
@@ -34,7 +36,8 @@ export function Blog() {
 								Latest Articles
 							</h2>
 							<p className="mt-2 text-surface-400">
-								Thoughts on software engineering, technology, and building things
+								Thoughts on software engineering, technology, and building
+								things
 							</p>
 						</div>
 					</div>
@@ -56,22 +59,25 @@ export function Blog() {
 								year: 'numeric',
 								month: 'short',
 								day: 'numeric',
-							}
+							},
 						);
 
 						return (
-							<article
+							<GradientCard
+								as="article"
 								key={post.slug}
-								className="card gradient-border p-6 flex flex-col group"
+								contentClassName="p-6 flex flex-col"
 								style={{ animationDelay: `${index * 0.1}s` }}
 							>
 								{/* Header */}
 								<div className="flex items-start justify-between gap-4">
 									<div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-accent-500/10 border border-accent-500/20 group-hover:bg-accent-500/20 transition-colors">
-										<PenLine className="h-5 w-5 text-accent-400" />
+										<PenLineIcon className="h-5 w-5 group-hover:[--active:1] transition-transform duration-200 ease-out group-hover:-translate-y-0.5" />
 									</div>
 									{post.featured && (
-										<span className="tag tag-accent text-[10px]">Featured</span>
+										<Tag variant="accent" className="text-[10px]">
+											Featured
+										</Tag>
 									)}
 								</div>
 
@@ -106,9 +112,7 @@ export function Blog() {
 								{/* Tags */}
 								<div className="mt-4 flex flex-wrap gap-2">
 									{post.tags.slice(0, 3).map((tag) => (
-										<span key={tag} className="tag">
-											{tag}
-										</span>
+										<Tag key={tag}>{tag}</Tag>
 									))}
 								</div>
 
@@ -122,7 +126,7 @@ export function Blog() {
 										<ArrowUpRight className="h-4 w-4 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
 									</Link>
 								</div>
-							</article>
+							</GradientCard>
 						);
 					})}
 				</div>

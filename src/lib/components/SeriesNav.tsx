@@ -1,6 +1,7 @@
 import { Link } from '@/lib/router';
 import type { BlogPost } from '@/content/blog';
 import { ChevronLeft, ChevronRight, BookOpen } from 'lucide-react';
+import { Card } from '@/lib/components/ui';
 
 interface SeriesNavProps {
 	post: BlogPost;
@@ -14,7 +15,7 @@ export function SeriesNav({ post, prev, next }: SeriesNavProps) {
 	const { title: seriesTitle, part, totalParts } = post.series;
 
 	return (
-		<nav className="not-prose my-12 card p-6">
+		<Card as="nav" className="not-prose my-12 p-6">
 			{/* Series header */}
 			<div className="mb-5 flex items-center gap-2 text-sm font-medium text-accent-400">
 				<BookOpen className="h-4 w-4" />
@@ -82,6 +83,6 @@ export function SeriesNav({ post, prev, next }: SeriesNavProps) {
 					/>
 				))}
 			</div>
-		</nav>
+		</Card>
 	);
 }

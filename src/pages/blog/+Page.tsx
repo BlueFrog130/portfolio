@@ -5,6 +5,7 @@ import { BlogSearch } from './BlogSearch';
 import { BlogCard } from './BlogCard';
 import { useSearchParams } from '@/lib/router';
 import { PenLine, SearchX } from 'lucide-react';
+import { Card } from '@/lib/components/ui';
 
 export default function BlogPage() {
 	const [searchParams, _setSearchParams] = useSearchParams();
@@ -17,13 +18,13 @@ export default function BlogPage() {
 	const setSearchParams = useCallback(
 		(
 			params: Parameters<typeof _setSearchParams>[0],
-			options?: Parameters<typeof _setSearchParams>[1]
+			options?: Parameters<typeof _setSearchParams>[1],
 		) => {
 			startTransition(() => {
 				_setSearchParams(params, options);
 			});
 		},
-		[_setSearchParams]
+		[_setSearchParams],
 	);
 
 	const setQuerySearchParam = useCallback(
@@ -38,10 +39,10 @@ export default function BlogPage() {
 					newParams.set('query', query);
 					return newParams;
 				},
-				{ replace: true }
+				{ replace: true },
 			);
 		},
-		[setSearchParams]
+		[setSearchParams],
 	);
 
 	const setSelectedTags = useCallback(
@@ -56,17 +57,17 @@ export default function BlogPage() {
 					newParams.set('tags', tags.join(','));
 					return newParams;
 				},
-				{ replace: true }
+				{ replace: true },
 			);
 		},
-		[setSearchParams]
+		[setSearchParams],
 	);
 
 	const allTags = useMemo(() => getAllTags(), []);
 
 	const filteredPosts = useMemo(
 		() => searchBlogPosts(searchParams.get('query') || '', selectedTags),
-		[searchParams, selectedTags]
+		[searchParams, selectedTags],
 	);
 
 	const handleTagToggle = useCallback(
@@ -74,10 +75,10 @@ export default function BlogPage() {
 			setSelectedTags(
 				selectedTags.includes(tag)
 					? selectedTags.filter((t) => t !== tag)
-					: [...selectedTags, tag]
+					: [...selectedTags, tag],
 			);
 		},
-		[selectedTags, setSelectedTags]
+		[selectedTags, setSelectedTags],
 	);
 
 	return (
@@ -119,7 +120,7 @@ export default function BlogPage() {
 					{/* Posts grid */}
 					<div className="mt-12 space-y-6">
 						{filteredPosts.length === 0 ? (
-							<div className="card p-12 text-center">
+							<Card className="p-12 text-center">
 								<div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-surface-800 mx-auto mb-4">
 									<SearchX className="h-8 w-8 text-surface-500" />
 								</div>
@@ -140,7 +141,7 @@ export default function BlogPage() {
 										Clear all filters
 									</button>
 								)}
-							</div>
+							</Card>
 						) : (
 							filteredPosts.map((post, index) => (
 								<BlogCard
@@ -153,11 +154,11 @@ export default function BlogPage() {
 					</div>
 
 					{blogPosts.length === 0 && (
-						<div className="card p-12 text-center">
+						<Card className="p-12 text-center">
 							<p className="text-surface-400">
 								No blog posts yet. Check back soon!
 							</p>
-						</div>
+						</Card>
 					)}
 				</div>
 			</div>

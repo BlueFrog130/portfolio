@@ -2,6 +2,7 @@ import { memo, ViewTransition, CSSProperties } from 'react';
 import { Link } from '@/lib/router';
 import type { BlogPost } from '@/content/blog';
 import { Calendar, Clock, ArrowUpRight, PenLine } from 'lucide-react';
+import { GradientCard, Tag } from '@/lib/components/ui';
 
 interface BlogCardProps {
 	post: BlogPost;
@@ -17,10 +18,7 @@ export const BlogCard = memo(function BlogCard({ post, style }: BlogCardProps) {
 
 	return (
 		<ViewTransition name={`blog-${post.slug}`}>
-			<article
-				className="card gradient-border p-6 group"
-				style={style}
-			>
+			<GradientCard as="article" contentClassName="p-6" style={style}>
 				<div className="flex flex-col sm:flex-row sm:items-start gap-5">
 					{/* Icon */}
 					<div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-accent-500/10 border border-accent-500/20 group-hover:bg-accent-500/20 transition-colors">
@@ -40,7 +38,9 @@ export const BlogCard = memo(function BlogCard({ post, style }: BlogCardProps) {
 								{post.readTime} min read
 							</span>
 							{post.featured && (
-								<span className="tag tag-accent text-[10px]">Featured</span>
+								<Tag variant="accent" className="text-[10px]">
+									Featured
+								</Tag>
 							)}
 						</div>
 
@@ -63,13 +63,9 @@ export const BlogCard = memo(function BlogCard({ post, style }: BlogCardProps) {
 						<div className="mt-4 flex flex-wrap items-center justify-between gap-4">
 							<div className="flex flex-wrap gap-2">
 								{post.tags.slice(0, 4).map((tag) => (
-									<span key={tag} className="tag">
-										{tag}
-									</span>
+									<Tag key={tag}>{tag}</Tag>
 								))}
-								{post.tags.length > 4 && (
-									<span className="tag">+{post.tags.length - 4}</span>
-								)}
+								{post.tags.length > 4 && <Tag>+{post.tags.length - 4}</Tag>}
 							</div>
 
 							<Link
@@ -82,7 +78,7 @@ export const BlogCard = memo(function BlogCard({ post, style }: BlogCardProps) {
 						</div>
 					</div>
 				</div>
-			</article>
+			</GradientCard>
 		</ViewTransition>
 	);
 });

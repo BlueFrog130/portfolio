@@ -134,8 +134,7 @@ Rather than auto-crawling links at build time, each route declares its own entry
 
 ```typescript
 // src/pages/blog/[slug]/+Page.options.ts
-export const entries = () =>
-	blogPosts.map((post) => `/blog/${post.slug}`);
+export const entries = () => blogPosts.map((post) => `/blog/${post.slug}`);
 ```
 
 The server entry collects all entries from all routes:
@@ -473,7 +472,12 @@ The fix is manual cleanup before React adds new tags:
 function clearExistingMetaTags() {
 	document.querySelector('title')?.remove();
 
-	const metaNames = ['description', 'author', 'keywords', 'twitter:card' /* ... */];
+	const metaNames = [
+		'description',
+		'author',
+		'keywords',
+		'twitter:card' /* ... */,
+	];
 	metaNames.forEach((name) => {
 		document.querySelector(`meta[name="${name}"]`)?.remove();
 	});

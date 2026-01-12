@@ -2,8 +2,17 @@ import { Link } from '@/lib/router';
 import { type BlogPost } from '@/content/blog';
 import { Layout } from '@/lib/components/Layout';
 import { ViewTransition } from 'react';
-import { ArrowLeft, Calendar, Clock, Tag, BookOpen, PenLine, Home } from 'lucide-react';
+import {
+	ArrowLeft,
+	Calendar,
+	Clock,
+	Tag as TagIcon,
+	BookOpen,
+	PenLine,
+	Home,
+} from 'lucide-react';
 import { SeriesNav } from '@/lib/components/SeriesNav';
+import { Button, Tag, Prose } from '@/lib/components/ui';
 
 interface BlogPostPageProps {
 	post?: BlogPost;
@@ -31,14 +40,14 @@ export default function BlogPostPage({ post, prev, next }: BlogPostPageProps) {
 						The blog post you're looking for doesn't exist or has been moved.
 					</p>
 					<div className="mt-8 flex items-center gap-4">
-						<Link to="/blog" className="btn btn-primary">
+						<Button as="a" href="/blog" variant="primary">
 							<ArrowLeft className="h-4 w-4" />
 							Back to Blog
-						</Link>
-						<Link to="/" className="btn btn-secondary">
+						</Button>
+						<Button as="a" href="/" variant="secondary">
 							<Home className="h-4 w-4" />
 							Home
-						</Link>
+						</Button>
 					</div>
 				</section>
 			</Layout>
@@ -110,23 +119,24 @@ export default function BlogPostPage({ post, prev, next }: BlogPostPageProps) {
 								{/* Tags */}
 								<div className="mt-6 flex flex-wrap gap-2">
 									{post.tags.map((tag) => (
-										<span
+										<Tag
 											key={tag}
-											className="inline-flex items-center gap-1.5 tag tag-accent"
+											variant="accent"
+											className="inline-flex items-center gap-1.5"
 										>
-											<Tag className="h-3 w-3" />
+											<TagIcon className="h-3 w-3" />
 											{tag}
-										</span>
+										</Tag>
 									))}
 								</div>
 							</header>
 
 							{/* Content */}
-							<section className="mt-12 prose prose-lg max-w-none prose-headings:scroll-mt-24">
+							<Prose className="mt-12 prose-headings:scroll-mt-24">
 								<post.Content />
 
 								<SeriesNav post={post} prev={prev} next={next} />
-							</section>
+							</Prose>
 						</article>
 					</ViewTransition>
 				</div>

@@ -4,7 +4,7 @@ services:
     container_name: grafana
     restart: unless-stopped
     ports:
-      - "3500:3000"
+      - '3500:3000'
     volumes:
       - grafana-data:/var/lib/grafana
       - ./.grafana/provisioning/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml:ro

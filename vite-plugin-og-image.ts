@@ -141,7 +141,11 @@ function generateSvg(params: OgImageParams): string {
 			const cx = startX + i * dotSpacing;
 			const isActive = i + 1 === seriesPart;
 			const isPast = i + 1 < seriesPart!;
-			const fill = isActive ? colors.accent : isPast ? colors.accentDark : colors.surface;
+			const fill = isActive
+				? colors.accent
+				: isPast
+					? colors.accentDark
+					: colors.surface;
 			const radius = isActive ? activeRadius : dotRadius;
 			return `<circle cx="${cx}" cy="${seriesY + 20}" r="${radius}" fill="${fill}"/>`;
 		}).join('\n    ');

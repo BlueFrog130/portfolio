@@ -15,13 +15,16 @@ export function Footer() {
 
 					{/* Navigation */}
 					<nav aria-label="Footer navigation">
-						<ul className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4" role="list">
+						<ul
+							className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4"
+							role="list"
+						>
 							<li>
 								<a
 									href={links.github}
 									target="_blank"
 									rel="noopener noreferrer"
-									className="text-sm text-surface-400 hover:text-accent-400 hover-underline"
+									className="relative text-sm text-surface-400 hover:text-accent-400 after:content-[''] after:absolute after:-bottom-0.5 after:left-0 after:w-0 after:h-0.5 after:bg-gradient-to-r after:from-accent-500 after:to-accent-400 after:transition-[width] after:duration-300 after:ease-[cubic-bezier(0.16,1,0.3,1)] hover:after:w-full"
 								>
 									GitHub
 								</a>
@@ -31,7 +34,7 @@ export function Footer() {
 									href={links.linkedin}
 									target="_blank"
 									rel="noopener noreferrer"
-									className="text-sm text-surface-400 hover:text-accent-400 hover-underline"
+									className="relative text-sm text-surface-400 hover:text-accent-400 after:content-[''] after:absolute after:-bottom-0.5 after:left-0 after:w-0 after:h-0.5 after:bg-gradient-to-r after:from-accent-500 after:to-accent-400 after:transition-[width] after:duration-300 after:ease-[cubic-bezier(0.16,1,0.3,1)] hover:after:w-full"
 								>
 									LinkedIn
 								</a>
@@ -39,7 +42,7 @@ export function Footer() {
 							<li>
 								<a
 									href={links.email}
-									className="text-sm text-surface-400 hover:text-accent-400 hover-underline"
+									className="relative text-sm text-surface-400 hover:text-accent-400 after:content-[''] after:absolute after:-bottom-0.5 after:left-0 after:w-0 after:h-0.5 after:bg-gradient-to-r after:from-accent-500 after:to-accent-400 after:transition-[width] after:duration-300 after:ease-[cubic-bezier(0.16,1,0.3,1)] hover:after:w-full"
 								>
 									Email
 								</a>
@@ -62,7 +65,7 @@ export function Footer() {
 								href={`${links.github}/portfolio`}
 								target="_blank"
 								rel="noopener noreferrer"
-								className="text-accent-500 hover:text-accent-400 hover-underline"
+								className="relative text-accent-500 hover:text-accent-400 after:content-[''] after:absolute after:-bottom-0.5 after:left-0 after:w-0 after:h-0.5 after:bg-gradient-to-r after:from-accent-500 after:to-accent-400 after:transition-[width] after:duration-300 after:ease-[cubic-bezier(0.16,1,0.3,1)] hover:after:w-full"
 							>
 								View source on GitHub
 							</a>

@@ -226,8 +226,7 @@ const cliOptions: OgImageOptions | undefined =
 				tags: values.tags?.split(',').map((t) => t.trim()),
 				type: values.type as 'blog' | 'project',
 				output:
-					values.output ||
-					join(ROOT, 'public', 'og', values.type, 'image.png'),
+					values.output || join(ROOT, 'public', 'og', values.type, 'image.png'),
 			}
 		: values.output
 			? {

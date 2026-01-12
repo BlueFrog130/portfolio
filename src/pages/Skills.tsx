@@ -1,25 +1,23 @@
 import { skills, type Skill } from '@/lib/data';
+import { Card, SectionNumber, Tag } from '@/lib/components/ui';
 import {
-	Code,
-	SquareTerminal,
-	Server,
-	Cloud,
-	type LucideIcon,
-} from 'lucide-react';
+	CodeIcon,
+	TerminalIcon,
+	ServerIcon,
+	CloudIcon,
+} from '@/lib/components/ui/icon';
+import type { ComponentType } from 'react';
 
-const LEVEL_LABELS: Record<Skill['level'], string> = {
-	1: 'Learning',
-	2: 'Familiar',
-	3: 'Proficient',
-	4: 'Advanced',
-	5: 'Expert',
-};
+interface IconProps {
+	className?: string;
+	style?: React.CSSProperties;
+}
 
-const CATEGORY_ICONS: Record<string, LucideIcon> = {
-	Languages: Code,
-	Frontend: SquareTerminal,
-	Backend: Server,
-	'Tools & Infrastructure': Cloud,
+const CATEGORY_ICONS: Record<string, ComponentType<IconProps>> = {
+	Languages: CodeIcon,
+	Frontend: TerminalIcon,
+	Backend: ServerIcon,
+	'Tools & Infrastructure': CloudIcon,
 };
 
 const CATEGORY_DESCRIPTIONS: Record<string, string> = {
@@ -30,33 +28,10 @@ const CATEGORY_DESCRIPTIONS: Record<string, string> = {
 };
 
 function SkillPill({ skill }: { skill: Skill }) {
-	// Size and opacity based on level
-	const sizeClasses = {
-		1: 'text-xs px-2.5 py-1',
-		2: 'text-xs px-3 py-1.5',
-		3: 'text-sm px-3.5 py-1.5',
-		4: 'text-sm px-4 py-2',
-		5: 'text-base px-4 py-2 font-semibold',
-	};
-
-	const opacityClasses = {
-		1: 'opacity-50',
-		2: 'opacity-60',
-		3: 'opacity-75',
-		4: 'opacity-90',
-		5: 'opacity-100',
-	};
-
 	return (
-		<div
-			className={`group relative tag tag-accent ${sizeClasses[skill.level]} ${opacityClasses[skill.level]} hover:opacity-100 cursor-default`}
-		>
+		<Tag variant="accent" className="cursor-default">
 			{skill.name}
-			{/* Tooltip on hover */}
-			<span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-surface-800 text-xs text-surface-300 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-surface-700">
-				{LEVEL_LABELS[skill.level]}
-			</span>
-		</div>
+		</Tag>
 	);
 }
 
@@ -69,13 +44,13 @@ export function Skills() {
 		>
 			{/* Background accents */}
 			<div className="absolute inset-0 -z-10">
-				<div className="absolute right-1/4 top-0 h-[400px] w-[400px] rounded-full bg-accent-500/5 blur-3xl" />
+				<div className="absolute right-1/4 top-0 h-100 w-100 rounded-full bg-accent-500/5 blur-3xl" />
 			</div>
 
 			<div className="mx-auto max-w-6xl px-6 sm:px-8 lg:px-12">
 				{/* Section header */}
 				<div className="flex items-end gap-6 mb-16">
-					<span className="section-number">03</span>
+					<SectionNumber number={3} />
 					<div>
 						<h2
 							id="skills-heading"
@@ -92,30 +67,25 @@ export function Skills() {
 				{/* Skills grid - Bento style */}
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
 					{skills.map((category, index) => {
-						const Icon = CATEGORY_ICONS[category.title] || Code;
+						const Icon = CATEGORY_ICONS[category.title] || CodeIcon;
 						const description = CATEGORY_DESCRIPTIONS[category.title] || '';
 
 						// Sort skills by level (highest first)
 						const sortedSkills = [...category.skills].sort(
-							(a, b) => b.level - a.level
+							(a, b) => b.level - a.level,
 						);
 
-						// Expert skills count
-						const expertCount = sortedSkills.filter(
-							(s) => s.level >= 4
-						).length;
-
 						return (
-							<div
+							<Card
 								key={category.title}
-								className="card p-6 group hover:border-accent-500/30"
+								className="p-6 group hover:border-accent-500/30"
 								style={{ animationDelay: `${index * 0.1}s` }}
 							>
 								{/* Header */}
 								<div className="flex items-start justify-between gap-4">
 									<div className="flex items-center gap-4">
 										<div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-accent-500/10 border border-accent-500/20 group-hover:bg-accent-500/20 transition-colors">
-											<Icon className="h-5 w-5 text-accent-400" />
+											<Icon className="h-5 w-5 group-hover:[--active:1] transition-transform duration-200 ease-out" />
 										</div>
 										<div>
 											<h3 className="font-display text-lg font-semibold text-surface-100">
@@ -125,12 +95,12 @@ export function Skills() {
 										</div>
 									</div>
 
-									{/* Expert count badge */}
+									{/* Skills count badge */}
 									<div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-accent-500/10 border border-accent-500/20">
 										<span className="text-xs font-semibold text-accent-400">
-											{expertCount}
+											{sortedSkills.length}
 										</span>
-										<span className="text-xs text-surface-500">advanced+</span>
+										<span className="text-xs text-surface-500">skills</span>
 									</div>
 								</div>
 
@@ -140,30 +110,13 @@ export function Skills() {
 										<SkillPill key={skill.name} skill={skill} />
 									))}
 								</div>
-
-								{/* Level legend */}
-								<div className="mt-6 pt-4 border-t border-surface-800">
-									<div className="flex items-center justify-between text-xs text-surface-500">
-										<span>Size indicates proficiency level</span>
-										<div className="flex items-center gap-3">
-											<span className="flex items-center gap-1">
-												<span className="h-1.5 w-1.5 rounded-full bg-accent-500/40" />
-												Learning
-											</span>
-											<span className="flex items-center gap-1">
-												<span className="h-2 w-2 rounded-full bg-accent-500" />
-												Expert
-											</span>
-										</div>
-									</div>
-								</div>
-							</div>
+							</Card>
 						);
 					})}
 				</div>
 
 				{/* Additional skills summary */}
-				<div className="mt-12 card card-accent p-8">
+				<Card variant="accent" className="mt-12 p-8">
 					<div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
 						<div>
 							<h3 className="font-display text-xl font-semibold text-surface-100">
@@ -175,14 +128,14 @@ export function Skills() {
 							</p>
 						</div>
 						<div className="flex flex-wrap gap-2">
-							{['AI/ML', 'Rust', 'Edge Computing', 'WebAssembly'].map((tech) => (
-								<span key={tech} className="tag">
-									{tech}
-								</span>
-							))}
+							{['AI/ML', 'Rust', 'Edge Computing', 'WebAssembly'].map(
+								(tech) => (
+									<Tag key={tech}>{tech}</Tag>
+								),
+							)}
 						</div>
 					</div>
-				</div>
+				</Card>
 			</div>
 		</section>
 	);

@@ -1,5 +1,18 @@
 import { experiences } from '@/lib/data';
-import { Briefcase, MapPin, Calendar } from 'lucide-react';
+import { BriefcaseIcon } from '@/lib/components/ui/icon';
+import { MapPin, Calendar } from 'lucide-react';
+import { Card, SectionNumber, Tag } from '@/lib/components/ui';
+import clsx from 'clsx';
+
+// Calculate gradient position (0-100) for timeline dot
+// Matches the line's gradient: from-accent-500 via-surface-700 to-transparent
+// The "via" point (surface-700) is at 50%, so we double the rate to reach gray faster
+function getGradientPosition(index: number, total: number): number {
+	if (total <= 1) return 0;
+	const position = (index / (total - 1)) * 100;
+	// Double the rate, cap at 100%
+	return Math.min(position * 2, 100);
+}
 
 export function Experience() {
 	return (
@@ -10,13 +23,13 @@ export function Experience() {
 		>
 			{/* Background accent */}
 			<div className="absolute inset-0 -z-10">
-				<div className="absolute top-1/4 right-0 h-[400px] w-[400px] rounded-full bg-accent-500/5 blur-3xl" />
+				<div className="absolute top-1/4 right-0 h-100 w-100 rounded-full bg-accent-500/5 blur-3xl" />
 			</div>
 
 			<div className="mx-auto max-w-6xl px-6 sm:px-8 lg:px-12">
 				{/* Section header with number */}
 				<div className="flex items-end gap-6 mb-16">
-					<span className="section-number">01</span>
+					<SectionNumber number={1} />
 					<div>
 						<h2
 							id="experience-heading"
@@ -33,28 +46,29 @@ export function Experience() {
 				{/* Timeline */}
 				<div className="relative">
 					{/* Timeline line */}
-					<div className="absolute left-0 top-0 bottom-0 w-px bg-gradient-to-b from-accent-500 via-surface-700 to-transparent lg:left-1/2 lg:-translate-x-1/2" />
+					<div className="absolute left-0 top-2 bottom-0 w-px bg-linear-to-b from-accent-500 via-surface-700 to-transparent lg:left-1/2 lg:-translate-x-1/2" />
 
 					<div className="space-y-12 lg:space-y-16">
 						{experiences.map((exp, index) => (
 							<article
 								key={`${exp.company}-${exp.role}`}
-								className={`relative lg:grid lg:grid-cols-2 lg:gap-8 ${
-									index % 2 === 0 ? '' : 'lg:text-right'
-								}`}
+								className={clsx(
+									'relative lg:grid lg:grid-cols-2 lg:gap-8',
+									index % 2 === 0 ? '' : 'lg:text-right',
+								)}
 							>
 								{/* Timeline dot */}
-								<div className="absolute left-0 top-0 lg:left-1/2 lg:-translate-x-1/2">
+								<div className="absolute left-0 top-0 -translate-x-1/2 lg:left-1/2">
 									<div className="relative flex h-4 w-4 items-center justify-center">
 										{exp.current && (
 											<span className="absolute h-4 w-4 rounded-full bg-accent-500 animate-ping opacity-50" />
 										)}
 										<span
-											className={`relative h-3 w-3 rounded-full ${
-												exp.current
-													? 'bg-accent-500 ring-4 ring-accent-500/20'
-													: 'bg-surface-600 ring-4 ring-surface-800'
-											}`}
+											className="relative h-3 w-3 rounded-full"
+											style={{
+												backgroundColor: `color-mix(in srgb, var(--color-surface-700) ${getGradientPosition(index, experiences.length)}%, var(--color-accent-500))`,
+												boxShadow: `0 0 0 4px color-mix(in srgb, color-mix(in srgb, var(--color-surface-700) ${getGradientPosition(index, experiences.length)}%, var(--color-accent-500)) 20%, transparent)`,
+											}}
 										/>
 									</div>
 								</div>
@@ -67,8 +81,8 @@ export function Experience() {
 											: 'lg:col-start-2 lg:pl-12 lg:text-left'
 									}`}
 								>
-									<div
-										className="card p-6 group hover:border-accent-500/30"
+									<Card
+										className="p-6 group hover:border-accent-500/30"
 										style={{ animationDelay: `${index * 0.1}s` }}
 									>
 										{/* Header */}
@@ -80,7 +94,7 @@ export function Experience() {
 											<div
 												className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-accent-500/10 border border-accent-500/20 group-hover:bg-accent-500/20 transition-colors`}
 											>
-												<Briefcase className="h-5 w-5 text-accent-400" />
+												<BriefcaseIcon className="h-5 w-5 group-hover:[--active:1] transition-transform duration-200 ease-out group-hover:-translate-y-0.5" />
 											</div>
 
 											<div className="flex-1 min-w-0">
@@ -89,9 +103,9 @@ export function Experience() {
 														{exp.role}
 													</h3>
 													{exp.current && (
-														<span className="tag tag-accent text-[10px]">
+														<Tag variant="accent" className="text-[10px]">
 															Current
-														</span>
+														</Tag>
 													)}
 												</div>
 												<p className="mt-1 text-accent-400 font-medium">
@@ -126,7 +140,7 @@ export function Experience() {
 												</li>
 											))}
 										</ul>
-									</div>
+									</Card>
 								</div>
 
 								{/* Empty column for alternating layout */}

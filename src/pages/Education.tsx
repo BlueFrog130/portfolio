@@ -4,10 +4,11 @@ import {
 	Sparkles,
 	FlaskConical,
 	FileText,
-	ExternalLink,
 	Calendar,
 	MapPin,
 } from 'lucide-react';
+import { Card, SectionNumber, Tag } from '@/lib/components/ui';
+import { ExternalLinkIcon } from '@/lib/components/ui/icon';
 
 export function Education() {
 	return (
@@ -18,14 +19,14 @@ export function Education() {
 		>
 			{/* Background accents */}
 			<div className="absolute inset-0 -z-10">
-				<div className="absolute left-0 bottom-1/4 h-[400px] w-[400px] rounded-full bg-accent-500/5 blur-3xl" />
-				<div className="absolute right-1/4 top-1/4 h-[300px] w-[300px] rounded-full bg-accent-600/5 blur-3xl" />
+				<div className="absolute left-0 bottom-1/4 h-100 w-100 rounded-full bg-accent-500/5 blur-3xl" />
+				<div className="absolute right-1/4 top-1/4 h-75 w-75 rounded-full bg-accent-600/5 blur-3xl" />
 			</div>
 
 			<div className="mx-auto max-w-6xl px-6 sm:px-8 lg:px-12">
 				{/* Section header */}
 				<div className="flex items-end gap-6 mb-16">
-					<span className="section-number">04</span>
+					<SectionNumber number={4} />
 					<div>
 						<h2
 							id="education-heading"
@@ -40,7 +41,7 @@ export function Education() {
 				</div>
 
 				{/* Institution header card */}
-				<div className="card card-accent p-6 lg:p-8 mb-8">
+				<Card variant="accent" className="p-6 lg:p-8 mb-8">
 					<div className="flex flex-col sm:flex-row sm:items-center gap-6">
 						<div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-accent-500/20 border border-accent-500/30">
 							<GraduationCap className="h-8 w-8 text-accent-400" />
@@ -56,23 +57,25 @@ export function Education() {
 						</div>
 						<div className="flex flex-wrap gap-3">
 							{education.map((edu) => (
-								<div
+								<Tag
 									key={edu.degree}
-									className="tag tag-accent whitespace-nowrap"
+									variant="accent"
+									className="whitespace-nowrap"
 								>
 									{edu.degree}
-								</div>
+								</Tag>
 							))}
 						</div>
 					</div>
-				</div>
+				</Card>
 
 				{/* Education cards grid */}
 				<div className="grid gap-6 lg:grid-cols-2">
 					{education.map((edu, index) => (
-						<article
+						<Card
+							as="article"
 							key={`${edu.institution}-${edu.degree}`}
-							className="card p-6 group hover:border-accent-500/30"
+							className="p-6 group hover:border-accent-500/30"
 							style={{ animationDelay: `${index * 0.1}s` }}
 						>
 							{/* Header */}
@@ -81,7 +84,9 @@ export function Education() {
 									<h4 className="font-display text-xl font-semibold text-surface-100">
 										{edu.degree}
 									</h4>
-									<p className="mt-1 text-accent-400 font-medium">{edu.field}</p>
+									<p className="mt-1 text-accent-400 font-medium">
+										{edu.field}
+									</p>
 								</div>
 								<div
 									className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${
@@ -120,9 +125,7 @@ export function Education() {
 									</p>
 									<div className="flex flex-wrap gap-2">
 										{edu.activities.map((activity) => (
-											<span key={activity} className="tag">
-												{activity}
-											</span>
+											<Tag key={activity}>{activity}</Tag>
 										))}
 									</div>
 								</div>
@@ -136,14 +139,14 @@ export function Education() {
 									</p>
 									<div className="flex flex-wrap gap-2">
 										{edu.skills.map((skill) => (
-											<span key={skill} className="tag tag-accent">
+											<Tag key={skill} variant="accent">
 												{skill}
-											</span>
+											</Tag>
 										))}
 									</div>
 								</div>
 							)}
-						</article>
+						</Card>
 					))}
 				</div>
 
@@ -158,16 +161,19 @@ export function Education() {
 
 					<div className="grid gap-6 lg:grid-cols-2">
 						{research.map((res, index) => (
-							<article
+							<Card
+								as="article"
 								key={`${res.institution}-${res.role}`}
-								className="card p-6 group hover:border-accent-500/30"
+								className="p-6 group hover:border-accent-500/30"
 								style={{ animationDelay: `${index * 0.1}s` }}
 							>
 								<div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
 									<h4 className="font-display text-lg font-semibold text-surface-100">
 										{res.role}
 									</h4>
-									<span className="text-sm text-accent-400">{res.institution}</span>
+									<span className="text-sm text-accent-400">
+										{res.institution}
+									</span>
 								</div>
 
 								<div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-surface-500">
@@ -184,7 +190,7 @@ export function Education() {
 								<p className="mt-4 text-surface-400 leading-relaxed">
 									{res.description}
 								</p>
-							</article>
+							</Card>
 						))}
 					</div>
 				</div>
@@ -215,7 +221,7 @@ export function Education() {
 								</div>
 								<div className="flex items-center gap-2 text-sm font-medium text-accent-400 group-hover:text-accent-300 shrink-0">
 									View on IEEE Xplore
-									<ExternalLink className="h-4 w-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+									<ExternalLinkIcon className="h-4 w-4 group-hover:[--active:1]" />
 								</div>
 							</a>
 						))}
