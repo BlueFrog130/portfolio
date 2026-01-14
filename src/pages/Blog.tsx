@@ -1,8 +1,12 @@
 import { blogPosts } from '@/content/blog';
 import { Link } from '@/lib/router';
-import { ArrowRight, Calendar, Clock, ArrowUpRight } from 'lucide-react';
+import { Calendar, Clock } from 'lucide-react';
 import { GradientCard, SectionNumber, Tag } from '@/lib/components/ui';
-import { PenLineIcon } from '@/lib/components/ui/icon';
+import {
+	ArrowRightIcon,
+	ArrowUpRightIcon,
+	PenLineIcon,
+} from '@/lib/components/ui/icon';
 
 export function Blog() {
 	// Show the 3 most recent posts
@@ -43,10 +47,10 @@ export function Blog() {
 					</div>
 					<Link
 						to="/blog"
-						className="hidden sm:inline-flex items-center gap-2 text-sm font-medium text-accent-400 hover:text-accent-300"
+						className="group/link hidden sm:inline-flex items-center gap-2 text-sm font-medium text-accent-400 hover:text-accent-300"
 					>
 						View all posts
-						<ArrowRight className="h-4 w-4" />
+						<ArrowRightIcon className="h-4 w-4 group-hover/link:[--active:1]" />
 					</Link>
 				</div>
 
@@ -123,7 +127,7 @@ export function Blog() {
 										className="inline-flex items-center gap-2 text-sm font-medium text-accent-400 hover:text-accent-300 group/link"
 									>
 										Read article
-										<ArrowUpRight className="h-4 w-4 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
+										<ArrowUpRightIcon className="h-4 w-4 group-hover/link:[--active:1]" />
 									</Link>
 								</div>
 							</GradientCard>
@@ -135,10 +139,10 @@ export function Blog() {
 				<div className="mt-8 text-center sm:hidden">
 					<Link
 						to="/blog"
-						className="inline-flex items-center gap-2 text-sm font-medium text-accent-400 hover:text-accent-300"
+						className="group/link inline-flex items-center gap-2 text-sm font-medium text-accent-400 hover:text-accent-300"
 					>
 						View all posts
-						<ArrowRight className="h-4 w-4" />
+						<ArrowRightIcon className="h-4 w-4 group-hover/link:[--active:1]" />
 					</Link>
 				</div>
 			</div>

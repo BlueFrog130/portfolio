@@ -9,7 +9,6 @@ import {
 	ViewTransition,
 } from 'react';
 import {
-	FolderOpen,
 	ArrowRight,
 	X,
 	Send,
@@ -82,105 +81,48 @@ export function Projects() {
 
 					{/* Bento grid */}
 					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
-						{featuredProjects
-							.filter((p) => p.slug !== openProject?.slug)
-							.map((project, index) => (
+						{featuredProjects.map((project, index) => {
+							const isOpen = openProject?.slug === project.slug;
+
+							// When dialog is open, render an invisible placeholder to prevent layout shift
+							if (isOpen) {
+								return (
+									<div
+										key={project.slug}
+										className={clsx(
+											'invisible',
+											index === 0 && 'md:col-span-2 lg:col-span-2',
+										)}
+										aria-hidden="true"
+									>
+										<ProjectCard
+											project={project}
+											index={index}
+											skipGridClasses
+										/>
+									</div>
+								);
+							}
+
+							return (
 								<ViewTransition
 									name={`project-${project.slug}`}
 									key={project.slug}
 								>
-									<GradientCard
-										as="article"
-										className={clsx(
-											// First project spans 2 columns on larger screens
-											index === 0 && 'md:col-span-2 lg:col-span-2',
-											clickedProject?.slug === project.slug && 'z-50',
-										)}
-										contentClassName="p-6 flex flex-col"
-										style={{ animationDelay: `${index * 0.1}s` }}
-									>
-										{/* Header row */}
-										<div className="flex items-start justify-between gap-4">
-											<div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-accent-500/10 border border-accent-500/20 group-hover:bg-accent-500/20 transition-colors">
-												<FolderIcon className="h-5 w-5 group-hover:[--active:1] transition-transform duration-200 ease-out group-hover:-translate-y-0.5" />
-											</div>
-
-											<div className="flex items-center gap-2">
-												{project.github && (
-													<Button
-														as="a"
-														href={project.github}
-														target="_blank"
-														rel="noopener noreferrer"
-														variant="ghost"
-														className="p-2 rounded-lg"
-														aria-label={`View ${project.title} on GitHub`}
-													>
-														<GitHubIcon className="h-5 w-5" />
-													</Button>
-												)}
-												<Tooltip content="Ask AI about this project">
-													<Button
-														variant="ghost"
-														className="group/ai p-2 rounded-lg text-accent-400"
-														aria-label={`Open ${project.title} details`}
-														onClick={() => {
-															setClickedProject(project);
-															startTransition(() => {
-																setOpenProject(project);
-															});
-														}}
-													>
-														<SparklesIcon className="h-5 w-5 group-hover/ai:[--active:1]" />
-													</Button>
-												</Tooltip>
-											</div>
-										</div>
-
-										{/* Content */}
-										<div className="mt-5 flex-1">
-											<h3 className="font-display text-xl font-semibold text-surface-100 group-hover:text-accent-400 transition-colors">
-												<Link
-													to={`/project/${project.slug}`}
-													className="focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 rounded"
-												>
-													{project.title}
-												</Link>
-											</h3>
-											<p className="mt-2 text-sm text-surface-400 leading-relaxed line-clamp-3">
-												{project.description}
-											</p>
-										</div>
-
-										{/* Technologies */}
-										<div className="mt-5 flex flex-wrap gap-2">
-											{project.technologies.slice(0, 4).map((tech) => (
-												<Tag key={tech}>{tech}</Tag>
-											))}
-											{project.technologies.length > 4 && (
-												<Tag>+{project.technologies.length - 4}</Tag>
-											)}
-										</div>
-
-										{/* Footer */}
-										<div className="mt-5 pt-5 border-t border-surface-800 flex items-center justify-between">
-											<Link
-												to={`/project/${project.slug}`}
-												className="inline-flex items-center gap-2 text-sm font-medium text-accent-400 hover:text-accent-300 group/link"
-											>
-												View project
-												<ArrowUpRight className="h-4 w-4 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
-											</Link>
-
-											{project.readTime && (
-												<span className="text-xs text-surface-500">
-													{project.readTime} min read
-												</span>
-											)}
-										</div>
-									</GradientCard>
+									<ProjectCard
+										project={project}
+										index={index}
+										isClicked={clickedProject?.slug === project.slug}
+										onOpenChat={() => {
+											setClickedProject(project);
+											startTransition(() => {
+												setOpenProject(project);
+											});
+										}}
+									/>
 								</ViewTransition>
-							))}
+							);
+						})}
 					</div>
 
 					{/* Mobile view all link */}
@@ -196,6 +138,111 @@ export function Projects() {
 				</div>
 			</section>
 		</>
+	);
+}
+
+type ProjectCardProps = {
+	project: Project;
+	index: number;
+	isClicked?: boolean;
+	onOpenChat?: () => void;
+	/** Skip grid positioning classes (for placeholder) */
+	skipGridClasses?: boolean;
+};
+
+function ProjectCard({
+	project,
+	index,
+	isClicked,
+	onOpenChat,
+	skipGridClasses,
+}: ProjectCardProps) {
+	return (
+		<GradientCard
+			as="article"
+			className={clsx(
+				// First project spans 2 columns on larger screens
+				!skipGridClasses && index === 0 && 'md:col-span-2 lg:col-span-2',
+				isClicked && 'z-50',
+			)}
+			contentClassName="p-6 flex flex-col"
+			style={{ animationDelay: `${index * 0.1}s` }}
+		>
+			{/* Header row */}
+			<div className="flex items-start justify-between gap-4">
+				<div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-accent-500/10 border border-accent-500/20 group-hover:bg-accent-500/20 transition-colors">
+					<FolderIcon className="h-5 w-5 group-hover:[--active:1] transition-transform duration-200 ease-out group-hover:-translate-y-0.5" />
+				</div>
+
+				<div className="flex items-center gap-2">
+					{project.github && (
+						<Button
+							as="a"
+							href={project.github}
+							target="_blank"
+							rel="noopener noreferrer"
+							variant="ghost"
+							className="p-2 rounded-lg"
+							aria-label={`View ${project.title} on GitHub`}
+						>
+							<GitHubIcon className="h-5 w-5" />
+						</Button>
+					)}
+					<Tooltip content="Ask AI about this project">
+						<Button
+							variant="ghost"
+							className="group/ai p-2 rounded-lg text-accent-400"
+							aria-label={`Open ${project.title} details`}
+							onClick={onOpenChat}
+						>
+							<SparklesIcon className="h-5 w-5 group-hover/ai:[--active:1]" />
+						</Button>
+					</Tooltip>
+				</div>
+			</div>
+
+			{/* Content */}
+			<div className="mt-5 flex-1">
+				<h3 className="font-display text-xl font-semibold text-surface-100 group-hover:text-accent-400 transition-colors">
+					<Link
+						to={`/project/${project.slug}`}
+						className="focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 rounded"
+					>
+						{project.title}
+					</Link>
+				</h3>
+				<p className="mt-2 text-sm text-surface-400 leading-relaxed line-clamp-3">
+					{project.description}
+				</p>
+			</div>
+
+			{/* Technologies */}
+			<div className="mt-5 flex flex-wrap gap-2">
+				{project.technologies.slice(0, 4).map((tech) => (
+					<Tag key={tech}>{tech}</Tag>
+				))}
+				{project.technologies.length > 4 && (
+					<Tag>+{project.technologies.length - 4}</Tag>
+				)}
+			</div>
+
+			{/* Footer */}
+			<div className="mt-5 pt-5 border-t border-surface-800 flex items-center justify-between">
+				<Link
+					to={`/project/${project.slug}`}
+					className="inline-flex items-center gap-2 text-sm font-medium text-accent-400 hover:text-accent-300 group/link"
+				>
+					View project
+					<ArrowUpRight className="h-4 w-4 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
+				</Link>
+
+				{project.readTime && (
+					<span className="text-xs text-surface-500">
+						{project.readTime} min read
+					</span>
+				)}
+			</div>
+		</GradientCard>
 	);
 }
 
@@ -252,8 +299,8 @@ function ProjectDialog({ project, onClose }: ProjectDialogProps) {
 
 	return (
 		<div className="fixed inset-0 flex justify-center items-center z-40 p-4">
-			{/* Backdrop */}
-			<div className="absolute inset-0 bg-surface-950/90 backdrop-blur-sm" />
+			{/* Backdrop - fades in via @starting-style */}
+			<div className="absolute inset-0 bg-surface-950/90 backdrop-blur-sm backdrop-fade" />
 
 			<ViewTransition name={`project-${project.slug}`}>
 				<article
@@ -274,7 +321,7 @@ function ProjectDialog({ project, onClose }: ProjectDialogProps) {
 						<div className="@3xl:col-span-5">
 							<div className="flex items-start gap-4">
 								<div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-accent-500/10 border border-accent-500/20">
-									<FolderOpen className="h-6 w-6 text-accent-400" />
+									<FolderIcon className="h-5 w-5 [--active:1]" />
 								</div>
 								<div className="flex-1 min-w-0 pt-1">
 									<h3 className="font-display text-xl font-semibold text-surface-100">
@@ -322,11 +369,11 @@ function ProjectDialog({ project, onClose }: ProjectDialogProps) {
 							<div className="mt-6">
 								<Link
 									to={`/project/${project.slug}`}
-									className="btn btn-primary w-full justify-center"
+									className="inline-flex items-center gap-2 text-sm font-medium text-accent-400 hover:text-accent-300 group/link"
 									onClick={handleClose}
 								>
-									View full project
-									<ArrowRight className="h-4 w-4" />
+									View project
+									<ArrowUpRight className="h-4 w-4 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
 								</Link>
 							</div>
 						</div>

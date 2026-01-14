@@ -31,19 +31,13 @@ export function Prose({
 				// Inline code
 				'prose-code:bg-surface-800 prose-code:text-accent-400 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-code:before:content-none prose-code:after:content-none',
 				// Pre blocks
-				'prose-pre:bg-surface-900 prose-pre:border prose-pre:border-surface-800',
+				'prose-pre:bg-surface-900 prose-pre:border prose-pre:border-surface-800 prose-pre:leading-none [&_pre_code]:bg-transparent [&_pre_code]:p-0',
 				// Table headers
 				'prose-th:text-surface-100',
 				// List markers
 				'marker:text-accent-500',
 				className,
 			)}
-			style={
-				{
-					'--tw-prose-code': 'var(--color-accent-400)',
-					fontFamily: 'var(--font-family-mono)',
-				} as React.CSSProperties
-			}
 			{...props}
 		>
 			{children}

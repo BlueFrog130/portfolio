@@ -4,8 +4,9 @@ import { blogPosts, getAllTags, searchBlogPosts } from '@/content/blog';
 import { BlogSearch } from './BlogSearch';
 import { BlogCard } from './BlogCard';
 import { useSearchParams } from '@/lib/router';
-import { PenLine, SearchX } from 'lucide-react';
+import { SearchX } from 'lucide-react';
 import { Card } from '@/lib/components/ui';
+import { PenLineIcon } from '@/lib/components/ui/icon';
 
 export default function BlogPage() {
 	const [searchParams, _setSearchParams] = useSearchParams();
@@ -95,7 +96,7 @@ export default function BlogPage() {
 					<header className="mb-12">
 						<div className="flex items-center gap-4 mb-4">
 							<div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-accent-500/10 border border-accent-500/20">
-								<PenLine className="h-6 w-6 text-accent-400" />
+								<PenLineIcon className="h-6 w-6" />
 							</div>
 							<div>
 								<h1 className="font-display text-4xl sm:text-5xl font-bold tracking-tight text-surface-100">

@@ -1,6 +1,7 @@
 import { profile, links } from '@/lib/data';
-import { ArrowRight, ArrowDown } from 'lucide-react';
+import { ArrowDown } from 'lucide-react';
 import { Button, Card, Tag } from '@/lib/components/ui';
+import { ArrowRightIcon } from '@/lib/components/ui/icon';
 
 export function Hero() {
 	return (
@@ -86,10 +87,10 @@ export function Hero() {
 								as="a"
 								href="#contact"
 								variant="primary"
-								className="group"
+								className="group/cta"
 							>
 								Let's talk
-								<ArrowRight className="h-4 w-4 group-hover:translate-x-1" />
+								<ArrowRightIcon className="h-4 w-4 group-hover/cta:[--active:1]" />
 							</Button>
 							<Button
 								as="a"
@@ -97,10 +98,10 @@ export function Hero() {
 								target="_blank"
 								rel="noopener noreferrer"
 								variant="secondary"
-								className="group"
+								className="group/github"
 							>
 								View GitHub
-								<ArrowRight className="h-4 w-4 opacity-0 -ml-2 group-hover:opacity-100 group-hover:ml-0" />
+								<ArrowRightIcon className="h-4 w-4 opacity-0 -ml-2 group-hover/github:opacity-100 group-hover/github:ml-0 group-hover/github:[--active:1] transition-all" />
 							</Button>
 						</div>
 					</div>

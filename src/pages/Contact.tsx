@@ -1,7 +1,7 @@
 import { profile, links } from '@/lib/data';
-import { Mail, ArrowUpRight } from 'lucide-react';
 import { GitHubIcon, LinkedInIcon } from '@/lib/components/icons';
 import { Button, Card } from '@/lib/components/ui';
+import { MailIcon } from '@/lib/components/ui/icon';
 
 export function Contact() {
 	return (
@@ -50,9 +50,9 @@ export function Contact() {
 								as="a"
 								href={links.email}
 								variant="primary"
-								className="w-full sm:w-auto"
+								className="group/mail w-full sm:w-auto"
 							>
-								<Mail className="h-5 w-5" />
+								<MailIcon className="h-5 w-5 group-hover/mail:[--active:1]" />
 								{profile.email}
 							</Button>
 
@@ -62,11 +62,10 @@ export function Contact() {
 								target="_blank"
 								rel="noopener noreferrer"
 								variant="secondary"
-								className="w-full sm:w-auto group"
+								className="w-full sm:w-auto group/linkedin"
 							>
 								<LinkedInIcon className="h-5 w-5" />
 								Connect on LinkedIn
-								<ArrowUpRight className="h-4 w-4 opacity-0 -ml-2 group-hover:opacity-100 group-hover:ml-0 transition-all" />
 							</Button>
 						</div>
 

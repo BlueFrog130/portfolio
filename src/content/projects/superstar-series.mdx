@@ -1,4 +1,5 @@
 import ogImage from 'virtual:og-image?title=Superstar Series&description=A full-stack esports management platform for competitive Rocket League tournaments, featuring a Discord bot for match reporting, a statistics website, and cloud infrastructure.&tags=SvelteKit,TypeScript,C%23/.NET,Discord&type=project';
+import { ArchitectureDiagram, DeploymentPipeline, MatchReportingFlow, MonorepoTree } from './diagrams';
 
 export const metadata = {
 	slug: 'superstar-series',
@@ -80,44 +81,7 @@ The system is designed for **cost efficiency** and **real-time performance**, us
 
 ## Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                         DISCORD USERS                               │
-└───────────────────────────────┬─────────────────────────────────────┘
-                                │
-        ┌───────────────────────┼───────────────────────┐
-        │                       │                       │
-        ▼                       ▼                       ▼
-┌───────────────┐    ┌─────────────────────┐    ┌─────────────────┐
-│  Discord Bot  │    │   Website (Static)  │    │ Cloud Functions │
-│    (C#/.NET)  │    │     (SvelteKit)     │    │   (TypeScript)  │
-├───────────────┤    ├─────────────────────┤    ├─────────────────┤
-│ /report game  │    │ Prerendered HTML    │    │ Discord OAuth   │
-│ /report series│    │ Static JSON APIs    │    │ Token Exchange  │
-│ /stats        │    │ Real-time listeners │    │                 │
-│ /clips        │    │ Chart.js analytics  │    │                 │
-└───────┬───────┘    └──────────┬──────────┘    └────────┬────────┘
-        │                       │                        │
-        │     ┌─────────────────┼────────────────────────┘
-        │     │                 │
-        ▼     ▼                 ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                      GOOGLE CLOUD FIRESTORE                         │
-├─────────────────────────────────────────────────────────────────────┤
-│  Seasons/{id}/Series → Games → PlayerStats                          │
-│  Users/{id} → Profile, Discord mapping                              │
-│  Config → Divisions, Teams, Channels                                │
-│  Clips → Metadata, Ratings                                          │
-└─────────────────────────────────────────────────────────────────────┘
-        │
-        ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                       EXTERNAL SERVICES                             │
-├─────────────────────────────────────────────────────────────────────┤
-│  Ballchasing.com API → Replay data, player stats, match validation  │
-│  Discord API → User identity, role management, guild interactions   │
-└─────────────────────────────────────────────────────────────────────┘
-```
+<ArchitectureDiagram />
 
 ---
 
@@ -125,20 +89,7 @@ The system is designed for **cost efficiency** and **real-time performance**, us
 
 The platform is built as a polyglot monorepo combining C# backends with TypeScript frontends:
 
-```
-SuperstarSeriesBot/
-├── SuperstarSeries.Website/        # SvelteKit static site (TypeScript)
-├── SuperstarSeries.Functions/      # Firebase Cloud Functions (TypeScript)
-├── SuperstarSeries.Scripts/        # Deployment utilities (TypeScript)
-├── SuperstarSeries.Bot/            # Discord bot (C#/.NET 8)
-├── SuperstarSeries.SeriesApi/      # API client library (C#)
-├── SuperstarSeries.Ballchasing/    # Ballchasing.com client (C#)
-├── SuperstarSeries.Firestore.Models/ # Shared data models (C#)
-├── SuperstarSeries.Core/           # Common utilities (C#)
-├── pnpm-workspace.yaml             # Node.js workspace config
-├── SuperstarSeries.sln             # .NET solution file
-└── firebase.json                   # Firebase configuration
-```
+<MonorepoTree />
 
 **Why Polyglot?**
 
@@ -200,43 +151,7 @@ SuperstarSeriesBot/
 
 ### Match Reporting Flow
 
-```
-User submits Ballchasing link
-         │
-         ▼
-┌─────────────────────────────┐
-│  Fetch replay from API      │
-│  Extract player platform IDs│
-└──────────────┬──────────────┘
-               │
-               ▼
-┌─────────────────────────────┐
-│  Map platform IDs → Discord │
-│  (Interactive if unknown)   │
-└──────────────┬──────────────┘
-               │
-               ▼
-┌─────────────────────────────┐
-│  Validate:                  │
-│  • Team membership          │
-│  • Player count (≤3/side)   │
-│  • Not duplicate            │
-└──────────────┬──────────────┘
-               │
-               ▼
-┌─────────────────────────────┐
-│  Firestore Transaction:     │
-│  • Create/update series     │
-│  • Add game record          │
-│  • Update player stats      │
-└──────────────┬──────────────┘
-               │
-               ▼
-┌─────────────────────────────┐
-│  Post results embed         │
-│  Check series completion    │
-└─────────────────────────────┘
-```
+<MatchReportingFlow />
 
 ---
 
@@ -342,22 +257,7 @@ onSnapshot(
 
 ## Deployment Pipeline
 
-```
-┌────────────┐         ┌─────────────┐         ┌─────────────┐
-│  PR Open   │────────▶│   Preview   │         │             │
-│            │         │ Deployment  │         │             │
-└────────────┘         └─────────────┘         │             │
-                                               │  Live Site  │
-┌────────────┐                                 │             │
-│   Merge    │────────────────────────────────▶│             │
-│ to Release │                                 │             │
-└────────────┘                                 └─────────────┘
-                                                     ▲
-┌────────────┐                                       │
-│  5 AM UTC  │───────────────────────────────────────┘
-│  (Nightly) │  Refresh cached data
-└────────────┘
-```
+<DeploymentPipeline />
 
 ---
 

@@ -1,8 +1,9 @@
 import { memo, ViewTransition, CSSProperties } from 'react';
 import { Link } from '@/lib/router';
 import type { BlogPost } from '@/content/blog';
-import { Calendar, Clock, ArrowUpRight, PenLine } from 'lucide-react';
+import { Calendar, Clock } from 'lucide-react';
 import { GradientCard, Tag } from '@/lib/components/ui';
+import { ArrowUpRightIcon, PenLineIcon } from '@/lib/components/ui/icon';
 
 interface BlogCardProps {
 	post: BlogPost;
@@ -22,7 +23,7 @@ export const BlogCard = memo(function BlogCard({ post, style }: BlogCardProps) {
 				<div className="flex flex-col sm:flex-row sm:items-start gap-5">
 					{/* Icon */}
 					<div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-accent-500/10 border border-accent-500/20 group-hover:bg-accent-500/20 transition-colors">
-						<PenLine className="h-5 w-5 text-accent-400" />
+						<PenLineIcon className="h-5 w-5 group-hover:[--active:1]" />
 					</div>
 
 					{/* Content */}
@@ -73,7 +74,7 @@ export const BlogCard = memo(function BlogCard({ post, style }: BlogCardProps) {
 								className="inline-flex items-center gap-2 text-sm font-medium text-accent-400 hover:text-accent-300 group/link shrink-0"
 							>
 								Read article
-								<ArrowUpRight className="h-4 w-4 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
+								<ArrowUpRightIcon className="h-4 w-4 group-hover/link:[--active:1]" />
 							</Link>
 						</div>
 					</div>

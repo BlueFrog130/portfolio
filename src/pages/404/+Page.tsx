@@ -1,7 +1,6 @@
 import { Layout } from '@/lib/components/Layout';
-import { Link } from '@/lib/router';
-import { Home, ArrowLeft } from 'lucide-react';
 import { Button } from '@/lib/components/ui';
+import { ArrowLeftIcon, HomeIcon } from '@/lib/components/ui/icon';
 
 export default function NotFound() {
 	return (
@@ -29,12 +28,12 @@ export default function NotFound() {
 
 					{/* Actions */}
 					<div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-						<Button as="a" href="/" variant="primary">
-							<Home className="h-4 w-4" />
+						<Button as="a" href="/" variant="primary" className="group/home">
+							<HomeIcon className="h-4 w-4 group-hover/home:[--active:1]" />
 							Go back home
 						</Button>
-						<Button onClick={() => window.history.back()} variant="secondary">
-							<ArrowLeft className="h-4 w-4" />
+						<Button onClick={() => window.history.back()} variant="secondary" className="group/back">
+							<ArrowLeftIcon className="h-4 w-4 group-hover/back:[--active:1]" />
 							Go back
 						</Button>
 					</div>
