@@ -43,11 +43,12 @@ export function Projects() {
 				createPortal(
 					<ProjectDialog
 						project={openProject}
-						onClose={() =>
+						onClose={() => {
+							setClickedProject(null);
 							startTransition(() => {
 								setOpenProject(null);
-							})
-						}
+							});
+						}}
 					/>,
 					document.body,
 				)}
@@ -256,6 +257,14 @@ function ProjectDialog({ project, onClose }: ProjectDialogProps) {
 		projectSlug: project.slug,
 	});
 	const messageCountRef = useRef(0);
+	const [mounted, setMounted] = useState(false);
+
+	useEffect(() => {
+		// Set mounted after animation plays
+		setTimeout(() => {
+			setMounted(true);
+		}, 250);
+	}, []);
 
 	useEffect(() => {
 		trackChatOpened();
@@ -300,22 +309,16 @@ function ProjectDialog({ project, onClose }: ProjectDialogProps) {
 	return (
 		<div className="fixed inset-0 flex justify-center items-center z-40 p-4">
 			{/* Backdrop - fades in via @starting-style */}
-			<div className="absolute inset-0 bg-surface-950/90 backdrop-blur-sm backdrop-fade" />
+			<div
+				data-opened={mounted ? '1' : '0'}
+				className="absolute inset-0 transition-opacity duration-300 opacity-0 data-[opened='1']:opacity-100 backdrop-blur-sm"
+			/>
 
 			<ViewTransition name={`project-${project.slug}`}>
 				<article
 					ref={outClickRef}
 					className="@container relative group flex flex-col rounded-2xl border border-surface-800 bg-surface-900 p-6 lg:p-8 max-w-[95vw] lg:max-w-4xl w-full z-50 max-h-[90vh] overflow-y-auto @3xl:overflow-hidden shadow-2xl"
 				>
-					{/* Close button */}
-					<button
-						className="absolute top-4 right-4 text-surface-300 hover:text-accent-400 hover:bg-surface-800/50 p-2 rounded-lg transition-all duration-300 z-10"
-						aria-label={`Close ${project.title} details`}
-						onClick={handleClose}
-					>
-						<X className="h-5 w-5" />
-					</button>
-
 					<div className="flex flex-col @3xl:grid @3xl:grid-cols-12 gap-6 @3xl:gap-8">
 						{/* Project info column */}
 						<div className="@3xl:col-span-5">
@@ -383,6 +386,7 @@ function ProjectDialog({ project, onClose }: ProjectDialogProps) {
 							<ProjectChat
 								project={project}
 								onMessageCountChange={handleMessageCountChange}
+								onClose={handleClose}
 							/>
 						</div>
 					</div>
@@ -409,9 +413,14 @@ function getStarterQuestions(project: Project): string[] {
 type ProjectChatProps = {
 	project: Project;
 	onMessageCountChange?: (count: number) => void;
+	onClose?: () => void;
 };
 
-function ProjectChat({ project, onMessageCountChange }: ProjectChatProps) {
+function ProjectChat({
+	project,
+	onMessageCountChange,
+	onClose,
+}: ProjectChatProps) {
 	const {
 		trackMessageSent,
 		trackStarterQuestionClicked,
@@ -479,16 +488,28 @@ function ProjectChat({ project, onMessageCountChange }: ProjectChatProps) {
 						<p className="text-xs text-surface-500">Powered by AI</p>
 					</div>
 				</div>
-				{messages.length > 0 && (
-					<button
-						onClick={clearMessages}
-						className="text-surface-300 hover:text-accent-400 hover:bg-surface-800/50 p-2 rounded-lg transition-all duration-300"
-						aria-label="Clear chat"
-						title="Clear chat"
-					>
-						<RotateCcw className="h-4 w-4" />
-					</button>
-				)}
+				<div className="flex items-center gap-1">
+					{messages.length > 0 && (
+						<button
+							onClick={clearMessages}
+							className="text-surface-300 hover:text-accent-400 hover:bg-surface-800/50 p-2 rounded-lg transition-all duration-300"
+							aria-label="Clear chat"
+							title="Clear chat"
+						>
+							<RotateCcw className="h-4 w-4" />
+						</button>
+					)}
+					{onClose && (
+						<button
+							onClick={onClose}
+							className="text-surface-300 hover:text-accent-400 hover:bg-surface-800/50 p-2 rounded-lg transition-all duration-300"
+							aria-label="Close dialog"
+							title="Close"
+						>
+							<X className="h-4 w-4" />
+						</button>
+					)}
+				</div>
 			</div>
 
 			{/* Messages */}

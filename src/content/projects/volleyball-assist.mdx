@@ -1,4 +1,5 @@
 import ogImage from 'virtual:og-image?title=Volleyball Assist&description=A full-stack tournament management platform for volleyball tournaments, featuring real-time score tracking, intelligent scheduling, and multi-device synchronization.&tags=SvelteKit,TypeScript,Firebase,Stripe&type=project';
+import { Tree } from '@/lib/components/ui/Tree';
 
 export const metadata = {
 	slug: 'volleyball-assist',
@@ -159,18 +160,23 @@ Shared TypeScript interfaces ensure consistency between frontend and backend:
 
 ## Data Model
 
-```
-tournaments/{tournamentId}
-├── name, type, organizer
-├── teams: { [teamId]: Team }
-├── matches: { [matchId]: Match }
-├── eliminationMatches: { [matchId]: Match }
-├── config: TournamentConfig
-└── scorekeepers: { [uid]: permissions }
+<Tree
+	root="tournaments/{tournamentId}"
+	items={[
+		{ name: 'name, type, organizer' },
+		{ name: 'teams: { [teamId]: Team }' },
+		{ name: 'matches: { [matchId]: Match }' },
+		{ name: 'eliminationMatches: { [matchId]: Match }' },
+		{ name: 'config: TournamentConfig' },
+		{ name: 'scorekeepers: { [uid]: permissions }' },
+	]}
+/>
 
-tournaments/{tournamentId}/sets/{matchId}
-└── sets: { [setNumber]: SetScore }
-```
+<Tree
+	root="tournaments/{tournamentId}/sets/{matchId}"
+	items={[{ name: 'sets: { [setNumber]: SetScore }' }]}
+	className="mt-4"
+/>
 
 Security rules enforce:
 

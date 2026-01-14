@@ -19,7 +19,7 @@ export function ModeSwitcher() {
 
 	return (
 		<nav
-			className="flex items-center gap-1 rounded-lg bg-surface-800/50 border border-surface-700/50 p-1"
+			className="hidden sm:flex items-center gap-1 rounded-lg bg-surface-800/50 border border-surface-700/50 p-1"
 			aria-label="Portfolio mode"
 		>
 			{(['web', 'terminal'] as const).map((m) => (

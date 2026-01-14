@@ -1,4 +1,5 @@
 import ogImage from 'virtual:og-image?title=Static Site Generation Without the Framework&description=File-based route entries, server routes for RSS/sitemaps, and module preloading.&tags=SSG,Vite,Performance&type=blog&seriesPart=3&seriesTotalParts=9';
+import { Tree } from '@/lib/components/ui/Tree';
 
 export const metadata = {
 	slug: 'building-portfolio-part-3-ssg',
@@ -340,26 +341,46 @@ The head includes everything: meta tags, OpenGraph, stylesheets, and module prel
 
 After SSG runs, the output looks like:
 
-```
-dist/static/
-├── index.html              # /
-├── 404.html                # Fallback for unknown routes
-├── feed.xml                # RSS feed (server route)
-├── sitemap.xml             # Sitemap (server route)
-├── blog/
-│   ├── index.html          # /blog
-│   └── some-post/
-│       └── index.html      # /blog/some-post
-├── projects/
-│   └── portfolio/
-│       └── index.html      # /projects/portfolio
-├── terminal/
-│   └── index.html          # /terminal
-└── assets/
-    ├── index-[hash].js     # Main bundle
-    ├── +Page-[hash].js     # Route chunks
-    └── style-[hash].css    # Styles
-```
+<Tree
+	root="dist/static"
+	items={[
+		{ name: 'index.html', description: '/' },
+		{ name: '404.html', description: 'Fallback for unknown routes' },
+		{ name: 'feed.xml', description: 'RSS feed (server route)' },
+		{ name: 'sitemap.xml', description: 'Sitemap (server route)' },
+		{
+			name: 'blog',
+			children: [
+				{ name: 'index.html', description: '/blog' },
+				{
+					name: 'some-post',
+					children: [{ name: 'index.html', description: '/blog/some-post' }],
+				},
+			],
+		},
+		{
+			name: 'projects',
+			children: [
+				{
+					name: 'portfolio',
+					children: [{ name: 'index.html', description: '/projects/portfolio' }],
+				},
+			],
+		},
+		{
+			name: 'terminal',
+			children: [{ name: 'index.html', description: '/terminal' }],
+		},
+		{
+			name: 'assets',
+			children: [
+				{ name: 'index-[hash].js', description: 'Main bundle' },
+				{ name: '+Page-[hash].js', description: 'Route chunks' },
+				{ name: 'style-[hash].css', description: 'Styles' },
+			],
+		},
+	]}
+/>
 
 Each page route gets its own `index.html`. Server routes produce files matching their folder names. Cloudflare (and most hosts) serve `index.html` automatically for directory requests, so `/blog` serves `/blog/index.html`.
 

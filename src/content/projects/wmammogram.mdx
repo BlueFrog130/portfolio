@@ -1,4 +1,5 @@
 import ogImage from 'virtual:og-image?title=wMammogram&description=7-day interactive health education platform increasing mammogram screening rates among American Indian women in South Dakota through daily video lessons, quizzes, and SMS engagement.&tags=Vue,TypeScript,Firebase&type=project';
+import { Tree } from '@/lib/components/ui/Tree';
 
 export const metadata = {
 	slug: 'wmammogram',
@@ -203,16 +204,18 @@ efficient Firestore queries were essential for the scheduled reminder function t
 
 ## Code Architecture Highlights
 
-```
-src/
-├── assets/days/ # Course content as TypeScript modules
-├── components/ # Reusable Vue components (WVideo, Question, etc.)
-├── models/ # TypeScript interfaces (User, Content, Day)
-├── services/ # Business logic (ContentManager, DayManager)
-├── views/ # Page-level components (Course, Dashboard)
-├── plugins/ # Firebase & Vuetify initialization
-└── store/ # Vuex state management
-```
+<Tree
+	root="src"
+	items={[
+		{ name: 'assets/days', isFolder: true, description: 'Course content as TypeScript modules' },
+		{ name: 'components', isFolder: true, description: 'Reusable Vue components (WVideo, Question, etc.)' },
+		{ name: 'models', isFolder: true, description: 'TypeScript interfaces (User, Content, Day)' },
+		{ name: 'services', isFolder: true, description: 'Business logic (ContentManager, DayManager)' },
+		{ name: 'views', isFolder: true, description: 'Page-level components (Course, Dashboard)' },
+		{ name: 'plugins', isFolder: true, description: 'Firebase & Vuetify initialization' },
+		{ name: 'store', isFolder: true, description: 'Vuex state management' },
+	]}
+/>
 
 The architecture emphasizes:
 

@@ -96,7 +96,7 @@ export function Header() {
 				</Link>
 
 				{/* Desktop Navigation */}
-				<ul className="hidden items-center gap-1 sm:flex" role="list">
+				<ul className="hidden items-center gap-1 md:flex" role="list">
 					{navItems.map((item) => (
 						<li key={item.href}>
 							<Link
@@ -112,15 +112,15 @@ export function Header() {
 				<div className="flex items-center gap-3">
 					<ModeSwitcher />
 
-					<div className="hidden h-5 w-px bg-surface-800 sm:block" />
+					<div className="hidden h-5 w-px bg-surface-800 md:block" />
 
-					<div className="hidden sm:flex items-center gap-2">
+					<div className="hidden md:flex *:shrink-0 items-center gap-4">
 						<Tooltip content="GitHub">
 							<a
 								href={links.github}
 								target="_blank"
 								rel="noopener noreferrer"
-								className="text-surface-300 hover:text-accent-400 shrink-0 hover:bg-surface-800/50 p-2 rounded-lg transition-all duration-300"
+								className="text-surface-300 hover:text-accent-400 shrink-0 flex items-center hover:bg-surface-800/50 rounded-lg transition-all duration-300"
 								aria-label="GitHub Profile"
 							>
 								<GitHubIcon className="h-5 w-5" />
@@ -131,7 +131,7 @@ export function Header() {
 								href={links.linkedin}
 								target="_blank"
 								rel="noopener noreferrer"
-								className="text-surface-300 hover:text-accent-400 shrink-0 hover:bg-surface-800/50 p-2 rounded-lg transition-all duration-300"
+								className="text-surface-300 hover:text-accent-400 shrink-0 flex items-center hover:bg-surface-800/50 rounded-lg transition-all duration-300"
 								aria-label="LinkedIn Profile"
 							>
 								<LinkedInIcon className="h-5 w-5" />
@@ -142,7 +142,7 @@ export function Header() {
 					{/* Mobile Menu Button */}
 					<button
 						type="button"
-						className="text-surface-300 hover:text-accent-400 hover:bg-surface-800/50 p-2 rounded-lg transition-all duration-300 sm:hidden"
+						className="text-surface-300 hover:text-accent-400 hover:bg-surface-800/50 p-2 rounded-lg transition-all duration-300 md:hidden"
 						onClick={() => setMobileMenuOpen(true)}
 						aria-label="Open main menu"
 					>
@@ -156,7 +156,7 @@ export function Header() {
 				createPortal(
 					<div
 						className={clsx(
-							'sm:hidden',
+							'md:hidden',
 							mobileMenuOpen ? 'pointer-events-auto' : 'pointer-events-none',
 						)}
 						role="dialog"

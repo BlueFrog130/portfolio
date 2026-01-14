@@ -52,8 +52,8 @@ function TreeNode({ item, depth, isLast, parentLines }: TreeNodeProps) {
 
 				{/* Description */}
 				{item.description && (
-					<span className="text-surface-500 text-sm ml-2 hidden sm:inline">
-						{item.description}
+					<span className="text-surface-500 text-sm ml-2 hidden sm:inline font-mono">
+						# {item.description}
 					</span>
 				)}
 			</div>

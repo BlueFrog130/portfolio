@@ -1,4 +1,5 @@
 import ogImage from 'virtual:og-image?title=Building a Custom React Router&description=File-based route discovery, pattern matching, and ViewTransition API with React 19.&tags=React,Router,ViewTransitions&type=blog&seriesPart=2&seriesTotalParts=9';
+import { Tree } from '@/lib/components/ui/Tree';
 
 export const metadata = {
 	slug: 'building-portfolio-part-2-router',
@@ -80,23 +81,43 @@ export const routes: Route[] = Object.entries(pageImports)
 
 The file structure determines the routes:
 
-```
-src/pages/
-├── +Page.tsx              # /
-├── +Page.options.ts       # Route options for /
-├── 404/
-│   └── +Page.tsx          # * (catch-all)
-├── blog/
-│   ├── +Page.tsx          # /blog
-│   └── [slug]/
-│       ├── +Page.tsx      # /blog/:slug
-│       └── +Page.options.ts
-├── project/
-│   └── [slug]/
-│       └── +Page.tsx      # /project/:slug
-└── terminal/
-    └── +Page.tsx          # /terminal
-```
+<Tree
+	root="src/pages"
+	items={[
+		{ name: '+Page.tsx', description: '/' },
+		{ name: '+Page.options.ts', description: 'Route options for /' },
+		{
+			name: '404',
+			children: [{ name: '+Page.tsx', description: '* (catch-all)' }],
+		},
+		{
+			name: 'blog',
+			children: [
+				{ name: '+Page.tsx', description: '/blog' },
+				{
+					name: '[slug]',
+					children: [
+						{ name: '+Page.tsx', description: '/blog/:slug' },
+						{ name: '+Page.options.ts' },
+					],
+				},
+			],
+		},
+		{
+			name: 'project',
+			children: [
+				{
+					name: '[slug]',
+					children: [{ name: '+Page.tsx', description: '/project/:slug' }],
+				},
+			],
+		},
+		{
+			name: 'terminal',
+			children: [{ name: '+Page.tsx', description: '/terminal' }],
+		},
+	]}
+/>
 
 ## Route Options
 
@@ -194,16 +215,22 @@ component: lazy(() => import('./pages/project/[slug]/+Page'));
 
 When Vite builds the app, it sees these dynamic imports and creates separate chunks. The result:
 
-```
-dist/
-├── assets/
-│   ├── index-[hash].js        # Core app (~50KB)
-│   ├── +Page-[hash].js        # Home page
-│   ├── +Page-[hash].js        # Blog list
-│   ├── +Page-[hash].js        # Blog post
-│   ├── +Page-[hash].js        # Project page
-│   └── +Page-[hash].js        # Terminal
-```
+<Tree
+	root="dist"
+	items={[
+		{
+			name: 'assets',
+			children: [
+				{ name: 'index-[hash].js', description: 'Core app (~50KB)' },
+				{ name: '+Page-[hash].js', description: 'Home page' },
+				{ name: '+Page-[hash].js', description: 'Blog list' },
+				{ name: '+Page-[hash].js', description: 'Blog post' },
+				{ name: '+Page-[hash].js', description: 'Project page' },
+				{ name: '+Page-[hash].js', description: 'Terminal' },
+			],
+		},
+	]}
+/>
 
 When a user lands on the home page, they download the core bundle plus the home page chunk. Navigate to a project? That chunk loads on demand. The user never downloads code for pages they don't visit.
 
