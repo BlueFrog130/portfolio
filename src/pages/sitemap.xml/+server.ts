@@ -1,21 +1,28 @@
 import { routes } from '@/routes';
 import { html as xml } from 'common-tags';
+import type { RouteMeta, RouteParams } from '@/lib/router';
+
+// Resolve meta - call it if it's a function, otherwise return as-is
+function resolveMeta(
+	meta: RouteMeta | ((params: RouteParams) => RouteMeta) | undefined,
+	params: RouteParams,
+): RouteMeta | undefined {
+	if (!meta) return undefined;
+	return typeof meta === 'function' ? meta(params) : meta;
+}
 
 export function get() {
 	const entries = routes
-		.flatMap((r) =>
-			r.entries
-				? r.entries().map((e) => ({
-						...r.meta,
-						path: e,
-					}))
-				: [
-						{
-							...r.meta,
-							path: r.path,
-						},
-					],
-		)
+		.flatMap((r) => {
+			if (r.entries) {
+				return r.entries().map(({ path, params }) => {
+					const meta = resolveMeta(r.meta, params);
+					return { ...meta, path };
+				});
+			}
+			const meta = resolveMeta(r.meta, {});
+			return [{ ...meta, path: r.path }];
+		})
 		.filter((e) => e.path !== '*'); // Exclude 404 route
 
 	const today = new Date(import.meta.env.VITE_BUILD_DATE)
@@ -30,8 +37,8 @@ export function get() {
 				<url>
 					<loc>${import.meta.env.VITE_BASE_URL + path}</loc>
 					<lastmod>${today}</lastmod>
-					<changefreq>${sitemapChangefreq}</changefreq>
-					<priority>${sitemapPriority}</priority>
+					${sitemapChangefreq ? `<changefreq>${sitemapChangefreq}</changefreq>` : ''}
+					${sitemapPriority != null ? `<priority>${sitemapPriority}</priority>` : ''}
 				</url>`,
 			)}
 		</urlset>`;

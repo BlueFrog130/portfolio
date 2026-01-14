@@ -131,9 +131,9 @@ export async function ssg() {
 	console.log('\nCopying static assets...');
 	copyDir(join(CLIENT_DIR, 'assets'), join(OUTPUT_DIR, 'assets'));
 
-	// Generate favicons from SVG before copying public files
+	// Generate favicons from SVG directly to output directory
 	console.log('\nGenerating favicons...');
-	await generateFavicons();
+	await generateFavicons(OUTPUT_DIR);
 
 	// Copy any public files
 	const publicDir = join(ROOT, 'public');

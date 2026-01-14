@@ -12,6 +12,8 @@ export { matchPath, matchRoute, getMetaForPath } from './match';
 export type {
 	Route,
 	RouteParams,
+	RouteEntry,
+	RouteEntries,
 	RouterContextValue,
 	RouteMeta,
 	SearchParams,

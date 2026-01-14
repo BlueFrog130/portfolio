@@ -1,6 +1,8 @@
 import { links, profile } from '../data';
 
 export const DEFAULT_OG_IMAGE = '/og-image.png';
+export const OG_IMAGE_WIDTH = 1200;
+export const OG_IMAGE_HEIGHT = 630;
 export const SITE_NAME = profile.name;
 export const AUTHOR = {
 	name: profile.name,

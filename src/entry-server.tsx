@@ -145,8 +145,8 @@ export function entries() {
 	return routes
 		.flatMap((route) => {
 			if (route.entries) {
-				return route.entries().map((e) => ({
-					path: e,
+				return route.entries().map((entry) => ({
+					path: entry.path,
 					mode: 'page',
 				}));
 			}

@@ -68,7 +68,12 @@ export interface MatchResult {
 
 export type PageLoad<T> = (context: LoaderContext) => Promise<T>;
 
-export type RouteEntries = () => string[];
+export interface RouteEntry {
+	path: string;
+	params: RouteParams;
+}
+
+export type RouteEntries = () => RouteEntry[];
 
 export type PageMeta = RouteMeta | ((params: RouteParams) => RouteMeta);
 

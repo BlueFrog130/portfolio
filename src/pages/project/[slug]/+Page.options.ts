@@ -13,4 +13,7 @@ export const load: PageLoad<any> = async ({ params }) => {
 };
 
 export const entries: RouteEntries = () =>
-	projects.map((p) => `/project/${p.slug}`);
+	projects.map((p) => ({
+		path: `/project/${p.slug}`,
+		params: { slug: p.slug },
+	}));

@@ -8,6 +8,7 @@ const ROOT = resolve(__dirname, '..');
 const FONTS_DIR = resolve(ROOT, 'fonts');
 const PUBLIC_DIR = resolve(ROOT, 'public');
 const SVG_PATH = resolve(PUBLIC_DIR, 'favicon.svg');
+const DEFAULT_OUTPUT_DIR = resolve(ROOT, 'dist', 'static');
 
 // Standard favicon sizes
 const SIZES = [
@@ -19,7 +20,8 @@ const SIZES = [
 	{ name: 'android-chrome-512x512.png', size: 512 },
 ];
 
-export async function generateFavicons(): Promise<void> {
+export async function generateFavicons(outputDir?: string): Promise<void> {
+	const targetDir = outputDir ?? DEFAULT_OUTPUT_DIR;
 	console.log('Generating favicons from SVG...');
 
 	if (!existsSync(SVG_PATH)) {
@@ -44,18 +46,18 @@ export async function generateFavicons(): Promise<void> {
 		const pngData = resvg.render();
 		const pngBuffer = pngData.asPng();
 
-		const outputPath = join(PUBLIC_DIR, name);
+		const outputPath = join(targetDir, name);
 		writeFileSync(outputPath, pngBuffer);
 		console.log(`  -> Generated ${name} (${size}x${size})`);
 	}
 
 	// Generate ICO file with multiple sizes (16, 32, 48)
-	await generateIco();
+	await generateIco(targetDir);
 
 	console.log('Favicon generation complete!');
 }
 
-async function generateIco(): Promise<void> {
+async function generateIco(targetDir: string): Promise<void> {
 	// ICO format header
 	const icoSizes = [16, 32, 48];
 	const pngBuffers: Buffer[] = [];
@@ -81,7 +83,7 @@ async function generateIco(): Promise<void> {
 
 	// Build ICO file
 	const ico = buildIco(pngBuffers, icoSizes);
-	const icoPath = join(PUBLIC_DIR, 'favicon.ico');
+	const icoPath = join(targetDir, 'favicon.ico');
 	writeFileSync(icoPath, ico);
 	console.log('  -> Generated favicon.ico (16, 32, 48)');
 }

@@ -1,5 +1,12 @@
 import { useState, useEffect } from 'react';
-import { DEFAULT_OG_IMAGE, SITE_NAME, AUTHOR, BASE_URL } from './shared';
+import {
+	DEFAULT_OG_IMAGE,
+	OG_IMAGE_WIDTH,
+	OG_IMAGE_HEIGHT,
+	SITE_NAME,
+	AUTHOR,
+	BASE_URL,
+} from './shared';
 
 export interface HeadProps {
 	title: string;
@@ -41,8 +48,6 @@ function clearExistingMetaTags() {
 		'twitter:title',
 		'twitter:description',
 		'twitter:image',
-		'sitemap:priority',
-		'sitemap:changefreq',
 	];
 	metaNames.forEach((name) => {
 		document.querySelector(`meta[name="${name}"]`)?.remove();
@@ -55,6 +60,10 @@ function clearExistingMetaTags() {
 		'og:title',
 		'og:description',
 		'og:image',
+		'og:image:width',
+		'og:image:height',
+		'og:image:type',
+		'og:image:alt',
 		'og:site_name',
 		'og:locale',
 		'article:published_time',
@@ -145,6 +154,10 @@ export function Head({
 			<meta property="og:title" content={title} />
 			<meta property="og:description" content={description} />
 			<meta property="og:image" content={fullImageUrl} />
+			<meta property="og:image:width" content={String(OG_IMAGE_WIDTH)} />
+			<meta property="og:image:height" content={String(OG_IMAGE_HEIGHT)} />
+			<meta property="og:image:type" content="image/png" />
+			<meta property="og:image:alt" content={description} />
 			<meta property="og:site_name" content={SITE_NAME} />
 			<meta property="og:locale" content="en_US" />
 
@@ -177,10 +190,6 @@ export function Head({
 				type="application/ld+json"
 				dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
 			/>
-
-			{/* Sitemap meta tags */}
-			<meta name="sitemap:priority" content={String(sitemapPriority)} />
-			<meta name="sitemap:changefreq" content={sitemapChangefreq} />
 
 			{/* Module preloads */}
 			{preloads &&

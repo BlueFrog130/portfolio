@@ -18,4 +18,7 @@ export const load: PageLoad<any> = async ({ params }) => {
 };
 
 export const entries: RouteEntries = () =>
-	blogPosts.map((post) => `/blog/${post.slug}`);
+	blogPosts.map((post) => ({
+		path: `/blog/${post.slug}`,
+		params: { slug: post.slug },
+	}));
