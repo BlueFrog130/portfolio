@@ -1,10 +1,10 @@
-import ogImage from 'virtual:og-image?title=Hosting on Cloudflare Workers&description=Edge-first architecture with Hono, D1 database, and Vite integration.&tags=Cloudflare,Hono,Edge&type=blog&seriesPart=5&seriesTotalParts=9';
+import ogImage from 'virtual:og-image?title=Hosting on Cloudflare Workers&description=Deploying a portfolio on Cloudflare Workers with Hono, D1 database, Workers AI, and the Vite Cloudflare plugin for local development.&tags=Cloudflare,Hono,Edge&type=blog&seriesPart=5&seriesTotalParts=9';
 
 export const metadata = {
 	slug: 'building-portfolio-part-5-hosting',
 	title: 'Hosting on Cloudflare Workers',
 	description:
-		'Edge-first architecture with Hono, D1 database, and Vite integration.',
+		'Deploying a portfolio on Cloudflare Workers with Hono, D1 database, Workers AI, and the Vite Cloudflare plugin for local development.',
 	tags: ['Cloudflare', 'Hono', 'Edge'],
 	publishedAt: '2025-12-16T12:00:00.000Z',
 	featuredImage: ogImage,
@@ -21,9 +21,9 @@ _Part 5 of the "Building a Modern Portfolio Without a Meta-Framework" series_
 
 ---
 
-Choosing where to host a web application used to be simple: pick a VPS, install Node, run your server. Now there are dozens of options—Vercel, Netlify, Railway, Render, Fly.io, AWS Lambda, and more. Each with different trade-offs around cost, complexity, and control.
+My portfolio costs $0/month to host, runs in 300+ data centers, and has a SQLite database and LLM inference built in. That's not a sales pitch—it's what Cloudflare Workers gives you on the free tier.
 
-For this portfolio, I went with Cloudflare Workers. Not because it's the easiest option, but because it lets me run code at the edge with a generous free tier and tight integration with their other services.
+I didn't choose Workers because it's the easiest option. I chose it because it lets me run real backend code at the edge with tight integration between compute, storage, and AI—all from a single vendor.
 
 ## Why Edge?
 
@@ -106,9 +106,9 @@ The `c.env` pattern is how Cloudflare injects bindings—database connections, A
 
 ## D1: SQLite at the Edge
 
-D1 is Cloudflare's serverless SQLite database. It's not a traditional database server—each request gets a connection to a SQLite file replicated globally.
+D1 is Cloudflare's serverless SQLite database. It's not a traditional database server—each request gets a connection to a SQLite file replicated globally. No connection pools, no cold-start latency for database connections, no separate infrastructure to manage.
 
-We will dive more into D1 in [Part 7](/blog/building-portfolio-part-7-analytics).
+I'll cover the D1 schema and queries in detail in [Part 7](/blog/building-portfolio-part-7-analytics), where we build the analytics system. For now, the key thing to know: D1 bindings work exactly like AI bindings—typed objects on `c.env`, available instantly.
 
 ## Request Validation with Zod
 
@@ -251,6 +251,6 @@ The backend is about 400 lines of TypeScript:
 - `worker/index.ts` - Hono app with API routes
 - `migrations/*.sql` - D1 schema
 
-That's it. No Docker, no Kubernetes, no infrastructure-as-code. Just a TypeScript file and a config.
+That's it. No Docker, no Kubernetes, no infrastructure-as-code. Just a TypeScript file and a config. The infrastructure disappears so you can focus on what it enables.
 
 ---

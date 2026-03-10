@@ -1,11 +1,11 @@
-import ogImage from 'virtual:og-image?title=Static Site Generation Without the Framework&description=File-based route entries, server routes for RSS/sitemaps, and module preloading.&tags=SSG,Vite,Performance&type=blog&seriesPart=3&seriesTotalParts=9';
+import ogImage from 'virtual:og-image?title=Static Site Generation Without the Framework&description=Building a custom SSG pipeline with Vite, including route entry discovery, module preloading from manifests, and server routes for RSS and sitemaps.&tags=SSG,Vite,Performance&type=blog&seriesPart=3&seriesTotalParts=9';
 import { Tree } from '@/lib/components/ui/Tree';
 
 export const metadata = {
 	slug: 'building-portfolio-part-3-ssg',
 	title: 'Static Site Generation Without the Framework',
 	description:
-		'File-based route entries, server routes for RSS and sitemaps, and module preloading.',
+		'Building a custom SSG pipeline with Vite, including route entry discovery, module preloading from manifests, and server routes for RSS and sitemaps.',
 	tags: ['SSG', 'Vite', 'Performance'],
 	publishedAt: '2025-12-16T10:00:00.000Z',
 	featuredImage: ogImage,
@@ -22,7 +22,7 @@ _Part 3 of the "Building a Modern Portfolio Without a Meta-Framework" series_
 
 ---
 
-The first time I saw someone explain SSG, they made it sound trivial: "just render your React app to HTML at build time." Three weeks later, I understood why Next.js exists.
+"Just render your React app to HTML at build time." That's how every SSG tutorial starts. None of them mention the hydration mismatches, the head tag duplication, or the module preloading that makes the difference between a fast site and a slow one.
 
 Static Site Generation is conceptually simple. The implementation details are where it gets interesting.
 
@@ -570,6 +570,6 @@ The complete SSG system is about 300 lines across a few files:
 - `src/pages/**/+Page.options.ts` - Route metadata, loaders, and entry points
 - `src/pages/**/+server.ts` - Non-HTML static files (RSS, sitemap)
 
-No special webpack loaders, no framework-specific data fetching conventions, no magic. Routes declare what they render via `entries()`. Server routes export a `get()` function that returns a string. The SSG script just iterates and writes files. The head management is the messiest part—cleaning up SSG tags on navigation isn't pretty—but it's all explicit and debuggable.
+No special webpack loaders, no framework-specific data fetching conventions, no magic. Routes declare what they render via `entries()`. Server routes export a `get()` function that returns a string. The SSG script iterates and writes files. The head management is the messiest part—cleaning up SSG tags on navigation isn't pretty—but it's explicit and debuggable.
 
 ---

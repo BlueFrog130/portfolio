@@ -1,11 +1,11 @@
-import ogImage from 'virtual:og-image?title=Building a Custom React Router&description=File-based route discovery, pattern matching, and ViewTransition API with React 19.&tags=React,Router,ViewTransitions&type=blog&seriesPart=2&seriesTotalParts=9';
+import ogImage from 'virtual:og-image?title=Building a Custom React Router&description=How to build a custom React router from scratch with file-based route discovery, pattern matching, lazy loading, and the ViewTransition API.&tags=React,Router,ViewTransitions&type=blog&seriesPart=2&seriesTotalParts=9';
 import { Tree } from '@/lib/components/ui/Tree';
 
 export const metadata = {
 	slug: 'building-portfolio-part-2-router',
 	title: 'Building a Custom React Router',
 	description:
-		'File-based route discovery, pattern matching, and ViewTransition API with React 19.',
+		'How to build a custom React router from scratch with file-based route discovery, pattern matching, lazy loading, and the ViewTransition API.',
 	tags: ['React', 'Router', 'ViewTransitions'],
 	publishedAt: '2025-12-16T09:00:00.000Z',
 	featuredImage: ogImage,
@@ -38,7 +38,7 @@ The real answer? I wanted to understand how routing actually works. The bundle s
 
 ## File-Based Route Discovery
 
-Before diving into the router itself, here's how routes are defined. Instead of manually maintaining an array of route objects, I use Vite's `import.meta.glob` to auto-discover pages from the filesystem, this is heavily inspired by SvelteKit's routing conventions:
+Before diving into the router itself, here's how routes are defined. Instead of manually maintaining an array of route objects, I use Vite's `import.meta.glob` to auto-discover pages from the filesystem—heavily inspired by SvelteKit's routing conventions:
 
 ```typescript
 // src/routes.ts
@@ -544,6 +544,6 @@ The complete router is about 250 lines of TypeScript across four files:
 - `Router.tsx` - The Router component with Suspense/ViewTransition
 - `Link.tsx` - The Link component
 
-That's it. No build plugins, no babel transforms, no special file naming conventions. Just React components and the History API.
+That's it. No build plugins, no babel transforms, no special file naming conventions beyond folder structure. Just React components and the History API.
 
 ---

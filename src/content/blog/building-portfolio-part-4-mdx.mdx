@@ -1,10 +1,10 @@
-import ogImage from 'virtual:og-image?title=MDX Content and Virtual Modules&description=Virtual modules in Vite for extracting MDX metadata without full parsing.&tags=MDX,Vite,Plugins&type=blog&seriesPart=4&seriesTotalParts=9';
+import ogImage from 'virtual:og-image?title=MDX Content and Virtual Modules&description=Building a custom Vite plugin to extract MDX metadata without full compilation, using virtual modules and the query parameter pattern.&tags=MDX,Vite,Plugins&type=blog&seriesPart=4&seriesTotalParts=9';
 
 export const metadata = {
 	slug: 'building-portfolio-part-4-mdx',
 	title: 'MDX Content and Virtual Modules',
 	description:
-		'Virtual modules in Vite for extracting MDX metadata without full parsing.',
+		'Building a custom Vite plugin to extract MDX metadata without full compilation, using virtual modules and the query parameter pattern.',
 	tags: ['MDX', 'Vite', 'Plugins'],
 	publishedAt: '2025-12-16T11:00:00.000Z',
 	featuredImage: ogImage,
@@ -21,13 +21,13 @@ _Part 4 of the "Building a Modern Portfolio Without a Meta-Framework" series_
 
 ---
 
-Why use MDX for content? It really just let me be lazy. I wanted to write blog posts and project pages in Markdown, but have the full power of React when I needed it. MDX is perfect for that. Not only can I write standard Markdown, but it is completely rendered to React at build time and can be rendered to plain HTML.
+I wanted to write in Markdown but reach for React components when Markdown fell short. MDX gives you exactly that—standard Markdown that compiles to React at build time. The catch is getting metadata out of MDX files without importing the entire component tree.
 
 ## The Problem
 
-I wanted MDX files to contain both content and metadata (title, description, tags, etc). The content would be rendered as React components, but I also needed to extract the metadata for use in lists, SEO, and Open Graph images.
+I wanted MDX files to contain both content and metadata (title, description, tags, etc). The content gets rendered as React components, but I also needed to extract the metadata for blog lists, SEO tags, and Open Graph images.
 
-To get the list of all blog posts or projects I leveraged Vite's `import.meta.glob` to import all MDX files in a directory. But I didn't want to fully parse and compile every MDX file just to get the metadata. That would be slow, wasteful and just bloat the assets. So you would think the solution is simple, just do two glob imports, one for the metadata and one for the full content:
+The naive approach: use Vite's `import.meta.glob` to import all MDX files in a directory. But I didn't want to fully parse and compile every MDX file just to read a title and a description. That's slow, wasteful, and bloats the output. The obvious solution—two separate glob imports—doesn't work:
 
 ```ts
 // ❌ Does not work!
@@ -42,11 +42,11 @@ const metadataModules = import.meta.glob('@/content/blog/*.mdx', {
 const contentModules = import.meta.glob('@/content/blog/*.mdx');
 ```
 
-But this doesn't work because Vite notices that we are importing the same files twice and optimizes them into a single module. So both imports end up being full MDX modules. To get around this, I created a custom Vite plugin that extracts the metadata from MDX files, forcing module separation. Is it a hack? Yes. Does it work? Also yes.
+Vite notices that both globs target the same files and optimizes them into a single module. Both imports end up being full MDX modules—exactly what we were trying to avoid. The fix: a custom Vite plugin that extracts metadata from MDX files, forcing module separation. Is it a hack? Yes. Does it work reliably? Also yes.
 
 ## Why Not Frontmatter?
 
-Frontmatter could work, but I wanted more flexibility using JS exports. Also, [MDX](https://mdxjs.com/guides/frontmatter/#frontmatter) even recommends using JS exports.
+Frontmatter would be the conventional choice, but JS exports give you more flexibility—computed values, imported assets, TypeScript type checking. [MDX's own documentation](https://mdxjs.com/guides/frontmatter/#frontmatter) recommends exports over frontmatter for exactly these reasons.
 
 ## Virtual Modules in Vite
 
@@ -135,11 +135,11 @@ export default metadata;
 }
 ```
 
-The plugin is actually reading and transforming raw MDX files, but then requires esbuild to handle the JSX transformation. This way, we can support any imports used in the metadata (like images or other modules), or even define metadata using JS logic.
+The plugin reads the raw MDX file as text, extracts only the import statements and metadata export, then uses esbuild to handle JSX transformation. This means metadata can reference imported assets (like OG images) or use arbitrary JS logic—without pulling in the entire MDX compilation pipeline.
 
 ## Read Time Calculation
 
-Using a vite plugin and static analysis, I can even compute derived metadata like estimated read time:
+Since the plugin already has access to the raw file content, computing derived metadata like read time is trivial—strip out code blocks and markup, count the remaining words, divide by reading speed:
 
 ````ts
 async load(id) {
@@ -216,6 +216,16 @@ handleHotUpdate({ file, server, modules }) {
 	}
 }
 ```
+
+## Alternatives I Considered
+
+**Frontmatter with gray-matter**: The standard approach. Parse YAML at the top of each file. Simple, well-supported, but no TypeScript checking and no way to reference imported assets in metadata.
+
+**Contentlayer**: A proper content layer with type-safe schemas, validation, and build-time processing. It's the right choice for content-heavy sites. For my use case—a handful of blog posts and projects—a 50-line Vite plugin was simpler.
+
+**Separate metadata files**: Keep metadata in `.json` or `.ts` files alongside each MDX file. Avoids the extraction problem entirely, but means maintaining two files per piece of content. Easy to forget updating one when you change the other.
+
+The Vite plugin approach sits in a sweet spot: metadata lives with content, types are inferred, and the extraction is invisible during development.
 
 ## The Full Plugin
 
@@ -314,5 +324,7 @@ export default metadata;
 	};
 }
 ````
+
+About 80 lines of plugin code, and MDX files become first-class content with typed metadata, read time estimates, and clean separation between content and metadata modules. Not bad for a "hack."
 
 ---

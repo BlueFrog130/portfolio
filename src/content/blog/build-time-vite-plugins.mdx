@@ -1,0 +1,295 @@
+import ogImage from 'virtual:og-image?title=Build-Time Asset Generation with Custom Vite Plugins&description=Why the cheapest compute you have runs at build time — and how two custom plugins replaced runtime services&tags=Vite,Build Tools,TypeScript,Performance&type=blog';
+
+export const metadata = {
+	slug: 'build-time-vite-plugins',
+	title: 'Build-Time Asset Generation with Custom Vite Plugins',
+	description: 'Why the cheapest compute you have runs at build time — and how two custom plugins replaced runtime services',
+	tags: ['Vite', 'Build Tools', 'TypeScript', 'Performance'],
+	publishedAt: '2026-03-10T09:00:00.000Z',
+	featuredImage: ogImage,
+	featured: true,
+	draft: false,
+	readTime: 11,
+};
+
+Your build server is the cheapest employee you'll ever hire — it works once and serves millions.
+
+---
+
+Most web developers reach for runtime solutions by default. Need OG images? Spin up a serverless function. Need metadata from Markdown files? Parse it on every request.
+
+I took the opposite approach. My portfolio runs two custom Vite plugins that shift all of that work to build time — generating OG images as PNG files and extracting MDX metadata without full compilation. Total combined code: about 400 lines. No external services. No runtime overhead. No framework.
+
+Here's why that matters and how each one works.
+
+---
+
+## The philosophy: build time is free compute
+
+Think about where your code runs. Runtime code executes on every single request — every page load, every user, every bot crawling your site. Build-time code runs once. Maybe twice if you messed up the deploy.
+
+The math isn't subtle:
+
+| | Build Time | Runtime |
+|---|---|---|
+| **Execution count** | Once per deploy | Once per request |
+| **Cost at scale** | Fixed | Linear |
+| **Failure blast radius** | Caught before deploy | Hits real users |
+| **Caching complexity** | None — it's already static | CDN config, invalidation, edge logic |
+| **Cold starts** | Irrelevant | Very relevant |
+
+Every computation you can move from runtime to build time is a computation that disappears from your production infrastructure entirely. No cold starts. No edge function limits. No "oh, the OG image service is down" at 2 AM.
+
+The question isn't "can I do this at runtime?" — it's "do I *need* to do this at runtime?"
+
+---
+
+## The Vite plugin model
+
+Vite plugins are [Rollup plugins](https://rollupjs.org/plugin-development/) with extra hooks for dev server integration. The three hooks that matter most for build-time generation:
+
+- **`resolveId`** — intercepts module imports and decides what "file" they point to
+- **`load`** — provides the actual content for a resolved module
+- **`transform`** — modifies source code after it's been loaded
+
+The magic trick is **virtual modules**. When `resolveId` returns an ID that doesn't correspond to a file on disk, you've created a virtual module. The `load` hook then generates its content on the fly. From the rest of your application's perspective, it's just a regular import — TypeScript doesn't care whether the bytes came from a file or from a function.
+
+The convention is to prefix virtual module IDs with `\0` internally (which tells other plugins to leave them alone) while exposing a clean import path like `virtual:og-image` to application code.
+
+---
+
+## Case study 1: generating OG images at import time
+
+This is the plugin I'm most proud of. Instead of using an external OG image service or a runtime endpoint, I generate Open Graph PNGs directly from import statements:
+
+```typescript
+import ogImage from 'virtual:og-image?title=My Post&description=A cool post&tags=React,Vite&type=blog';
+// ogImage is now a path to a generated PNG (or a data URL in dev)
+```
+
+The parameters are encoded right in the import path as query strings. The plugin intercepts these imports, renders an SVG template with the parameters, converts it to PNG, and emits the result as a build asset.
+
+### How it works
+
+The `resolveId` hook catches anything starting with `virtual:og-image` and marks it as virtual:
+
+```typescript
+resolveId(id) {
+    if (id.startsWith(VIRTUAL_PREFIX)) {
+        return '\0' + id;
+    }
+}
+```
+
+The `load` hook does the heavy lifting — parsing parameters, generating SVG, and rendering to PNG:
+
+```typescript
+async load(id) {
+    if (!id.startsWith('\0' + VIRTUAL_PREFIX)) return;
+
+    const query = id.slice(('\0' + VIRTUAL_PREFIX).length);
+    const params = parseParams(query); // URLSearchParams under the hood
+    const hash = generateHash(params); // MD5 for cache busting
+    const fileName = `og-${hash}.png`;
+
+    const svg = generateSvg(params);
+
+    // Convert SVG to PNG using resvg-js with custom fonts
+    const resvg = new Resvg(svg, {
+        font: {
+            fontDirs: [FONTS_DIR],
+            loadSystemFonts: true,
+            defaultFontFamily: 'Geist',
+        },
+    });
+
+    const pngData = resvg.render();
+    const pngBuffer = pngData.asPng();
+
+    if (isDev) {
+        // Dev mode: inline as data URL — no file I/O needed
+        const base64 = Buffer.from(pngBuffer).toString('base64');
+        return `export default "data:image/png;base64,${base64}"`;
+    }
+
+    // Production: emit as a hashed static asset
+    this.emitFile({
+        type: 'asset',
+        fileName: `assets/${fileName}`,
+        source: pngBuffer,
+    });
+
+    return `export default "/assets/${fileName}"`;
+}
+```
+
+The SVG template itself handles dynamic text wrapping, tag pills with rounded rects, gradient backgrounds, series indicators with progress dots, and custom font rendering — all generated from a pure function. No browser. No Puppeteer. No headless Chrome.
+
+### The dev mode trick
+
+Notice the `isDev` branch. In development, the plugin returns a base64 data URL instead of emitting a file. This means OG images work instantly in dev without any file system writes or static asset serving. You get the same import, the same type, the same behavior — just a different underlying representation. That's the kind of DX win that makes custom plugins worth writing.
+
+### Content-hashed filenames
+
+The `generateHash` function creates an MD5 hash from the serialized parameters. Same title, same tags, same description — same filename. Change any parameter and you get a new hash, which busts CDN caches automatically. No cache invalidation logic needed.
+
+---
+
+## Case study 2: MDX metadata without MDX compilation
+
+My portfolio uses MDX files for blog posts and project pages. Each file exports a `metadata` object with title, description, tags, and so on. But I also need to list all posts on index pages — and I don't want to compile every MDX file just to read its metadata.
+
+The `mdxMetadataPlugin` solves this with a `?metadata` query parameter convention:
+
+```typescript
+// Full MDX compilation — renders the entire document
+import Post from './my-post.mdx';
+
+// Metadata only — skips MDX, just extracts the export
+import metadata from './my-post.mdx?metadata';
+```
+
+Same file, two different import paths, two completely different behaviors.
+
+### The ?query pattern
+
+This pattern is more powerful than it looks. The `resolveId` hook strips the `?metadata` suffix, resolves the actual MDX file, then reattaches the query with a virtual prefix:
+
+```typescript
+resolveId(id, importer) {
+    if (id.endsWith(METADATA_QUERY)) {
+        const actualId = id.slice(0, -METADATA_QUERY.length);
+        return this.resolve(actualId, importer).then((resolved) => {
+            if (resolved) {
+                // Virtual prefix tells other plugins (including MDX) to skip this
+                return VIRTUAL_PREFIX + resolved.id + METADATA_QUERY;
+            }
+        });
+    }
+}
+```
+
+The `\0` prefix is doing critical work here. Without it, the MDX plugin would try to compile this import as a full MDX document. With it, only our plugin handles the resolution.
+
+### Regex extraction instead of AST parsing
+
+The `load` hook reads the raw MDX file and uses regex to extract just the metadata block and its imports:
+
+```typescript
+// Extract import statements (to support imports used in metadata)
+const importMatches = content.match(
+    /^import\s+.+\s+from\s+['"][^'"]+['"];?\s*$/gm
+);
+const imports = importMatches ? importMatches.join('\n') : '';
+
+// Extract the metadata export block
+const match = content.match(
+    /export\s+const\s+metadata\s*=\s*(\{[\s\S]*?\n\});/
+);
+```
+
+Why regex instead of a proper AST? Because it's fast and the input format is controlled. I write the metadata blocks. I know the shape. A full MDX parse for a 3000-word blog post takes measurable time — a regex match is effectively instant.
+
+### Computed read time
+
+The plugin also computes read time by stripping code blocks and HTML tags, then counting words:
+
+```typescript
+const words = content
+    .replace(/<[^>]+>/g, '')           // Remove HTML tags
+    .replace(/```[\s\S]*?```/g, '')    // Remove code blocks
+    .replace(/^import\s+.+$/gm, '')   // Remove imports
+    .replace(/^export\s+const\s+.*$/m, '') // Remove exports
+    .split(/\s+/).length;
+
+const readTime = Math.ceil(words / 200); // 200 WPM
+```
+
+This runs at build time, so the read time is baked into the metadata module. No runtime calculation needed.
+
+### HMR integration
+
+The `handleHotUpdate` hook ensures that when you edit an MDX file, both the content module and its metadata module get invalidated:
+
+```typescript
+handleHotUpdate({ file, server, modules }) {
+    if (file.endsWith('.mdx')) {
+        const metadataModuleId = VIRTUAL_PREFIX + file + METADATA_QUERY;
+        const metadataModule =
+            server.moduleGraph.getModuleById(metadataModuleId);
+        if (metadataModule) {
+            return [...modules, metadataModule];
+        }
+    }
+}
+```
+
+Edit the title in your MDX file, save, and the blog index updates instantly. Build-time thinking doesn't mean sacrificing dev experience.
+
+---
+
+## Composing plugins together
+
+Both plugins slot into the Vite config as a flat list:
+
+```typescript
+plugins: [
+    ssrDevPlugin(),
+    tailwindcss(),
+    ogImagePlugin(),
+    mdxMetadataPlugin(),
+    mdx({ remarkPlugins: [gfm], rehypePlugins: [[rehypeStarryNight, ...]] }),
+    react({ babel: { plugins: ['babel-plugin-react-compiler'] } }),
+    cloudflare({ viteEnvironment: { name: 'ssr' } }),
+],
+```
+
+Order matters — both the OG image and MDX metadata plugins use `enforce: 'pre'` so they resolve virtual modules before other plugins try to handle them. The MDX metadata plugin needs to intercept `?metadata` imports before the MDX plugin tries to compile them as full documents.
+
+The beauty of this model is composability. Each plugin is a self-contained ~100-300 line file with no dependencies on the other. The OG image plugin doesn't know about MDX. The MDX metadata plugin doesn't know about OG images. They both just hook into Vite's pipeline at the right points.
+
+---
+
+## What I got wrong
+
+This approach isn't without rough edges.
+
+**Regex metadata extraction is fragile.** My regex pattern for pulling `metadata` out of MDX files assumes a specific formatting convention — the closing `};` must be at the start of a line. If I ever write metadata that breaks that pattern, the build fails silently with a confusing error. A proper AST approach would be more robust, but I've chosen speed over safety here because I control the input. That trade-off gets worse if anyone else ever contributes content.
+
+**SVG text layout is painful.** The OG image plugin does manual text wrapping with character counting — `wrapText(title, 35)`. This is a rough approximation because characters aren't monospaced. A title with lots of "W"s will overflow differently than one with lots of "i"s. I've tuned the character limits conservatively, but it's never going to be pixel-perfect without actual font metrics.
+
+**Dev mode data URLs are large.** A 1200x630 PNG as a base64 data URL is not small. It works fine for development, but if you had dozens of OG images loading simultaneously, you'd feel it in your dev server's memory usage. For my portfolio with a handful of posts, this is irrelevant. For a site with hundreds of pages, you'd want to write temp files instead.
+
+---
+
+## When to write your own vs use existing
+
+Not every build-time need warrants a custom plugin. Here's my rough heuristic:
+
+**Write your own when:**
+- The problem is specific to your project's conventions (like my MDX metadata shape)
+- Existing solutions require runtime infrastructure you don't want to maintain
+- The plugin is under 300 lines and the scope is clearly bounded
+- You need tight integration with your dev server (HMR, middleware)
+
+**Use existing solutions when:**
+- The problem is well-solved by established tools (image optimization, CSS processing)
+- The implementation requires deep domain expertise (font rendering, code highlighting)
+- Multiple people need to maintain it and documentation matters
+- The scope is likely to grow beyond your initial estimate
+
+I use [rehype-starry-night](https://github.com/rehypejs/rehype-starry-night) for syntax highlighting and [@resvg/resvg-js](https://github.com/nicedaycode/resvg-js) for SVG-to-PNG rendering. I didn't write those — they're complex, well-tested libraries. But the *orchestration* — deciding when to render, what to render, and how to expose the result to application code — that's where custom plugins shine.
+
+The plugin API is the boundary. The hooks are the contract. Everything inside the plugin is your code, your conventions, your trade-offs. Everything outside is just standard imports.
+
+---
+
+## The takeaway
+
+Custom Vite plugins are simpler than they seem. The core pattern — `resolveId` to intercept, `load` to generate, `transform` to modify — covers an enormous range of use cases. Virtual modules let you generate code from thin air. Query parameters let you parameterize that generation. And the dev/prod split means you can optimize for DX and performance independently.
+
+Build time is the cheapest compute you have. Use it.
+
+If you're building something similar or want to dig into the source, the full code for both plugins is in my [portfolio repository](https://github.com/BlueFrog130/portfolio). Reach out on [LinkedIn](https://www.linkedin.com/in/adam-grady/) or [GitHub](https://github.com/BlueFrog130) if you want to talk about build tooling — I have opinions.
+
+---

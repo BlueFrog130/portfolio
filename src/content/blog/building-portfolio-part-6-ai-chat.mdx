@@ -1,10 +1,10 @@
-import ogImage from 'virtual:og-image?title=AI Chat with Streaming&description=Per-project AI chat with SSE streaming, prompt engineering, and analytics.&tags=AI,Streaming,SSE&type=blog&seriesPart=6&seriesTotalParts=9';
+import ogImage from 'virtual:og-image?title=AI Chat with Streaming&description=Building a per-project AI chat feature with Cloudflare Workers AI, Server-Sent Events streaming, and prompt engineering for focused responses.&tags=AI,Streaming,SSE&type=blog&seriesPart=6&seriesTotalParts=9';
 
 export const metadata = {
 	slug: 'building-portfolio-part-6-ai-chat',
 	title: 'AI Chat with Streaming',
 	description:
-		'Per-project AI chat with SSE streaming, prompt engineering, and analytics.',
+		'Building a per-project AI chat feature with Cloudflare Workers AI, Server-Sent Events streaming, and prompt engineering for focused responses.',
 	tags: ['AI', 'Streaming', 'SSE'],
 	publishedAt: '2025-12-16T13:00:00.000Z',
 	featuredImage: ogImage,
@@ -308,5 +308,11 @@ This works well for a portfolio. For a production chat:
 **WebSockets**: Overkill for request-response chat. SSE is simpler and HTTP-native.
 
 **Vercel AI SDK**: Nice abstractions, but I wanted to understand the raw primitives first.
+
+## The Full Picture
+
+The chat feature is about 200 lines of TypeScript split between the client hook and the Worker endpoint. The hardest part wasn't the streaming or the AI integration—it was prompt engineering. Getting an LLM to be concise, stay on topic, and not echo questions back took more iteration than any of the code.
+
+The lesson: AI features are 20% plumbing and 80% prompt tuning.
 
 ---

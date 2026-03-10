@@ -39,7 +39,7 @@ But I didn't start with a custom solution. The portfolio you're reading this on 
 3. [Astro](https://astro.build/) - Loved the content-first philosophy, but the island architecture felt like overkill for a fully interactive React app.
 4. [TanStack Start](https://tanstack.com/start/v1) - Promising, but still in beta. Too many rough edges and breaking changes for a project I wanted to ship.
 
-After four false starts, I asked myself: why am I fighting these tools? A portfolio doesn't need server-side rendering, complex data fetching, or most of what these frameworks provide. I considered just writing plain HTML, but I wanted to stay sharp with React. So I built exactly what I needed—nothing more.
+After four false starts, I asked myself: why am I fighting these tools? A portfolio doesn't need server-side rendering, complex data fetching, or most of what these frameworks provide. I briefly considered just writing plain HTML—but I wanted to stay sharp with React. So I built exactly what I needed and nothing more.
 
 ## Why Custom?
 
@@ -73,7 +73,7 @@ I'm not going to pretend this approach is right for everyone. Here's an honest l
 
 ## The Tech Stack
 
-With the philosophy established, here's what I actually landed on:
+With the philosophy established, here's what I actually landed on. Each choice was deliberate—every dependency earned its place:
 
 - [React](https://react.dev/) - The UI library. Using the latest features including the React Compiler.
 - [TypeScript](https://www.typescriptlang.org/) - Non-negotiable for any project I work on.
@@ -151,11 +151,3 @@ At a high level, the portfolio follows a straightforward architecture:
 **Edge Backend**: A Cloudflare Worker running Hono handles API routes for analytics tracking and AI-powered chat features, with D1 as the database.
 
 The beauty of this architecture is its simplicity—there's no magic. Every piece is visible, debuggable, and replaceable.
-
-In the upcoming parts of this series, we'll dive deep into each component:
-
-- **Part 2**: Building the custom router
-- **Part 3**: Static Site Generation
-- **Part 4**: MDX content system
-- **Part 5**: The Cloudflare Workers backend
-- And more...

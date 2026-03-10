@@ -1,10 +1,10 @@
-import ogImage from 'virtual:og-image?title=Performance Optimization&description=React Compiler, code splitting, module preloading, and achieving fast Core Web Vitals.&tags=Performance,React,Vite&type=blog&seriesPart=8&seriesTotalParts=9';
+import ogImage from 'virtual:og-image?title=Performance Optimization&description=Achieving near-perfect Lighthouse scores with React Compiler, route-level code splitting, build-time module preloading, and edge caching.&tags=Performance,React,Vite&type=blog&seriesPart=8&seriesTotalParts=9';
 
 export const metadata = {
 	slug: 'building-portfolio-part-8-performance',
 	title: 'Performance Optimization',
 	description:
-		'React Compiler, code splitting, module preloading, and achieving fast Core Web Vitals.',
+		'Achieving near-perfect Lighthouse scores with React Compiler, route-level code splitting, build-time module preloading, and edge caching.',
 	tags: ['Performance', 'React', 'Vite'],
 	publishedAt: '2025-12-16T15:00:00.000Z',
 	featuredImage: ogImage,
@@ -21,9 +21,9 @@ _Part 8 of the "Building a Modern Portfolio Without a Meta-Framework" series_
 
 ---
 
-Performance optimization is where frameworks usually earn their keep. Next.js handles code splitting, image optimization, and preloading automatically. Without a framework, you do it yourself.
+A portfolio with a Lighthouse score of 60 tells recruiters one thing: this person doesn't practice what they preach. Performance optimization is where frameworks usually earn their keep—Next.js handles code splitting, image optimization, and preloading automatically. Without a framework, you handle it yourself.
 
-The good news: the primitives aren't complicated. The bad news: nobody's going to remind you when you forget them.
+The good news: the primitives aren't complicated. The bad news: nobody's going to remind you when you forget one.
 
 ## The Goal
 
@@ -379,6 +379,6 @@ Real user metrics (p75):
 - **INP**: ~31.2ms
 - **CLS**: ~0.021
 
-These numbers are achievable because the site is fundamentally simple: pre-rendered HTML, minimal JavaScript, fast hosting. No amount of optimization saves a poorly architected site.
+These numbers are achievable because the site is fundamentally simple: pre-rendered HTML, minimal JavaScript, fast hosting. No amount of optimization saves a poorly architected site. The real performance work happened in Parts [3](/blog/building-portfolio-part-3-ssg) and [5](/blog/building-portfolio-part-5-hosting)—SSG and edge hosting are the foundation. Everything in this post is polish on top of those decisions.
 
 ---
